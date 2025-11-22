@@ -58,6 +58,15 @@ exclude = ["tests*", "docs*"]
 target-version = "py38"
 line-length = 100
 indent-width = 4
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    ".venv",
+    "venv",
+    "shadowlib/generated/",  # Exclude generated code from linting
+]
 
 [tool.ruff.lint]
 # Enable pycodestyle (E, W), Pyflakes (F), and isort (I)
@@ -126,6 +135,7 @@ omit = [
     "*/tests/*",
     "*/__pycache__/*",
     "*/site-packages/*",
+    "shadowlib/generated/*",  # Exclude generated code from coverage
 ]
 
 [tool.coverage.report]

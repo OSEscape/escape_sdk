@@ -6,8 +6,10 @@ repos:
       # Run the linter
       - id: ruff
         args: [--fix]
+        exclude: ^shadowlib/generated/
       # Run the formatter
       - id: ruff-format
+        exclude: ^shadowlib/generated/
 
   # Custom naming convention checker
   - repo: local
@@ -18,6 +20,7 @@ repos:
         language: system
         types: [python]
         pass_filenames: false
+        exclude: ^shadowlib/generated/
 
   # Type checking with mypy
   - repo: https://github.com/pre-commit/mirrors-mypy
@@ -26,6 +29,7 @@ repos:
       - id: mypy
         additional_dependencies: [types-all]
         args: [--ignore-missing-imports]
+        exclude: ^shadowlib/generated/
 
   # Basic file checks
   - repo: https://github.com/pre-commit/pre-commit-hooks
