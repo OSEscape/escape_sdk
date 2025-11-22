@@ -323,11 +323,7 @@ class Menu:
         options = self.getOptions(strip_colors=strip_colors)
         option_text_lower = option_text.lower()
 
-        for option in options:
-            if option_text_lower in option.lower():
-                return True
-
-        return False
+        return any(option_text_lower in option.lower() for option in options)
 
     def getOptionArea(self, option_index: int) -> Optional[Area]:
         """
@@ -385,9 +381,8 @@ class Menu:
             True if option was found and hovered, False otherwise
         """
         # Ensure menu is open
-        if not self.client.cache.get("isOpen", False):
-            if not self.open():
-                return False
+        if not self.client.cache.get("isOpen", False) and not self.open():
+            return False
 
         options = self.getOptions()
         option_text_lower = option_text.lower()
@@ -419,9 +414,8 @@ class Menu:
             menu.hoverOptionIndex(0)
         """
         # Ensure menu is open
-        if not self.client.cache.get("isOpen", False):
-            if not self.open():
-                return False
+        if not self.client.cache.get("isOpen", False) and not self.open():
+            return False
 
         area = self.getOptionArea(option_index)
         if area:
@@ -473,9 +467,8 @@ class Menu:
                 return True
 
         # Not default - need to open menu
-        if not self.client.cache.get("isOpen", False):
-            if not self.open():
-                return False
+        if not self.client.cache.get("isOpen", False) and not self.open():
+            return False
 
         # Find and click the option
         options = self.getOptions()
@@ -513,9 +506,8 @@ class Menu:
             menu.clickOptionIndex(1, button='right')
         """
         # Ensure menu is open
-        if not self.client.cache.get("isOpen", False):
-            if not self.open():
-                return False
+        if not self.client.cache.get("isOpen", False) and not self.open():
+            return False
 
         area = self.getOptionArea(option_index)
         if area:

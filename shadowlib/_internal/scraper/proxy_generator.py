@@ -428,7 +428,7 @@ class ProxyGenerator:
 
                 # Find full class name for parent
                 parent_full_name = None
-                for full_name in self.class_methods.keys():
+                for full_name in self.class_methods:
                     if (
                         full_name.endswith("." + parent_simple_name)
                         or full_name == parent_simple_name
@@ -605,11 +605,9 @@ class ProxyGenerator:
             "None",
             "Any",
             "QueryRef",
-        ):
-            if "[" not in return_type and "]" not in return_type:
-                if return_type not in self.enums:
-                    wrapped_class = return_type
-                    needs_wrapping = True
+        ) and "[" not in return_type and "]" not in return_type and return_type not in self.enums:
+            wrapped_class = return_type
+            needs_wrapping = True
 
         # Generate method with *args
         # Use wrapped class name for return type if wrapping
@@ -1095,10 +1093,10 @@ PROXY_CLASSES = {"""
 def get_proxy_class(class_name: str) -> type:
     """
     Get a proxy class by name.
-    
+
     Args:
         class_name: Simple class name (e.g., "Client", "Player")
-        
+
     Returns:
         Proxy class or QueryRef if not found
     """

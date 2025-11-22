@@ -1,6 +1,6 @@
 """Type stub for query_builder to help IDEs with autocomplete"""
 
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Any
 
 from shadowlib._internal.api import RuneLiteAPI
 
@@ -15,7 +15,7 @@ class Query:
     api: RuneLiteAPI
 
     def __init__(self, api: RuneLiteAPI, optimize: bool = True) -> None: ...
-    def execute(self, selections: Optional[Dict[str, Any]] = None) -> Dict[str, Any]: ...
+    def execute(self, selections: dict[str, Any] | None = None) -> dict[str, Any]: ...
     def select(self, **kwargs: Any) -> Query: ...
 
     # Add other commonly used methods here

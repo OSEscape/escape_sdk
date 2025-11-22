@@ -627,13 +627,13 @@ def _shapelyToShape(geom: BaseGeometry) -> Shape:
     elif isinstance(geom, MultiPolygon):
         # For MultiPolygon, use the convex hull to get a single polygon
         # This is a reasonable approximation for most use cases
-        return _shapely_to_shape(geom.convex_hull)
+        return _shapelyToShape(geom.convex_hull)
     elif isinstance(geom, GeometryCollection):
         # For GeometryCollection, also use convex hull
         if geom.is_empty:
             # Return a minimal point if empty
             return Point(0, 0)
-        return _shapely_to_shape(geom.convex_hull)
+        return _shapelyToShape(geom.convex_hull)
     else:
         # For other geometry types, wrap in a generic polygon
         if hasattr(geom, "exterior"):

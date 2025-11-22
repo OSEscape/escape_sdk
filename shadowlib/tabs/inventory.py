@@ -5,7 +5,7 @@ Inventory tab module.
 from typing import Any, Dict, List, Optional
 
 from shadowlib.utilities.geometry import createGrid
-from shadowlib.utilities.itemNames import getFormattedItemName, getItemName
+from shadowlib.utilities.item_names import getFormattedItemName, getItemName
 
 from .gametab import GameTab, GameTabs
 
@@ -94,9 +94,6 @@ class Inventory(GameTabs):
         """
         quantities = self.getItemQuantities()
         return sum(quantities)
-
-    def isFull(self) -> bool:
-        return self.slotsUsed() >= 28
 
     def getItemsWithNames(self, formatted: bool = False) -> List[Dict[str, Any]]:
         """
@@ -194,9 +191,7 @@ class Inventory(GameTabs):
                 print("You have logs!")
         """
         items = self.getItemIds()
-        if item_id in items:
-            return True
-        return False
+        return item_id in items
 
     def findItemSlots(self, item_id: int) -> List[int]:
         """

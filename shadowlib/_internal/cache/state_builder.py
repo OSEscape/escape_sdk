@@ -214,7 +214,7 @@ class StateBuilder:
         if container_id == 93:  # Inventory
             self.inventory = []
             # Items dict has string keys like '0', '1', etc representing slots
-            for slot_str, item_data in sorted(items_dict.items(), key=lambda x: int(x[0])):
+            for _slot_str, item_data in sorted(items_dict.items(), key=lambda x: int(x[0])):
                 if item_data is None:
                     self.inventory.append(None)  # Empty slot
                 else:
@@ -222,7 +222,7 @@ class StateBuilder:
 
         elif container_id == 94:  # Equipment
             self.equipment = []
-            for slot_str, item_data in sorted(items_dict.items(), key=lambda x: int(x[0])):
+            for _slot_str, item_data in sorted(items_dict.items(), key=lambda x: int(x[0])):
                 if item_data is None:
                     self.equipment.append(None)  # Empty slot
                 else:
@@ -230,7 +230,7 @@ class StateBuilder:
 
         elif container_id == 95:  # Bank
             self.bank = []
-            for slot_str, item_data in sorted(items_dict.items(), key=lambda x: int(x[0])):
+            for _slot_str, item_data in sorted(items_dict.items(), key=lambda x: int(x[0])):
                 if item_data is None:
                     self.bank.append(None)  # Empty slot
                 else:
@@ -307,7 +307,7 @@ class StateBuilder:
         client = getClient()
 
         try:
-            result = client.api.invokeCustomMethod(
+            client.api.invokeCustomMethod(
                 target="EventBusListener",
                 method="rebuildGroundItems",
                 signature="()V",

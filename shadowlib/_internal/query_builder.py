@@ -8,13 +8,14 @@ Now with Pythonic extensions for forEach, filter, map, and conditionals
 import json
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set, Union
 
+from ..generated.query_proxies import (
+    ClientProxy,
+    LocalPointProxy,
+    PerspectiveProxy,
+    WorldPointProxy,
+)
+
 if TYPE_CHECKING:
-    from ..generated.query_proxies import (
-        ClientProxy,
-        LocalPointProxy,
-        PerspectiveProxy,
-        WorldPointProxy,
-    )
     from .api import RuneLiteAPI
 
 
@@ -276,7 +277,7 @@ class PluginProxy:
                 plugin_methods = self.query.api.plugin_data.get("methods", {})
                 if method_name in plugin_methods:
                     # Find the matching signature
-                    for class_path, signature, return_type in plugin_methods[method_name]:
+                    for class_path, signature, _return_type in plugin_methods[method_name]:
                         if self.class_name in class_path:
                             # Found it! Create the method call with slashes in declaring_class
                             declaring_class = class_path  # Keep slashes as-is
@@ -724,7 +725,7 @@ class QueryRef:
 
         # Process each dimension
         dimensions = []
-        dependencies = set([self.ref_id])
+        dependencies = {self.ref_id}
 
         for key in keys:
             if isinstance(key, slice):
@@ -877,10 +878,7 @@ class QueryRef:
         # Try to get from generated proxies
         if _USE_GENERATED_PROXIES and PROXY_CLASSES:
             # Extract just the class name from full path
-            if "." in type_name:
-                class_name = type_name.split(".")[-1]
-            else:
-                class_name = type_name
+            class_name = type_name.split(".")[-1] if "." in type_name else type_name
 
             # Look for the proxy class (keys in PROXY_CLASSES don't have "Proxy" suffix)
             return PROXY_CLASSES.get(class_name)
@@ -1593,7 +1591,7 @@ class Query:
         raw_results = self._executeQuery(optimized_ops)
 
         # Check for errors first - if there's an error, return it with consistent structure
-        if raw_results.get("error") or raw_results.get("success") == False:
+        if raw_results.get("error") or not raw_results.get("success"):
             return {
                 "success": False,
                 "error": raw_results.get("error", "Unknown error"),
@@ -1737,7 +1735,7 @@ class Query:
                 enum_data = data["$enum"]
                 enum_class_name = enum_data.get("class")
                 ordinal = enum_data.get("ordinal")
-                name = enum_data.get("name")
+                enum_data.get("name")
 
                 # Get the enum class if it exists
                 if enum_class_name in self.api.enum_classes:
@@ -2868,7 +2866,6 @@ class Query:
 try:
     from ..generated.query_proxies import PROXY_CLASSES
     from ..generated.query_proxies import ClientProxy as GeneratedClientProxy
-    from ..generated.query_proxies import PlayerProxy as GeneratedPlayerProxy
 
     _USE_GENERATED_PROXIES = True
 except ImportError as e:

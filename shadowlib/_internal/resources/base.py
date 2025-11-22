@@ -213,10 +213,7 @@ class BaseResource(ABC):
     def _hasCachedFiles(self) -> bool:
         """Check if all required files are cached locally."""
         files = self.getRemoteFiles()
-        for local_name in files.keys():
-            if not (self.cache_dir / local_name).exists():
-                return False
-        return True
+        return all((self.cache_dir / local_name).exists() for local_name in files)
 
     def _downloadAll(self) -> bool:
         """

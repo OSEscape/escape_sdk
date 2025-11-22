@@ -136,10 +136,7 @@ class Player:
         if self.x != x or self.y != y:
             return False
 
-        if plane is not None and self.plane != plane:
-            return False
-
-        return True
+        return not (plane is not None and self.plane != plane)
 
     def isNearby(self, x: int, y: int, radius: int, plane: Optional[int] = None) -> bool:
         """

@@ -423,7 +423,7 @@ class EfficientRuneLiteScraper:
                         constants[const_name] = int(const_value)
                     else:
                         constants[const_name] = const_value
-                except:
+                except (ValueError, IndexError, AttributeError):
                     constants[const_name] = const_value
             elif (
                 const_type == "String" and const_value.startswith('"') and const_value.endswith('"')
@@ -826,7 +826,7 @@ class EfficientRuneLiteScraper:
                 "is_enum": True,
                 "values": enum_info.values,
                 "name_to_ordinal": {v: i for i, v in enumerate(enum_info.values)},
-                "ordinal_to_name": {i: v for i, v in enumerate(enum_info.values)},
+                "ordinal_to_name": dict(enumerate(enum_info.values)),
                 "python_converter": "enum_to_ordinal",
             }
             db["enums"][jni_sig] = enum_data
@@ -834,8 +834,8 @@ class EfficientRuneLiteScraper:
 
         # 3. Process all method signatures to find all types
         seen_types = set()
-        for method_name, implementations in self.methods.items():
-            for class_name, signature, generic_type in implementations:
+        for _method_name, implementations in self.methods.items():
+            for class_name, signature, _generic_type in implementations:
                 # Extract parameter and return types
                 params, ret = self._parseJniSignature(signature)
                 for param_type in params:
@@ -1038,7 +1038,7 @@ class EfficientRuneLiteScraper:
             return self.class_packages[simple_name]
 
         # Try to find it in methods data
-        for method_name, signatures in self.methods.items():
+        for _method_name, signatures in self.methods.items():
             for sig_info in signatures:
                 if isinstance(sig_info, list) and len(sig_info) >= 1:
                     class_path = sig_info[0]
@@ -1394,7 +1394,7 @@ class EfficientRuneLiteScraper:
                 name: {"values": enum.values, "value_map": enum.value_map}
                 for name, enum in self.enums.items()
             },
-            "classes": sorted(list(self.classes)),
+            "classes": sorted(self.classes),
             "constants": self.constants,
             "inheritance": self.inheritance,  # Add inheritance data
             "class_packages": self.class_packages,  # Add class-to-package mapping
@@ -1417,7 +1417,7 @@ class EfficientRuneLiteScraper:
                 "total_types": len(type_conversion_db["all_types"]),
                 "total_inheritance": len(self.inheritance),
             },
-            "classes": sorted(list(self.classes))[:50],
+            "classes": sorted(self.classes)[:50],
             "enums": {
                 name: {
                     "count": len(enum.values),
@@ -1462,7 +1462,7 @@ class EfficientRuneLiteScraper:
 
         if class_hint:
             # Try to find in specific class
-            for class_name, sig, generic_type in impls:
+            for class_name, sig, _generic_type in impls:
                 if class_hint in class_name:
                     return sig
 
@@ -1504,7 +1504,7 @@ def main():
     # Check specifically for WorldPoint methods
     worldpoint_methods = []
     for method_name, impls in scraper.methods.items():
-        for cls, sig, generic_type in impls:
+        for cls, sig, _generic_type in impls:
             if "WorldPoint" in cls:
                 worldpoint_methods.append(f"{method_name}: {sig}")
 

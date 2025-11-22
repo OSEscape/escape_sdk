@@ -212,12 +212,12 @@ class RuneLiteAPI:
     def connect(self) -> bool:
         """Connect to the universal bridge"""
         try:
-            api_fd = open("/dev/shm/runelite_api_universal", "r+b")
-            self.api_channel = mmap.mmap(api_fd.fileno(), 16 * 1024 * 1024)  # 16MB to match C side
+            self.api_fd = open("/dev/shm/runelite_api_universal", "r+b")
+            self.api_channel = mmap.mmap(self.api_fd.fileno(), 16 * 1024 * 1024)  # 16MB to match C side
 
-            result_fd = open("/dev/shm/runelite_results_universal", "r+b")
+            self.result_fd = open("/dev/shm/runelite_results_universal", "r+b")
             self.result_buffer = mmap.mmap(
-                result_fd.fileno(), 16 * 1024 * 1024
+                self.result_fd.fileno(), 16 * 1024 * 1024
             )  # 16MB to match C side
 
             print("✅ Connected to bridge")

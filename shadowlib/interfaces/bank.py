@@ -6,10 +6,8 @@ import math
 import random
 from typing import Optional
 
-import src
-from src.utils import timing
-
 from shadowlib.globals import getClient
+from shadowlib.utilities import timing
 from shadowlib.utilities.geometry import Area, createGrid
 
 
@@ -153,6 +151,7 @@ class Bank:
         items, _ = self.getAllItems()
 
         if tab_index == 0:
+            tabcounts = 0
             for i in range(1, 9):
                 count = self.client.varps.getVarbitByName(f"BANK_TAB_{i}")
                 if count is None:
@@ -544,7 +543,7 @@ class Bank:
                 inv_count = self.client.inventory.totalQuantity()
                 return inv_count >= quantity and inv_count > 0
 
-            if not timing.wait_until(check_withdrawal, timeout=5.0):
+            if not timing.wait_until(checkWithdrawal, timeout=5.0):
                 print(f"Failed to withdraw item ID {item_id}!")
                 return False
 
