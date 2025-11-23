@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.4](https://github.com/ShadowLib/shadowlib/compare/v2.0.3...v2.0.4) (2025-11-23)
+
+### ♻️ Refactoring
+
+* remove shadowlib/generated/ folder completely ([5a0a2ab](https://github.com/ShadowLib/shadowlib/commit/5a0a2ab41b47cc08a34b0011387f90f7b33036c9))
+
 ## [2.0.3](https://github.com/ShadowLib/shadowlib/compare/v2.0.2...v2.0.3) (2025-11-23)
 
 ### 📚 Documentation
