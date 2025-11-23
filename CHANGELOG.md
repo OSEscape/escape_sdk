@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.0.1](https://github.com/ShadowLib/shadowlib/compare/v1.0.0...v1.0.1) (2025-11-23)
+
+### 🐛 Bug Fixes
+
+* **ci:** enable tag fetching for semantic-release ([6bc83f1](https://github.com/ShadowLib/shadowlib/commit/6bc83f194220c30bb3a872961cfa1cb5d9cb5d3b))
+
 ## 1.0.0 (2025-11-23)
 
 ### ⚠ BREAKING CHANGES
