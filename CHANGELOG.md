@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.7](https://github.com/ShadowLib/shadowlib/compare/v2.0.6...v2.0.7) (2025-11-23)
+
+### ♻️ Refactoring
+
+* **resources:** unify varps and objects into single GameDataResource ([46ce387](https://github.com/ShadowLib/shadowlib/commit/46ce3874e0d3295cd0507846026b5b9023c963e7))
+
 ## [2.0.6](https://github.com/ShadowLib/shadowlib/compare/v2.0.5...v2.0.6) (2025-11-23)
 
 ### 🐛 Bug Fixes
