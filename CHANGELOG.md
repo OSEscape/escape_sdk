@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.6](https://github.com/ShadowLib/shadowlib/compare/v2.0.5...v2.0.6) (2025-11-23)
+
+### 🐛 Bug Fixes
+
+* **resources:** prevent duplicate downloads of shared files ([3abcb56](https://github.com/ShadowLib/shadowlib/commit/3abcb56c1a4432fbf6132e916dd2c05d03e1dfc4))
+
 ## [2.0.5](https://github.com/ShadowLib/shadowlib/compare/v2.0.4...v2.0.5) (2025-11-23)
 
 ### 🐛 Bug Fixes
