@@ -2,17 +2,18 @@
 Inventory tab module.
 """
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
+from shadowlib.types.gametab import GameTab, GameTabs
+from shadowlib.types.item import Item
+from shadowlib.types.itemcontainer import ItemContainer
 from shadowlib.utilities.geometry import createGrid
 from shadowlib.utilities.item_names import getFormattedItemName, getItemName
 
-from .gametab import GameTab, GameTabs
 
-
-class Inventory(GameTabs):
+class Inventory(GameTabs, ItemContainer):
     """
-    Inventory operations class.
+    Inventory operations class combining GameTab and ItemContainer functionality.
     Can be used directly or via module-level functions.
     """
 
@@ -26,7 +27,10 @@ class Inventory(GameTabs):
         Args:
             client: Optional Client instance. If None, uses global Client.
         """
-        super().__init__(client)
+        # Initialize GameTabs (which sets up client and tab areas)
+        GameTabs.__init__(self, client)
+        # Initialize ItemContainer with inventory-specific values
+        ItemContainer.__init__(self, containerId=self.INVENTORY_ID, slotCount=28, items=[])
 
         # Create inventory slot grid (4 columns x 7 rows, 28 slots total)
         # Slot 0 starts at (563, 213), each slot is 36x32 pixels with 6px horizontal spacing
@@ -42,6 +46,28 @@ class Inventory(GameTabs):
             spacing_y=4,  # Vertical spacing between rows
             padding=1,  # 2px padding on all sides to avoid edge misclicks
         )
+
+    def _syncItemsFromCache(self) -> None:
+        """
+        Sync items list from cache data.
+        Converts cache IDs and quantities to Item objects.
+        """
+        item_ids = self.getItemIds()
+        quantities = self.getItemQuantities()
+
+        self.items = []
+        for item_id, quantity in zip(item_ids, quantities, strict=False):
+            if item_id == -1:
+                self.items.append(None)
+            else:
+                # Create Item from cache data
+                item = Item(
+                    id=item_id,
+                    name=getItemName(item_id) or "Unknown",
+                    quantity=quantity,
+                    noted=False,  # TODO: Detect noted items from cache if available
+                )
+                self.items.append(item)
 
     def getItemIds(self) -> List[int]:
         """

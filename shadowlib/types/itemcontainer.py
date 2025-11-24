@@ -1,0 +1,285 @@
+"""
+ItemContainer type for representing item containers like inventory, bank, equipment.
+"""
+
+from typing import Any, Dict, List, Optional
+
+from shadowlib.globals import getClient
+from shadowlib.types.item import Item
+
+
+class ItemContainer:
+    """
+    Base class for OSRS item containers (inventory, bank, equipment, etc.).
+
+    Can be used standalone as a data container or inherited by tab classes
+    for additional functionality.
+
+    Attributes:
+        containerId: Unique identifier for this container
+        slotCount: Number of slots in container (-1 if unknown)
+        items: List of items in slots (None for empty slots)
+    """
+
+    def __init__(self, containerId: int = -1, slotCount: int = -1, items: List[Optional[Item]] = None):
+        """
+        Initialize item container.
+
+        Args:
+            containerId: Unique identifier for this container (default -1)
+            slotCount: Number of slots in container (-1 if unknown)
+            items: List of items in slots (None for empty slots)
+        """
+        self.containerId = containerId
+        self.slotCount = slotCount
+        self.items = items if items is not None else []
+
+    @classmethod
+    def fromDict(cls, data: Dict[str, Any]) -> "ItemContainer":
+        """
+        Convert dict from Java to ItemContainer instance.
+
+        Java sends container data with:
+            - containerId: int
+            - slotCount: int (default -1 for unknown)
+            - items: List of item dicts or None for empty slots
+
+        Args:
+            data: Dict with 'containerId', 'slotCount', 'items'
+
+        Returns:
+            ItemContainer instance
+
+        Example:
+            data = {
+                'containerId': 93,
+                'slotCount': 28,
+                'items': [
+                    {'id': 995, 'name': 'Coins', 'stack': 1000, 'noted': False},
+                    None,  # Empty slot
+                    {'id': 1333, 'name': 'Rune scimitar', 'stack': 1, 'noted': False}
+                ]
+            }
+            container = ItemContainer.fromDict(data)
+            print(container.getItemCount())  # 2
+        """
+        itemsList = data.get("items", [])
+        parsedItems = [Item.fromDict(itemData) if itemData is not None else None for itemData in itemsList]
+
+        return cls(
+            containerId=data.get("containerId", -1),
+            slotCount=data.get("slotCount", -1),
+            items=parsedItems,
+        )
+    
+    def populate(self):
+        client = getClient()
+
+
+        result = client.api.invokeCustomMethod(
+            target="EventBusListener",
+            method="getItemContainerPacked",
+            signature="(I)[B",
+            args=[self.containerId],
+            async_exec=False,
+        )
+
+        if result:
+            self.fromDict(result)
+
+    def toDict(self) -> Dict[str, Any]:
+        """
+        Convert ItemContainer back to dict format.
+
+        Returns:
+            Dict with 'containerId', 'slotCount', 'items'
+        """
+        return {
+            "containerId": self.containerId,
+            "slotCount": self.slotCount,
+            "items": [item.toDict() if item is not None else None for item in self.items],
+        }
+
+    def getTotalCount(self) -> int:
+        """
+        Get count of non-empty slots.
+
+        Returns:
+            Number of items (non-None slots)
+        """
+        return sum(1 for item in self.items if item is not None)
+
+    def getTotalQuantity(self) -> int:
+        """
+        Get total quantity of all items (sum of stacks).
+
+        Returns:
+            Total item quantity across all slots
+        """
+        return sum(item.quantity for item in self.items if item is not None)
+    
+    def getItemCount(self, id: int) -> int:
+        """
+        Get count of items matching the given ID.
+
+        Args:
+            id: Item ID to count
+
+        Returns:
+            Number of items with matching ID
+        """
+        return sum(1 for item in self.items if item is not None and item.id == id)
+    
+    def getItemCountByName(self, name: str) -> int:
+        """
+        Get count of items matching the given name.
+
+        Args:
+            name: Item name to count
+
+        Returns:
+            Number of items with matching name
+        """
+        return sum(1 for item in self.items if item is not None and item.name in name)
+
+
+    def getItemsById(self, itemId: int) -> List[Item]:
+        """
+        Get all items matching the given ID.
+
+        Args:
+            itemId: Item ID to search for
+
+        Returns:
+            List of all Items with matching ID
+        """
+        return [item for item in self.items if item is not None and item.id == itemId]
+
+    def getItemsByName(self, name: str) -> List[Item]:
+        """
+        Get all items matching the given name.
+
+        Args:
+            name: Item name to search for
+
+        Returns:
+            List of all Items with matching name
+        """
+        return [item for item in self.items if item is not None and item.name in name]
+
+    def getSlot(self, slotIndex: int) -> Optional[Item]:
+        """
+        Get item at specific slot index.
+
+        Args:
+            slotIndex: Slot index (0-based)
+
+        Returns:
+            Item at slot, or None if empty or out of range
+        """
+        if 0 <= slotIndex < len(self.items):
+            return self.items[slotIndex]
+        return None
+    
+    def getSlots(self, slots: List[int]) -> List[Optional[Item]]:
+        """
+        Get items at specific slot indices.
+
+        Args:
+            slots: List of slot indices (0-based)
+
+        Returns:
+            List of Items or None for each requested slot
+        """
+        result = []
+        for slotIndex in slots:
+            if 0 <= slotIndex < len(self.items):
+                result.append(self.items[slotIndex])
+            else:
+                result.append(None)
+        return result
+    
+    def containsItem(self, id: int) -> bool:
+        """
+        Check if container contains an item with the given ID.
+
+        Args:
+            id: Item ID to check
+
+        Returns:
+            True if item with ID exists in container
+        """
+        return any(item is not None and item.id == id for item in self.items)
+    
+    def containsItemByName(self, name: str) -> bool:
+        """
+        Check if container contains an item with the given name.
+
+        Args:
+            name: Item name to check
+
+        Returns:
+            True if item with name exists in container
+        """
+        return any(item is not None and item.name in name for item in self.items)
+    
+    def containsAllItems(self, ids: List[int]) -> bool:
+        """
+        Check if container contains all items with the given IDs.
+
+        Args:
+            ids: List of item IDs to check
+
+        Returns:
+            True if all item IDs exist in container
+        """
+        return all(any(item is not None and item.id == id for item in self.items) for id in ids)
+    
+    def containsAllItemsByName(self, names: List[str]) -> bool:
+        """
+        Check if container contains all items with the given names.
+
+        Args:
+            names: List of item names to check
+
+        Returns:
+            True if all item names exist in container
+        """
+        return all(any(item is not None and item.name in name for item in self.items) for name in names)
+
+    def isEmpty(self) -> bool:
+        """
+        Check if container has no items.
+
+        Returns:
+            True if all slots are None
+        """
+        return all(item is None for item in self.items)
+
+    def isFull(self) -> bool:
+        """
+        Check if container is full.
+
+        Returns:
+            True if no empty slots remain (considers slotCount if known)
+        """
+        if self.slotCount > 0:
+            return self.getItemCount() >= self.slotCount
+        return all(item is not None for item in self.items)
+
+    def __repr__(self) -> str:
+        """String representation."""
+        itemCount = self.getItemCount()
+        slotInfo = f"/{self.slotCount}" if self.slotCount > 0 else ""
+        return f"ItemContainer(id={self.containerId}, items={itemCount}{slotInfo})"
+
+
+    def __eq__(self, other) -> bool:
+        """Check equality with another ItemContainer."""
+        if not isinstance(other, ItemContainer):
+            return False
+        return (
+            self.containerId == other.containerId
+            and self.slotCount == other.slotCount
+            and self.items == other.items
+        )

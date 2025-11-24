@@ -2,7 +2,7 @@
 Progress tab module (Quest/Achievement Diaries).
 """
 
-from .gametab import GameTab, GameTabs
+from shadowlib.types.gametab import GameTab, GameTabs
 
 
 class Progress(GameTabs):

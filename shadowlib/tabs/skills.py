@@ -4,7 +4,7 @@ Skills tab module.
 
 from typing import Dict, List
 
-from .gametab import GameTab, GameTabs
+from shadowlib.types.gametab import GameTab, GameTabs
 
 # Ordered list of skill names (matching game order)
 SKILL_NAMES: List[str] = [

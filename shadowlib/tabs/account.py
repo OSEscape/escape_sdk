@@ -2,7 +2,7 @@
 Account Management tab module.
 """
 
-from .gametab import GameTab, GameTabs
+from shadowlib.types.gametab import GameTab, GameTabs
 
 
 class Account(GameTabs):

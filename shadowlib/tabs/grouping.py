@@ -2,7 +2,7 @@
 Grouping tab module (Clan/Group activities).
 """
 
-from .gametab import GameTab, GameTabs
+from shadowlib.types.gametab import GameTab, GameTabs
 
 
 class Grouping(GameTabs):
