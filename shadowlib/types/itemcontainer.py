@@ -21,7 +21,7 @@ class ItemContainer:
         items: List of items in slots (None for empty slots)
     """
 
-    def __init__(self, containerId: int = -1, slotCount: int = -1, items: List[Optional[Item]] = None):
+    def __init__(self, containerId: int = -1, slotCount: int = -1, items: List[Item | None] = None):
         """
         Initialize item container.
 
@@ -64,17 +64,18 @@ class ItemContainer:
             print(container.getItemCount())  # 2
         """
         itemsList = data.get("items", [])
-        parsedItems = [Item.fromDict(itemData) if itemData is not None else None for itemData in itemsList]
+        parsedItems = [
+            Item.fromDict(itemData) if itemData is not None else None for itemData in itemsList
+        ]
 
         return cls(
             containerId=data.get("containerId", -1),
             slotCount=data.get("slotCount", -1),
             items=parsedItems,
         )
-    
+
     def populate(self):
         client = getClient()
-
 
         result = client.api.invokeCustomMethod(
             target="EventBusListener",
@@ -117,7 +118,7 @@ class ItemContainer:
             Total item quantity across all slots
         """
         return sum(item.quantity for item in self.items if item is not None)
-    
+
     def getItemCount(self, id: int) -> int:
         """
         Get count of items matching the given ID.
@@ -129,7 +130,7 @@ class ItemContainer:
             Number of items with matching ID
         """
         return sum(1 for item in self.items if item is not None and item.id == id)
-    
+
     def getItemCountByName(self, name: str) -> int:
         """
         Get count of items matching the given name.
@@ -141,7 +142,6 @@ class ItemContainer:
             Number of items with matching name
         """
         return sum(1 for item in self.items if item is not None and item.name in name)
-
 
     def getItemsById(self, itemId: int) -> List[Item]:
         """
@@ -167,7 +167,7 @@ class ItemContainer:
         """
         return [item for item in self.items if item is not None and item.name in name]
 
-    def getSlot(self, slotIndex: int) -> Optional[Item]:
+    def getSlot(self, slotIndex: int) -> Item | None:
         """
         Get item at specific slot index.
 
@@ -180,8 +180,8 @@ class ItemContainer:
         if 0 <= slotIndex < len(self.items):
             return self.items[slotIndex]
         return None
-    
-    def getSlots(self, slots: List[int]) -> List[Optional[Item]]:
+
+    def getSlots(self, slots: List[int]) -> List[Item | None]:
         """
         Get items at specific slot indices.
 
@@ -198,7 +198,7 @@ class ItemContainer:
             else:
                 result.append(None)
         return result
-    
+
     def containsItem(self, id: int) -> bool:
         """
         Check if container contains an item with the given ID.
@@ -210,7 +210,7 @@ class ItemContainer:
             True if item with ID exists in container
         """
         return any(item is not None and item.id == id for item in self.items)
-    
+
     def containsItemByName(self, name: str) -> bool:
         """
         Check if container contains an item with the given name.
@@ -222,7 +222,7 @@ class ItemContainer:
             True if item with name exists in container
         """
         return any(item is not None and item.name in name for item in self.items)
-    
+
     def containsAllItems(self, ids: List[int]) -> bool:
         """
         Check if container contains all items with the given IDs.
@@ -234,7 +234,7 @@ class ItemContainer:
             True if all item IDs exist in container
         """
         return all(any(item is not None and item.id == id for item in self.items) for id in ids)
-    
+
     def containsAllItemsByName(self, names: List[str]) -> bool:
         """
         Check if container contains all items with the given names.
@@ -245,7 +245,9 @@ class ItemContainer:
         Returns:
             True if all item names exist in container
         """
-        return all(any(item is not None and item.name in name for item in self.items) for name in names)
+        return all(
+            any(item is not None and item.name in name for item in self.items) for name in names
+        )
 
     def isEmpty(self) -> bool:
         """
@@ -272,7 +274,6 @@ class ItemContainer:
         itemCount = self.getItemCount()
         slotInfo = f"/{self.slotCount}" if self.slotCount > 0 else ""
         return f"ItemContainer(id={self.containerId}, items={itemCount}{slotInfo})"
-
 
     def __eq__(self, other) -> bool:
         """Check equality with another ItemContainer."""

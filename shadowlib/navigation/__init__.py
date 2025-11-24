@@ -10,7 +10,7 @@ class Navigation:
     """Namespace for navigation systems with lazy-loading."""
 
     _modules = {
-        'pathfinder': 'Pathfinder',
+        "pathfinder": "Pathfinder",
         # Add more as they're created:
         # 'walker': 'Walker',
         # 'teleports': 'Teleports',
@@ -28,7 +28,7 @@ class Navigation:
 
     def __getattr__(self, name):
         """Lazy-load navigation modules."""
-        if name.startswith('_'):
+        if name.startswith("_"):
             raise AttributeError(name)
 
         if name in self._cache:
@@ -38,7 +38,7 @@ class Navigation:
             raise AttributeError(f"Navigation has no module '{name}'")
 
         class_name = self._modules[name]
-        module_path = f'shadowlib.navigation.{name}'
+        module_path = f"shadowlib.navigation.{name}"
         module = __import__(module_path, fromlist=[class_name])
         cls = getattr(module, class_name)
 

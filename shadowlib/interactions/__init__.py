@@ -5,7 +5,7 @@ class Interactions:
     """Namespace for interaction systems with lazy-loading."""
 
     _modules = {
-        'menu': 'Menu',
+        "menu": "Menu",
         # Add more as they're created:
         # 'widgets': 'Widgets',
         # 'hover': 'Hover',
@@ -23,7 +23,7 @@ class Interactions:
 
     def __getattr__(self, name):
         """Lazy-load interaction modules."""
-        if name.startswith('_'):
+        if name.startswith("_"):
             raise AttributeError(name)
 
         if name in self._cache:
@@ -33,7 +33,7 @@ class Interactions:
             raise AttributeError(f"Interactions has no module '{name}'")
 
         class_name = self._modules[name]
-        module_path = f'shadowlib.interactions.{name}'
+        module_path = f"shadowlib.interactions.{name}"
         module = __import__(module_path, fromlist=[class_name])
         cls = getattr(module, class_name)
 

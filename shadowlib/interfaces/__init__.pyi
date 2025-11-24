@@ -9,7 +9,6 @@ class Interfaces:
     # grand_exchange: GrandExchange  # Add when implemented
     # shop: Shop  # Add when implemented
     # dialogue: Dialogue  # Add when implemented
-
     def __init__(self, client) -> None: ...
 
 __all__ = ["Interfaces"]

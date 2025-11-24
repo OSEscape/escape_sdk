@@ -9,8 +9,8 @@ class Input:
     """Namespace for input controls with lazy-loading."""
 
     _modules = {
-        'runelite': ('RuneLite', lambda cls, ns: cls()),  # No client param
-        'mouse': ('Mouse', lambda cls, ns: cls(runelite=ns._getRuneLite())),
+        "runelite": ("RuneLite", lambda cls, ns: cls()),  # No client param
+        "mouse": ("Mouse", lambda cls, ns: cls(runelite=ns._getRuneLite())),
         # 'keyboard': ('Keyboard', lambda cls, ns: cls(runelite=ns._getRuneLite())),
     }
 
@@ -33,7 +33,7 @@ class Input:
 
     def __getattr__(self, name):
         """Lazy-load input modules."""
-        if name.startswith('_'):
+        if name.startswith("_"):
             raise AttributeError(name)
 
         if name in self._cache:
@@ -48,7 +48,7 @@ class Input:
         else:
             class_name, init_fn = entry, None
 
-        module_path = f'shadowlib.input.{name}'
+        module_path = f"shadowlib.input.{name}"
         module = __import__(module_path, fromlist=[class_name])
         cls = getattr(module, class_name)
 

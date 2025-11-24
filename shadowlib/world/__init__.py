@@ -5,7 +5,7 @@ class World:
     """Namespace for 3D world entities with lazy-loading."""
 
     _modules = {
-        'ground_items': 'GroundItems',
+        "ground_items": "GroundItems",
         # Add more as they're created:
         # 'npcs': 'NPCs',
         # 'objects': 'Objects',
@@ -24,7 +24,7 @@ class World:
 
     def __getattr__(self, name):
         """Lazy-load world modules."""
-        if name.startswith('_'):
+        if name.startswith("_"):
             raise AttributeError(name)
 
         if name in self._cache:
@@ -34,7 +34,7 @@ class World:
             raise AttributeError(f"World has no module '{name}'")
 
         class_name = self._modules[name]
-        module_path = f'shadowlib.world.{name}'
+        module_path = f"shadowlib.world.{name}"
         module = __import__(module_path, fromlist=[class_name])
         cls = getattr(module, class_name)
 

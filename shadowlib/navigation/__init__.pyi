@@ -8,7 +8,6 @@ class Navigation:
     pathfinder: Pathfinder
     # walker: Walker  # Add when implemented
     # teleports: Teleports  # Add when implemented
-
     def __init__(self, client) -> None: ...
 
 __all__ = ["Navigation", "Pathfinder"]

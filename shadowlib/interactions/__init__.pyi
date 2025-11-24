@@ -8,7 +8,6 @@ class Interactions:
     menu: Menu
     # widgets: Widgets  # Add when implemented
     # hover: Hover  # Add when implemented
-
     def __init__(self, client) -> None: ...
 
 __all__ = ["Interactions"]

@@ -350,7 +350,6 @@ class Client:
 
         return objects
 
-
     @property
     def cache(self):
         """

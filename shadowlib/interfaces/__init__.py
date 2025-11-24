@@ -5,7 +5,7 @@ class Interfaces:
     """Namespace for overlay interfaces with lazy-loading."""
 
     _modules = {
-        'bank': 'Bank',
+        "bank": "Bank",
         # Add more as they're created:
         # 'grand_exchange': 'GrandExchange',
         # 'shop': 'Shop',
@@ -24,7 +24,7 @@ class Interfaces:
 
     def __getattr__(self, name):
         """Lazy-load interface modules."""
-        if name.startswith('_'):
+        if name.startswith("_"):
             raise AttributeError(name)
 
         if name in self._cache:
@@ -34,7 +34,7 @@ class Interfaces:
             raise AttributeError(f"Interfaces has no module '{name}'")
 
         class_name = self._modules[name]
-        module_path = f'shadowlib.interfaces.{name}'
+        module_path = f"shadowlib.interfaces.{name}"
         module = __import__(module_path, fromlist=[class_name])
         cls = getattr(module, class_name)
 

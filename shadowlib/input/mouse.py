@@ -99,7 +99,7 @@ class Mouse:
         # Calculate distance
         dx = abs_x - current_x
         dy = abs_y - current_y
-        distance = (dx ** 2 + dy ** 2) ** 0.5
+        distance = (dx**2 + dy**2) ** 0.5
 
         if distance == 0:
             return  # Already at target
@@ -128,10 +128,7 @@ class Mouse:
 
             # Move to intermediate position
             pag.moveTo(
-                intermediate_x + jitter_x,
-                intermediate_y + jitter_y,
-                duration=0,
-                _pause=False
+                intermediate_x + jitter_x, intermediate_y + jitter_y, duration=0, _pause=False
             )
 
             # Wait 20ms (with slight randomness)
@@ -207,8 +204,7 @@ class Mouse:
         """
         self._moveTo(x, y, safe=safe)
 
-    def leftClick(self, x: int | None = None, y: int | None = None,
-                  safe: bool = True) -> None:
+    def leftClick(self, x: int | None = None, y: int | None = None, safe: bool = True) -> None:
         """
         Perform left click at current position or move to position and click.
         Coordinates are relative to RuneLite window.
@@ -225,10 +221,9 @@ class Mouse:
         if x is not None and y is not None:
             self._moveTo(x, y, safe=safe)
 
-        self._clickButton('left')
+        self._clickButton("left")
 
-    def rightClick(self, x: int | None = None, y: int | None = None,
-                   safe: bool = True) -> None:
+    def rightClick(self, x: int | None = None, y: int | None = None, safe: bool = True) -> None:
         """
         Perform right click at current position or move to position and click.
         Coordinates are relative to RuneLite window.
@@ -245,10 +240,9 @@ class Mouse:
         if x is not None and y is not None:
             self._moveTo(x, y, safe=safe)
 
-        self._clickButton('right')
+        self._clickButton("right")
 
-    def holdLeft(self, x: int | None = None, y: int | None = None,
-                 safe: bool = True) -> None:
+    def holdLeft(self, x: int | None = None, y: int | None = None, safe: bool = True) -> None:
         """
         Hold left mouse button at current position or move to position and hold.
         Coordinates are relative to RuneLite window.
@@ -266,10 +260,9 @@ class Mouse:
         if x is not None and y is not None:
             self._moveTo(x, y, safe=safe)
 
-        self._hold('left')
+        self._hold("left")
 
-    def holdRight(self, x: int | None = None, y: int | None = None,
-                  safe: bool = True) -> None:
+    def holdRight(self, x: int | None = None, y: int | None = None, safe: bool = True) -> None:
         """
         Hold right mouse button at current position or move to position and hold.
         Coordinates are relative to RuneLite window.
@@ -287,7 +280,7 @@ class Mouse:
         if x is not None and y is not None:
             self._moveTo(x, y, safe=safe)
 
-        self._hold('right')
+        self._hold("right")
 
     def releaseLeft(self) -> None:
         """
@@ -298,7 +291,7 @@ class Mouse:
             >>> time.sleep(1)
             >>> mouse.releaseLeft()
         """
-        self._release('left')
+        self._release("left")
 
     def releaseRight(self) -> None:
         """
@@ -309,4 +302,4 @@ class Mouse:
             >>> time.sleep(1)
             >>> mouse.releaseRight()
         """
-        self._release('right')
+        self._release("right")

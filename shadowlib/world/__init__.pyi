@@ -9,7 +9,6 @@ class World:
     # npcs: NPCs  # Add when implemented
     # objects: Objects  # Add when implemented
     # players: Players  # Add when implemented
-
     def __init__(self, client) -> None: ...
 
 __all__ = ["World"]

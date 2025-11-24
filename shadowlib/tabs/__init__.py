@@ -28,20 +28,20 @@ class Tabs:
     """Namespace for game tabs with lazy-loading."""
 
     _modules = {
-        'combat': 'Combat',
-        'skills': 'Skills',
-        'progress': 'Progress',
-        'inventory': 'Inventory',
-        'equipment': 'Equipment',
-        'prayer': 'Prayer',
-        'magic': 'Magic',
-        'grouping': 'Grouping',
-        'friends': 'Friends',
-        'account': 'Account',
-        'settings': 'Settings',
-        'logout': 'Logout',
-        'emotes': 'Emotes',
-        'music': 'Music',
+        "combat": "Combat",
+        "skills": "Skills",
+        "progress": "Progress",
+        "inventory": "Inventory",
+        "equipment": "Equipment",
+        "prayer": "Prayer",
+        "magic": "Magic",
+        "grouping": "Grouping",
+        "friends": "Friends",
+        "account": "Account",
+        "settings": "Settings",
+        "logout": "Logout",
+        "emotes": "Emotes",
+        "music": "Music",
     }
 
     def __init__(self, client):
@@ -56,7 +56,7 @@ class Tabs:
 
     def __getattr__(self, name):
         """Lazy-load tab modules."""
-        if name.startswith('_'):
+        if name.startswith("_"):
             raise AttributeError(name)
 
         if name in self._cache:
@@ -66,7 +66,7 @@ class Tabs:
             raise AttributeError(f"Tabs has no module '{name}'")
 
         class_name = self._modules[name]
-        module_path = f'shadowlib.tabs.{name}'
+        module_path = f"shadowlib.tabs.{name}"
         module = __import__(module_path, fromlist=[class_name])
         cls = getattr(module, class_name)
 

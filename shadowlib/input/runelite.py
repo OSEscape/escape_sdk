@@ -37,14 +37,14 @@ class RuneLite:
         """
         try:
             result = subprocess.run(
-                ['xdotool', 'search', '--name', self.window_title],
+                ["xdotool", "search", "--name", self.window_title],
                 capture_output=True,
                 text=True,
-                check=False
+                check=False,
             )
 
             if result.returncode == 0 and result.stdout.strip():
-                return result.stdout.strip().split('\n')
+                return result.stdout.strip().split("\n")
 
             return []
 
@@ -61,25 +61,22 @@ class RuneLite:
         try:
             # Use wmctrl to find the exact RuneLite window
             result = subprocess.run(
-                ['wmctrl', '-l', '-G'],
-                capture_output=True,
-                text=True,
-                check=False
+                ["wmctrl", "-l", "-G"], capture_output=True, text=True, check=False
             )
 
             if result.returncode != 0:
                 return False
 
             # Parse wmctrl output to find RuneLite window
-            for line in result.stdout.split('\n'):
+            for line in result.stdout.split("\n"):
                 if self.window_title in line:
                     parts = line.split()
                     if len(parts) >= 7:
                         # Check if this is actually the RuneLite client window
-                        window_name = ' '.join(parts[7:])
+                        window_name = " ".join(parts[7:])
 
                         # Skip if it's not the actual RuneLite window
-                        if not window_name.startswith('RuneLite'):
+                        if not window_name.startswith("RuneLite"):
                             continue
 
                         # Format: window_id desktop x y width height client_machine window_title
@@ -91,24 +88,24 @@ class RuneLite:
 
                         # Use xwininfo to get the client area (without decorations)
                         geom_result = subprocess.run(
-                            ['xwininfo', '-id', window_id],
+                            ["xwininfo", "-id", window_id],
                             capture_output=True,
                             text=True,
-                            check=False
+                            check=False,
                         )
 
                         if geom_result.returncode == 0:
                             # Parse xwininfo for more accurate client coordinates
-                            for info_line in geom_result.stdout.split('\n'):
+                            for info_line in geom_result.stdout.split("\n"):
                                 info_line = info_line.strip()
-                                if info_line.startswith('Absolute upper-left X:'):
-                                    x = int(info_line.split(':')[1].strip())
-                                elif info_line.startswith('Absolute upper-left Y:'):
-                                    y = int(info_line.split(':')[1].strip())
-                                elif info_line.startswith('Width:'):
-                                    width = int(info_line.split(':')[1].strip())
-                                elif info_line.startswith('Height:'):
-                                    height = int(info_line.split(':')[1].strip())
+                                if info_line.startswith("Absolute upper-left X:"):
+                                    x = int(info_line.split(":")[1].strip())
+                                elif info_line.startswith("Absolute upper-left Y:"):
+                                    y = int(info_line.split(":")[1].strip())
+                                elif info_line.startswith("Width:"):
+                                    width = int(info_line.split(":")[1].strip())
+                                elif info_line.startswith("Height:"):
+                                    height = int(info_line.split(":")[1].strip())
 
                         self.window_offset = (x, y)
                         self.window_size = (width, height)
@@ -140,16 +137,12 @@ class RuneLite:
             for window_id in window_ids:
                 # Unminimize the window (if minimized)
                 subprocess.run(
-                    ['xdotool', 'windowmap', window_id],
-                    capture_output=True,
-                    check=False
+                    ["xdotool", "windowmap", window_id], capture_output=True, check=False
                 )
 
                 # Activate the window
                 subprocess.run(
-                    ['xdotool', 'windowactivate', window_id],
-                    capture_output=True,
-                    check=False
+                    ["xdotool", "windowactivate", window_id], capture_output=True, check=False
                 )
 
             # Wait for window to come to foreground
@@ -182,13 +175,10 @@ class RuneLite:
             # Check each window ID - if ANY is viewable, window is not minimized
             for window_id in window_ids:
                 state_result = subprocess.run(
-                    ['xwininfo', '-id', window_id],
-                    capture_output=True,
-                    text=True,
-                    check=False
+                    ["xwininfo", "-id", window_id], capture_output=True, text=True, check=False
                 )
 
-                if 'IsViewable' in state_result.stdout:
+                if "IsViewable" in state_result.stdout:
                     return False
 
             # All windows are unmapped, so window is minimized
@@ -215,10 +205,7 @@ class RuneLite:
         try:
             # Get the currently active window
             active_result = subprocess.run(
-                ['xdotool', 'getactivewindow'],
-                capture_output=True,
-                text=True,
-                check=False
+                ["xdotool", "getactivewindow"], capture_output=True, text=True, check=False
             )
 
             if active_result.returncode != 0 or not active_result.stdout.strip():
@@ -316,6 +303,6 @@ class RuneLite:
                 self.window_offset[0],
                 self.window_offset[1],
                 self.window_size[0],
-                self.window_size[1]
+                self.window_size[1],
             )
         return None
