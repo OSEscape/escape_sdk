@@ -207,7 +207,7 @@ class Mouse:
         """
         self._moveTo(x, y, safe=safe)
 
-    def leftClick(self, x: Optional[int] = None, y: Optional[int] = None,
+    def leftClick(self, x: int | None = None, y: int | None = None,
                   safe: bool = True) -> None:
         """
         Perform left click at current position or move to position and click.
@@ -227,7 +227,7 @@ class Mouse:
 
         self._clickButton('left')
 
-    def rightClick(self, x: Optional[int] = None, y: Optional[int] = None,
+    def rightClick(self, x: int | None = None, y: int | None = None,
                    safe: bool = True) -> None:
         """
         Perform right click at current position or move to position and click.
@@ -247,7 +247,7 @@ class Mouse:
 
         self._clickButton('right')
 
-    def holdLeft(self, x: Optional[int] = None, y: Optional[int] = None,
+    def holdLeft(self, x: int | None = None, y: int | None = None,
                  safe: bool = True) -> None:
         """
         Hold left mouse button at current position or move to position and hold.
@@ -268,7 +268,7 @@ class Mouse:
 
         self._hold('left')
 
-    def holdRight(self, x: Optional[int] = None, y: Optional[int] = None,
+    def holdRight(self, x: int | None = None, y: int | None = None,
                   safe: bool = True) -> None:
         """
         Hold right mouse button at current position or move to position and hold.

@@ -20,8 +20,8 @@ class RuneLite:
             auto_refresh: If True, automatically refresh window position when needed
         """
         self.window_title = window_title
-        self.window_offset: Optional[Tuple[int, int]] = None
-        self.window_size: Optional[Tuple[int, int]] = None
+        self.window_offset: Tuple[int, int] | None = None
+        self.window_size: Tuple[int, int] | None = None
         self.auto_refresh = auto_refresh
         self._last_detection_time = 0.0
 
@@ -246,10 +246,7 @@ class RuneLite:
                 return False
 
         # Activate window (this also unminimizes it)
-        if not self.activateWindow():
-            return False
-
-        return True
+        return self.activateWindow()
 
     def refreshWindowPosition(self, force: bool = False, max_age: float = 10.0) -> bool:
         """
@@ -285,7 +282,7 @@ class RuneLite:
         if self.auto_refresh:
             self.refreshWindowPosition()
 
-    def getWindowOffset(self) -> Optional[Tuple[int, int]]:
+    def getWindowOffset(self) -> Tuple[int, int] | None:
         """
         Get current window offset (x, y).
 
@@ -295,7 +292,7 @@ class RuneLite:
         self._autoRefresh()
         return self.window_offset
 
-    def getWindowSize(self) -> Optional[Tuple[int, int]]:
+    def getWindowSize(self) -> Tuple[int, int] | None:
         """
         Get current window size (width, height).
 
@@ -305,7 +302,7 @@ class RuneLite:
         self._autoRefresh()
         return self.window_size
 
-    def getGameBounds(self) -> Optional[Tuple[int, int, int, int]]:
+    def getGameBounds(self) -> Tuple[int, int, int, int] | None:
         """
         Get game window bounds (x, y, width, height).
 
