@@ -328,9 +328,7 @@ def ensureResourcesLoaded() -> bool:
             raw_varbits = json.load(f)
             # Convert list to dict indexed by ID
             if isinstance(raw_varbits, list):
-                varps._varbits_data = {
-                    item["id"]: item for item in raw_varbits if "id" in item
-                }
+                varps._varbits_data = {item["id"]: item for item in raw_varbits if "id" in item}
             else:
                 varps._varbits_data = raw_varbits
             print(f"✅ Loaded {len(varps._varbits_data)} varbits")
