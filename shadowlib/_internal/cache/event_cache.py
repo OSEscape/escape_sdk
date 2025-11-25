@@ -187,7 +187,7 @@ class EventCache:
             if varp_id >= len(self._state.varps):
                 return None
             return self._state.varps[varp_id]
-    
+
     def getVarc(self, varc_id: int) -> Any | None:
         """
         Get current value of a varc from cache.
@@ -221,7 +221,7 @@ class EventCache:
                 print(f"{name}: Level {data['level']} (XP: {data['xp']})")
         """
         with self._lock:
-            if not len(self._state.skills) == 24:
+            if len(self._state.skills) != 24:
                 self._state.initSkills()
             return self._state.skills.copy()
 
@@ -265,7 +265,7 @@ class EventCache:
                 containers[container_id] = ItemContainer(container_id, -1)
 
             return self._state.itemcontainers.get(container_id, None)
-        
+
     def getMenuState(self) -> Dict[str, Any]:
         """
         Get latest menu state.
@@ -277,7 +277,7 @@ class EventCache:
         """
         with self._lock:
             return self._state.latest_states.get("menu_opened", {}).copy()
-        
+
     def getMenuOptions(self) -> List[Dict[str, Any]]:
         """
         Get latest menu options.
@@ -290,7 +290,7 @@ class EventCache:
         with self._lock:
             menu_state = self._state.latest_states.get("post_menu_sort", {})
             return menu_state
-        
+
     def getClientTickState(self) -> Dict[str, Any]:
         """
         Get latest client tick state.
@@ -302,7 +302,7 @@ class EventCache:
         """
         with self._lock:
             return self._state.latest_states.get("clienttick", {}).copy()
-        
+
     def getMenuClickedState(self) -> Dict[str, Any]:
         """
         Get latest menu option clicked state.

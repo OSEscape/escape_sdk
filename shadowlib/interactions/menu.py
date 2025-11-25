@@ -7,11 +7,9 @@ import time
 from typing import List, Tuple
 
 from shadowlib.globals import getClient
-from shadowlib.utilities.text import stripColorTags
-from shadowlib.utilities import timing
-
 from shadowlib.types import Box
-
+from shadowlib.utilities import timing
+from shadowlib.utilities.text import stripColorTags
 
 
 class Menu:
@@ -37,9 +35,9 @@ class Menu:
         Returns:
             True if menu is open, False otherwise
         """
-        
+
         return self.client.cache.getClientTickState().get("menu_open", False)
-    
+
     def _getOptions(self, strip_colors: bool = True) -> Tuple[List[str], List[str]]:
         data = self.client.cache.getMenuOptions()
         types = data["types"]
@@ -48,10 +46,12 @@ class Menu:
 
         if not types or not options or not targets:
             return [], []
-        
+
         # Combine types, options, and targets into formatted strings
-        
-        formatted_options = [f"{option} {target}".strip() for option, target in zip(options, targets)]
+
+        formatted_options = [
+            f"{option} {target}".strip() for option, target in zip(options, targets)
+        ]
         if strip_colors:
             formatted_options = [stripColorTags(opt) for opt in formatted_options]
 
@@ -60,9 +60,9 @@ class Menu:
         types.reverse()
 
         return formatted_options, types
-    
+
     def _getMenuInfo(self) -> dict:
-        return self.client.cache.getMenuState()     
+        return self.client.cache.getMenuState()
 
     def waitMenuClickEvent(self, max_age: float = 0.2, timeout: float = 0.5) -> bool:
         """
@@ -80,13 +80,12 @@ class Menu:
         if (time.time() - timestamp) < max_age:
             return True
 
-        def check_event(timestamp) -> bool:
+        def checkEvent(ts) -> bool:
             state = self.client.cache.getMenuClickedState()
             event_time = state.get("_timestamp", 0)
-            return (event_time - timestamp) > 0
-        
-        return timing.waitUntil(lambda: check_event(timestamp), timeout=timeout, poll_interval=0.001)
+            return (event_time - ts) > 0
 
+        return timing.waitUntil(lambda: checkEvent(timestamp), timeout=timeout, poll_interval=0.001)
 
     def open(self, timeout: float = 0.5) -> bool:
         """
@@ -107,7 +106,7 @@ class Menu:
         """
         if self.isOpen():
             return True  # Already open
-        
+
         # Right-click at current position
         self.client.input.mouse.rightClick()
 
@@ -204,7 +203,7 @@ class Menu:
                 target_y = random.randint(menu_y1, menu_y2)
 
             # Move mouse to target position
-            self.client.input.mouse.moveTo(target_x, target_y, safe = False)
+            self.client.input.mouse.moveTo(target_x, target_y, safe=False)
 
             return timing.waitUntil(lambda: not self.isOpen(), timeout=timeout, poll_interval=0.001)
 
@@ -231,7 +230,7 @@ class Menu:
         menu_options, _ = self._getOptions(strip_colors=strip_colors)
 
         return menu_options
-    
+
     def getTypes(self) -> List[str]:
         """
         Get all menu option types.
@@ -246,7 +245,6 @@ class Menu:
         _, menu_types = self._getOptions(strip_colors=True)
 
         return menu_types
-
 
     def getLeftClickOption(self, strip_colors: bool = True) -> str | None:
         """
@@ -270,7 +268,7 @@ class Menu:
             return None
 
         return options[0]
-    
+
     def getLeftClickType(self) -> str | None:
         """
         Get the action type of the default menu option (the one accessible with left-click).
@@ -286,7 +284,6 @@ class Menu:
             return None
 
         return types[0]
-        
 
     def hasOption(self, option_text: str, strip_colors: bool = True) -> bool:
         """
@@ -405,15 +402,17 @@ class Menu:
             box.hover()
             return True
         return False
-    
+
     def lastOptionClicked(self) -> str:
         latest_click = self.client.cache.getMenuClickedState()
         option = latest_click.get("menu_option", "")
         target = latest_click.get("menu_target", "")
         full_option = f"{option} {target}".strip()
         return stripColorTags(full_option)
-    
-    def waitOptionClicked(self, option_text: str, max_age: float = 0.2, timeout: float = 0.5) -> bool:
+
+    def waitOptionClicked(
+        self, option_text: str, max_age: float = 0.2, timeout: float = 0.5
+    ) -> bool:
         if not self.waitMenuClickEvent(max_age=max_age, timeout=timeout):
             return False
 
@@ -446,21 +445,19 @@ class Menu:
             self.hoverOption(option_text)
             self.client.input.mouse.leftClick()
             return self.waitOptionClicked(option_text)
-        
+
         left_click_option = self.getLeftClickOption()
         if left_click_option is None:
             return False
-        
+
         if option_text.lower() in left_click_option.lower():
             # It's the default! Just left-click at current position
             self.client.input.mouse.leftClick()
             return self.waitOptionClicked(option_text)
-        
-        options = self.getOptions()
 
         if not self.hasOption(option_text):
             return False
-        
+
         self.open()
         self.hoverOption(option_text)
         self.client.input.mouse.leftClick()

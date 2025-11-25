@@ -13,9 +13,9 @@ from typing import Any, Deque, Dict, List
 
 import shadowlib.utilities.timing as timing
 from shadowlib._internal.events.channels import LATEST_STATE_CHANNELS
+from shadowlib._internal.resources import varps as varps_resource
 from shadowlib.globals import getApi
 from shadowlib.tabs.skills import SKILL_NAMES
-from shadowlib._internal.resources import varps as varps_resource
 from shadowlib.types import Item, ItemContainer
 
 

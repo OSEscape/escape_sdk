@@ -240,6 +240,7 @@ def listVarbits(filter_name: str | None = None) -> Dict[int, Dict[str, Any]]:
 
     return {int(k): v for k, v in _varbits_data.items()}
 
+
 def getVarcValue(varc_id: int) -> Any | None:
     """
     Get the current value of a varc from the event cache.

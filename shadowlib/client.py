@@ -184,7 +184,7 @@ class Client:
             from constants import InterfaceID
 
             return InterfaceID
-        
+
     @property
     def VarClientID(self):
         """Access VarClientID constants."""

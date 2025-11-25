@@ -150,7 +150,6 @@ class Mouse:
         # Perform click
         pag.click(button=button, _pause=False)
 
-
     def _hold(self, button: str) -> None:
         """
         Core hold function - ONLY access point to pyautogui.mouseDown().
@@ -182,7 +181,6 @@ class Mouse:
 
     def click(self, button: str = "left") -> None:
         self._clickButton(button)
-
 
     def moveTo(self, x: int, y: int, safe: bool = True) -> None:
         """
