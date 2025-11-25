@@ -12,6 +12,13 @@ from shadowlib.player import Player
 from shadowlib.tabs import Tabs
 from shadowlib.world import World
 
+class _ResourcesNamespace:
+    """Namespace for accessing game resources."""
+    @property
+    def varps(self) -> Any: ...
+    @property
+    def objects(self) -> Any: ...
+
 class Client:
     """
     Advanced client for explicit API management.
@@ -34,6 +41,7 @@ class Client:
     interactions: Interactions
     interfaces: Interfaces
     player: Player
+    resources: _ResourcesNamespace
 
     # Constants
     @property
@@ -61,7 +69,5 @@ class Client:
     def disconnect(self) -> None: ...
     def isConnected(self) -> bool: ...
     def query(self) -> Any: ...
-    def getVarps(self) -> Any: ...
-    def getObjects(self) -> Any: ...
     def __enter__(self) -> Client: ...
     def __exit__(self, *args: Any) -> None: ...
