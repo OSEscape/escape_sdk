@@ -4,10 +4,10 @@ Inventory tab module.
 
 from typing import Any, Dict, List, Optional
 
+from shadowlib.types.box import Box, createGrid
 from shadowlib.types.gametab import GameTab, GameTabs
 from shadowlib.types.item import Item
 from shadowlib.types.itemcontainer import ItemContainer
-from shadowlib.types.box import createGrid, Box
 from shadowlib.utilities.item_names import getFormattedItemName, getItemName
 
 
@@ -53,8 +53,8 @@ class Inventory(GameTabs, ItemContainer):
         cached = self.client.cache.getItemContainer(self.INVENTORY_ID)
         self._items = cached.items
         return self._items
-    
-    def getSlotBox(self, slot_index: int) ->  Box:
+
+    def getSlotBox(self, slot_index: int) -> Box:
         """
         Get the Box area for a specific inventory slot.
 
@@ -64,28 +64,6 @@ class Inventory(GameTabs, ItemContainer):
             Box area of the specified slot
         """
         return self.slots[slot_index]
-    
-    def hoverSlot(self, slot_index: int) -> bool:
-        """
-        Hover over a specific inventory slot regardless of contents.
-
-        Args:
-            slot_index: Slot index (0-27) to hover
-
-        Returns:
-            True if slot index is valid, False otherwise
-
-        Example:
-            # Hover over slot 0 (top-left)
-            inventory.hoverSlot(0)
-
-            # Hover over slot 27 (bottom-right)
-            inventory.hoverSlot(27)
-        """
-        if 0 <= slot_index < 28:
-            self.getSlotBox(slot_index).hover()
-            return True
-        return False
 
     def hoverItem(self, item_id: int, random: bool = False) -> bool:
         """
@@ -147,28 +125,6 @@ class Inventory(GameTabs, ItemContainer):
             self.slots[slot_index].hover()
             return True
         return False
-    
-    def clickSlot(self, slot_index: int) -> bool:
-        """
-        Click a specific inventory slot regardless of contents.
-
-        Args:
-            slot_index: Slot index (0-27) to click
-
-        Returns:
-            True if slot index is valid, False otherwise
-
-        Example:
-            # Click slot 0 (top-left)
-            inventory.clickSlot(0)
-
-            # Click slot 27 (bottom-right)
-            inventory.clickSlot(27)
-        """
-        if self.hoverSlot(slot_index):
-            # self.client.input.mouse.leftClick()
-            return True
-        return False
 
     def clickItem(
         self,
@@ -211,7 +167,9 @@ class Inventory(GameTabs, ItemContainer):
             return False
 
         # Click the first slot
-        self.slots[slots[0]].click(button=button, )
+        self.slots[slots[0]].click(
+            button=button,
+        )
         return True
 
     def isShiftDropEnabled(self) -> bool:
@@ -303,7 +261,7 @@ class Inventory(GameTabs, ItemContainer):
             return 0
 
         # Use drop_slots for the actual dropping logic
-        return self.dropSlots(slots, , force_shift=force_shift)
+        return self.dropSlots(slots, force_shift=force_shift)
 
     def dropItems(
         self, item_ids: List[int], duration: float = 0.2, force_shift: bool = False
@@ -340,7 +298,7 @@ class Inventory(GameTabs, ItemContainer):
             return 0
 
         # Use drop_slots for the actual dropping logic
-        return self.dropSlots(all_slots, , force_shift=force_shift)
+        return self.dropSlots(all_slots, force_shift=force_shift)
 
     def dropSlots(
         self, slot_indices: List[int], duration: float = 0.2, force_shift: bool = False
@@ -396,7 +354,9 @@ class Inventory(GameTabs, ItemContainer):
                     continue  # Skip if Drop option not available
 
                 # Click Drop option with fresh cache
-                if menu.clickOption("Drop", ):
+                if menu.clickOption(
+                    "Drop",
+                ):
                     dropped_count += 1
         finally:
             if use_shift_drop:
@@ -441,7 +401,9 @@ class Inventory(GameTabs, ItemContainer):
             target_slot = slots[0]
 
         # Click the item to select it
-        self.slots[target_slot].click(button="left", )
+        self.slots[target_slot].click(
+            button="left",
+        )
 
         # TODO: Verify selection with new cache system when implemented
         return True
@@ -482,11 +444,17 @@ class Inventory(GameTabs, ItemContainer):
         from ..menu import Menu
 
         # Step 1: Select the first item
-        if not self.selectItem(item1_id, slot_index=item1_slot, ):
+        if not self.selectItem(
+            item1_id,
+            slot_index=item1_slot,
+        ):
             return False
 
         # Step 2: Hover over the second item
-        if not self.hoverItem(item2_id, slot_index=item2_slot, ):
+        if not self.hoverItem(
+            item2_id,
+            slot_index=item2_slot,
+        ):
             return False
 
         # Step 3: Click the menu option with '->' in it
@@ -496,7 +464,9 @@ class Inventory(GameTabs, ItemContainer):
         for option in options:
             if "->" in option:
                 # Found the "Use X -> Y" option
-                return menu.clickOption(option, )
+                return menu.clickOption(
+                    option,
+                )
 
         return False
 
@@ -520,6 +490,6 @@ class Inventory(GameTabs, ItemContainer):
             inventory.clickSlot(27, button='right')
         """
         if 0 <= slot_index < 28:
-            self.slots[slot_index].click(button=button, )
+            self.slots[slot_index].click(button=button, duration=duration)
             return True
         return False

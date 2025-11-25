@@ -67,8 +67,8 @@ class ResourceUpdater:
 
         try:
             from shadowlib._internal.cache_manager import (
-                _downloadFile,
                 BASE_URL,
+                _downloadFile,
                 getCacheManager,
             )
 

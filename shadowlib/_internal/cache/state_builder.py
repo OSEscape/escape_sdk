@@ -43,7 +43,7 @@ class StateBuilder:
 
         # Derived state from ring buffer events
         self.varps: List[int] = []  # {varp_id: value}
-        
+
         self.skills: Dict[str, Dict[str, int]] = {}  # {skill_name: {level, xp, boosted_level}}
         self.last_click: Dict[str, Any] = {}  # {button, coords, time}
         self.chat_history: Deque = deque(maxlen=100)  # Last 100 chat messages
@@ -213,7 +213,7 @@ class StateBuilder:
             event: Item container changed event dict
         """
         container_id = event.get("container_id")
-        items_list = event.get("items", [])  
+        items_list = event.get("items", [])
 
         self.recently_changed_containers.append(
             [container_id, time()]
@@ -224,7 +224,7 @@ class StateBuilder:
 
         if items_list is None:
             return None
-        
+
         self.itemcontainers[container_id].fromArray(items_list)
 
     def _processStatChanged(self, event: Dict[str, Any]) -> None:

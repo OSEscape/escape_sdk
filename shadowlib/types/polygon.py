@@ -31,7 +31,7 @@ class Polygon:
         if len(self.vertices) < 3:
             raise ValueError("Polygon must have at least 3 vertices")
 
-    def fromArray(self, data: List[List[int]]) -> None:  
+    def fromArray(self, data: List[List[int]]) -> None:
         """
         Populate Polygon from array of [x, y] coordinate pairs.
 
@@ -47,8 +47,7 @@ class Polygon:
         x_data = data[0]
         y_data = data[1]
 
-        self.vertices = [Point(x, y) for x, y in zip(x_data, y_data)] 
-
+        self.vertices = [Point(x, y) for x, y in zip(x_data, y_data)]
 
     def center(self) -> "Point":
         """

@@ -34,12 +34,12 @@ class ItemContainer:
         self.slotCount = slotCount
         self.items = items if items is not None else []
 
-    def fromArray(self, data: List[Dict[str, Any]]): 
+    def fromArray(self, data: List[Dict[str, Any]]):
         """
         Populate ItemContainer from array of item dicts.
         Args:
             data: List of item dicts from Java response
-        """       
+        """
         parsedItems = [
             Item.fromDict(itemData) if itemData is not None else None for itemData in data
         ]
@@ -170,8 +170,8 @@ class ItemContainer:
             else:
                 result.append(None)
         return result
-    
-    def findItemSlot(self, id: int) -> Optional[int]:
+
+    def findItemSlot(self, id: int) -> int | None:
         """
         Find the first slot index containing an item with the given ID.
 
@@ -185,7 +185,7 @@ class ItemContainer:
             if item is not None and item.id == id:
                 return index
         return None
-    
+
     def findItemSlots(self, id: int) -> List[int]:
         """
         Find all slot indices containing items with the given ID.
@@ -201,7 +201,7 @@ class ItemContainer:
             if item is not None and item.id == id:
                 slots.append(index)
         return slots
-    
+
     def findItemSlotsByName(self, name: str) -> List[int]:
         """
         Find all slot indices containing items with the given name.
