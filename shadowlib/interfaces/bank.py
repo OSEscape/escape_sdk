@@ -7,6 +7,7 @@ import random
 
 from shadowlib.client import client
 from shadowlib.types.box import Box, createGrid
+from shadowlib.types.widget import Widget, WidgetFields
 from shadowlib.utilities import timing
 
 
@@ -75,6 +76,9 @@ class Bank:
         self.capacity = 920
         self.bank_area = Box(62, 83, 482, 293)
         self.bank_cache = {"lasttime": 0, "items": [], "quantities": []}
+
+        self.capacity_widget = Widget(client.InterfaceID.Bankmain.CAPACITY)
+        self.capacity_widget.enable(WidgetFields.getText)
 
     def isOpen(self) -> bool:
         """

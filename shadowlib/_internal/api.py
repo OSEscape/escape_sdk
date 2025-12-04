@@ -34,8 +34,18 @@ except ImportError:
 
 class RuneLiteAPI:
     """
-    Smart API wrapper that uses scraped data to provide exact signatures
+    Smart API wrapper that uses scraped data to provide exact signatures.
+
+    Singleton pattern - use RuneLiteAPI() to get the shared instance.
     """
+
+    _instance = None
+
+    def __new__(cls, api_data_file: str = None, auto_update: bool = True):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance._initialized = False
+        return cls._instance
 
     def __del__(self):
         """Cleanup when API object is destroyed."""
@@ -50,6 +60,11 @@ class RuneLiteAPI:
             api_data_file: Path to API data JSON file (auto-detected if None)
             auto_update: If True, check for RuneLite updates on initialization
         """
+        # Skip if already initialized (singleton pattern)
+        if self._initialized:
+            return
+        self._initialized = True
+
         self.api_channel = None
         self.result_buffer = None
         self.cached_objects = {}

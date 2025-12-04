@@ -25,16 +25,14 @@ def getClient():
 
 def getApi():
     """
-    Get the API instance from the singleton Client.
-
-    Deprecated: Use `from shadowlib.client import client; client.api` instead.
+    Get the singleton RuneLiteAPI instance.
 
     Returns:
-        RuneLiteAPI: The API instance
+        RuneLiteAPI: The singleton API instance
     """
-    from shadowlib.client import client
+    from shadowlib._internal.api import RuneLiteAPI
 
-    return client.api
+    return RuneLiteAPI()
 
 
 # Convenience exports

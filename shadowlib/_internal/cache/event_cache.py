@@ -330,6 +330,18 @@ class EventCache:
             menu_clicked = self._state.latest_states.get("menu_option_clicked", {})
             return menu_clicked.get("consumed", False)
 
+    def getOpenWidgets(self) -> List[Dict[int, Any]]:
+        """
+        Get list of currently open widgets.
+
+        Returns copy of open widgets data from StateBuilder.latest_states.
+
+        Returns:
+            List of dicts with open widget information
+        """
+        with self._lock:
+            return self._state.active_widgets.copy()
+
 
 if __name__ == "__main__":
     # Simple test
