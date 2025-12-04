@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.0](https://github.com/ShadowLib/shadowlib/compare/v2.2.2...v3.0.0) (2025-12-04)
+
+### ⚠ BREAKING CHANGES
+
+* Module access patterns have changed significantly.
+
+- Convert Client, all tabs, Bank, Menu, Mouse, Keyboard, RuneLite,
+  GroundItems, Pathfinder, and Player to singletons using __new__ + _init()
+- Add module-level singleton exports (e.g., `from shadowlib.tabs.inventory import inventory`)
+- Update namespace classes (Tabs, Interfaces, etc.) to return singleton instances
+- Replace self.client pattern with `from shadowlib.client import client` imports
+- Fix circular import issue by duplicating SKILL_NAMES constant
+- Fix event consumer deadlock by not waiting for warmup during module import
+
+Migration guide:
+- Old: `client = Client(); client.tabs.inventory.getItems()`
+- New: `from shadowlib.tabs.inventory import inventory; inventory.getItems()`
+- Or: `from shadowlib.client import client; client.tabs.inventory.getItems()`
+
+### ✨ Features
+
+* enhance event cache initialization and menu interaction methods; improve inventory slot handling and timing utilities ([9848daa](https://github.com/ShadowLib/shadowlib/commit/9848daa42d52a98493e00c4d1929295e4f5b38bf))
+
+### ♻️ Refactoring
+
+* convert modules to singleton pattern ([2e48446](https://github.com/ShadowLib/shadowlib/commit/2e484464daa6d03a4182fb7eba3e9d345387c621))
+
 ## [2.2.2](https://github.com/ShadowLib/shadowlib/compare/v2.2.1...v2.2.2) (2025-11-25)
 
 ### 🐛 Bug Fixes
