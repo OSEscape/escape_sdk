@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.3.0](https://github.com/ShadowLib/shadowlib/compare/v3.2.1...v3.3.0) (2025-12-04)
+
+### ✨ Features
+
+* unify item lookup methods to accept ID or name ([d78e213](https://github.com/ShadowLib/shadowlib/commit/d78e2131c83e46ea2b4885f4aa7da5c7467c1893))
+
 ## [3.2.1](https://github.com/ShadowLib/shadowlib/compare/v3.2.0...v3.2.1) (2025-12-04)
 
 ### 🐛 Bug Fixes
