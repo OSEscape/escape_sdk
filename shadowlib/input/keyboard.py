@@ -12,24 +12,36 @@ except ImportError:
 
 class Keyboard:
     """
-    Keyboard controller with human-like typing.
+    Singleton keyboard controller with human-like typing.
     Uses pyautogui for cross-platform keyboard control.
     Requires RuneLite window focus for input.
+
+    Example:
+        from shadowlib.input.keyboard import keyboard
+
+        keyboard.type("Hello world")
+        keyboard.pressEnter()
     """
 
-    def __init__(self, runelite, speed: float = 1.0):
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance._init()
+        return cls._instance
+
+    def _init(self, speed: float = 1.0):
         """
-        Initialize keyboard controller.
+        Actual initialization, runs once.
 
         Args:
-            runelite: RuneLite instance for window management (required)
             speed: Typing speed multiplier (1.0 = ~50ms per keystroke)
         """
+        from shadowlib.input.runelite import runelite
+
         if pag is None:
             raise ImportError("pyautogui is required. Install with: pip install pyautogui")
-
-        if runelite is None:
-            raise ValueError("RuneLite instance is required for Keyboard controller")
 
         # Configure pyautogui
         pag.PAUSE = 0
@@ -267,3 +279,7 @@ class Keyboard:
             raise ValueError(f"Number must be between 0 and 9, got {num}")
 
         self.press(str(num))
+
+
+# Module-level singleton instance
+keyboard = Keyboard()

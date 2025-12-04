@@ -7,145 +7,111 @@ tab-specific functionality for the Old School RuneScape interface.
 
 from shadowlib.types.gametab import GameTab, GameTabs
 
-from .account import Account
-from .combat import Combat
-from .emotes import Emotes
-from .equipment import Equipment
-from .friends import Friends
-from .grouping import Grouping
-from .inventory import Inventory
-from .logout import Logout
-from .magic import Magic
-from .music import Music
-from .prayer import Prayer
-from .progress import Progress
-from .settings import Settings
-from .skills import Skills
+from .account import Account, account
+from .combat import Combat, combat
+from .emotes import Emotes, emotes
+from .equipment import Equipment, equipment
+from .friends import Friends, friends
+from .grouping import Grouping, grouping
+from .inventory import Inventory, inventory
+from .logout import Logout, logout
+from .magic import Magic, magic
+from .music import Music, music
+from .prayer import Prayer, prayer
+from .progress import Progress, progress
+from .settings import Settings, settings
+from .skills import Skills, skills
 
 
 class Tabs:
-    """Namespace for game tabs with lazy-loading."""
+    """
+    Namespace for game tabs - returns singleton instances.
 
-    def __init__(self, client):
-        """
-        Initialize tabs namespace.
+    Example:
+        from shadowlib.client import client
 
-        Args:
-            client: The Client instance
-        """
-        self._client = client
-        self._combat: Combat | None = None
-        self._skills: Skills | None = None
-        self._progress: Progress | None = None
-        self._inventory: Inventory | None = None
-        self._equipment: Equipment | None = None
-        self._prayer: Prayer | None = None
-        self._magic: Magic | None = None
-        self._grouping: Grouping | None = None
-        self._friends: Friends | None = None
-        self._account: Account | None = None
-        self._settings: Settings | None = None
-        self._logout: Logout | None = None
-        self._emotes: Emotes | None = None
-        self._music: Music | None = None
+        client.tabs.inventory.getItems()
+        # Or directly:
+        from shadowlib.tabs.inventory import inventory
+        inventory.getItems()
+    """
+
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
 
     @property
     def combat(self) -> Combat:
-        """Get combat tab."""
-        if self._combat is None:
-            self._combat = Combat(client=self._client)
-        return self._combat
+        """Get combat tab singleton."""
+        return combat
 
     @property
     def skills(self) -> Skills:
-        """Get skills tab."""
-        if self._skills is None:
-            self._skills = Skills(client=self._client)
-        return self._skills
+        """Get skills tab singleton."""
+        return skills
 
     @property
     def progress(self) -> Progress:
-        """Get progress tab."""
-        if self._progress is None:
-            self._progress = Progress(client=self._client)
-        return self._progress
+        """Get progress tab singleton."""
+        return progress
 
     @property
     def inventory(self) -> Inventory:
-        """Get inventory tab."""
-        if self._inventory is None:
-            self._inventory = Inventory(client=self._client)
-        return self._inventory
+        """Get inventory tab singleton."""
+        return inventory
 
     @property
     def equipment(self) -> Equipment:
-        """Get equipment tab."""
-        if self._equipment is None:
-            self._equipment = Equipment(client=self._client)
-        return self._equipment
+        """Get equipment tab singleton."""
+        return equipment
 
     @property
     def prayer(self) -> Prayer:
-        """Get prayer tab."""
-        if self._prayer is None:
-            self._prayer = Prayer(client=self._client)
-        return self._prayer
+        """Get prayer tab singleton."""
+        return prayer
 
     @property
     def magic(self) -> Magic:
-        """Get magic tab."""
-        if self._magic is None:
-            self._magic = Magic(client=self._client)
-        return self._magic
+        """Get magic tab singleton."""
+        return magic
 
     @property
     def grouping(self) -> Grouping:
-        """Get grouping tab."""
-        if self._grouping is None:
-            self._grouping = Grouping(client=self._client)
-        return self._grouping
+        """Get grouping tab singleton."""
+        return grouping
 
     @property
     def friends(self) -> Friends:
-        """Get friends tab."""
-        if self._friends is None:
-            self._friends = Friends(client=self._client)
-        return self._friends
+        """Get friends tab singleton."""
+        return friends
 
     @property
     def account(self) -> Account:
-        """Get account tab."""
-        if self._account is None:
-            self._account = Account(client=self._client)
-        return self._account
+        """Get account tab singleton."""
+        return account
 
     @property
     def settings(self) -> Settings:
-        """Get settings tab."""
-        if self._settings is None:
-            self._settings = Settings(client=self._client)
-        return self._settings
+        """Get settings tab singleton."""
+        return settings
 
     @property
     def logout(self) -> Logout:
-        """Get logout tab."""
-        if self._logout is None:
-            self._logout = Logout(client=self._client)
-        return self._logout
+        """Get logout tab singleton."""
+        return logout
 
     @property
     def emotes(self) -> Emotes:
-        """Get emotes tab."""
-        if self._emotes is None:
-            self._emotes = Emotes(client=self._client)
-        return self._emotes
+        """Get emotes tab singleton."""
+        return emotes
 
     @property
     def music(self) -> Music:
-        """Get music tab."""
-        if self._music is None:
-            self._music = Music(client=self._client)
-        return self._music
+        """Get music tab singleton."""
+        return music
 
     def getOpenTab(self) -> GameTab | None:
         """
@@ -155,30 +121,52 @@ class Tabs:
             The currently open GameTab, or None if unknown
 
         Example:
+            >>> from shadowlib.client import client
             >>> tab = client.tabs.getOpenTab()
             >>> if tab == GameTab.INVENTORY:
             ...     print("Inventory is open")
         """
-        index = self._client.cache.getVarc(self._client.VarClientID.TOPLEVEL_PANEL)
+        from shadowlib.client import client
+
+        index = client.cache.getVarc(client.VarClientID.TOPLEVEL_PANEL)
         return GameTab(index) if index in GameTab._value2member_map_ else None
+
+
+# Module-level singleton instance
+tabs = Tabs()
 
 
 __all__ = [
     "GameTab",
     "GameTabs",
     "Tabs",
+    "tabs",
     "Combat",
+    "combat",
     "Skills",
+    "skills",
     "Progress",
+    "progress",
     "Inventory",
+    "inventory",
     "Equipment",
+    "equipment",
     "Prayer",
+    "prayer",
     "Magic",
+    "magic",
     "Grouping",
+    "grouping",
     "Friends",
+    "friends",
     "Account",
+    "account",
     "Settings",
+    "settings",
     "Logout",
+    "logout",
     "Emotes",
+    "emotes",
     "Music",
+    "music",
 ]

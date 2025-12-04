@@ -1,27 +1,36 @@
 """Navigation module."""
 
-from shadowlib.navigation.pathfinder import Pathfinder
+from shadowlib.navigation.pathfinder import Pathfinder, pathfinder
 
 
 class Navigation:
-    """Namespace for navigation systems with lazy-loading."""
+    """
+    Namespace for navigation systems - returns singleton instances.
 
-    def __init__(self, client):
-        """
-        Initialize navigation namespace.
+    Example:
+        from shadowlib.client import client
 
-        Args:
-            client: The Client instance
-        """
-        self._client = client
-        self._pathfinder: Pathfinder | None = None
+        path = client.navigation.pathfinder.getPath(3200, 3200, 0)
+        # Or directly:
+        from shadowlib.navigation.pathfinder import pathfinder
+        path = pathfinder.getPath(3200, 3200, 0)
+    """
+
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
 
     @property
     def pathfinder(self) -> Pathfinder:
-        """Get pathfinder."""
-        if self._pathfinder is None:
-            self._pathfinder = Pathfinder(client=self._client)
-        return self._pathfinder
+        """Get pathfinder singleton."""
+        return pathfinder
 
 
-__all__ = ["Navigation", "Pathfinder"]
+# Module-level singleton instance
+navigation = Navigation()
+
+
+__all__ = ["Navigation", "navigation", "Pathfinder", "pathfinder"]

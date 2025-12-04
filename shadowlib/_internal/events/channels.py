@@ -24,8 +24,9 @@ LATEST_STATE_CHANNELS = [
     "menu_option_clicked",  # Menu interaction events
     "game_state_changed",  # Game state transitions (login, loading, etc.)
     "world_view_loaded",  # World view load events
-    "menu_opened",  # Menu opened events
     "ground_items",  # Current ground items state
+    "menu_open",  # Current menu information when open
+    "selected_widget",  # Currently selected widget information
 ]
 
 # Doorbell file path - Java rings this after writing any event

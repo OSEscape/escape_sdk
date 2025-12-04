@@ -7,6 +7,7 @@ from typing import Dict, List
 from shadowlib.types.gametab import GameTab, GameTabs
 
 # Ordered list of skill names (matching game order)
+# Note: Also defined in state_builder.py to avoid circular import
 SKILL_NAMES: List[str] = [
     "Attack",
     "Defence",
@@ -37,20 +38,27 @@ SKILL_NAMES: List[str] = [
 
 class Skills(GameTabs):
     """
-    Skills tab operations class.
-    Can be used directly or via module-level functions.
+    Singleton skills tab operations class.
+
+    Example:
+        from shadowlib.tabs.skills import skills
+
+        level = skills.getLevel("Attack")
     """
 
     TAB_TYPE = GameTab.SKILLS
 
-    def __init__(self, client=None):
-        """
-        Initialize skills manager.
+    _instance = None
 
-        Args:
-            client: Optional Client instance. If None, uses global Client.
-        """
-        super().__init__(client)
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance._init()
+        return cls._instance
+
+    def _init(self):
+        """Actual initialization, runs once."""
+        GameTabs.__init__(self)
         self._last_total_xp: int | None = None
 
     def _getSkillData(self, skill_name: str) -> Dict[str, int]:
@@ -63,8 +71,10 @@ class Skills(GameTabs):
         Returns:
             Dict with 'level', 'xp', 'boosted_level'
         """
+        from shadowlib.client import client
+
         # Get from cache
-        data = self.client.cache.getAllSkills().get(skill_name)
+        data = client.cache.getAllSkills().get(skill_name)
         if data:
             return data
 
@@ -130,7 +140,9 @@ class Skills(GameTabs):
             total = skills.getTotalLevel()
             print(f"Total level: {total}")
         """
-        skills_data = self.client.cache.getAllSkills()
+        from shadowlib.client import client
+
+        skills_data = client.cache.getAllSkills()
         return sum(data["level"] for data in skills_data.values())
 
     def getTotalExperience(self) -> int:
@@ -144,7 +156,9 @@ class Skills(GameTabs):
             total_xp = skills.getTotalExperience()
             print(f"Total XP: {total_xp}")
         """
-        skills_data = self.client.cache.getAllSkills()
+        from shadowlib.client import client
+
+        skills_data = client.cache.getAllSkills()
         return sum(data["xp"] for data in skills_data.values())
 
     def gainedXp(self) -> bool:
@@ -206,3 +220,7 @@ class Skills(GameTabs):
             time.sleep(0.05)
 
         return False
+
+
+# Module-level singleton instance
+skills = Skills()

@@ -1,45 +1,48 @@
 """OS-level input handling - mouse and keyboard."""
 
-from shadowlib.input.keyboard import Keyboard
-from shadowlib.input.mouse import Mouse
-from shadowlib.input.runelite import RuneLite
+from shadowlib.input.keyboard import Keyboard, keyboard
+from shadowlib.input.mouse import Mouse, mouse
+from shadowlib.input.runelite import RuneLite, runelite
 
 
 class Input:
-    """Namespace for input controls with lazy-loading."""
+    """
+    Namespace for input controls - returns singleton instances.
 
-    def __init__(self, client):
-        """
-        Initialize input namespace.
+    Example:
+        from shadowlib.client import client
 
-        Args:
-            client: The Client instance
-        """
-        self._client = client
-        self._runelite: RuneLite | None = None
-        self._mouse: Mouse | None = None
-        self._keyboard: Keyboard | None = None
+        client.input.mouse.leftClick(100, 200)
+        # Or directly:
+        from shadowlib.input.mouse import mouse
+        mouse.leftClick(100, 200)
+    """
+
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
 
     @property
     def runelite(self) -> RuneLite:
-        """Get RuneLite window manager."""
-        if self._runelite is None:
-            self._runelite = RuneLite()
-        return self._runelite
+        """Get RuneLite window manager singleton."""
+        return runelite
 
     @property
     def mouse(self) -> Mouse:
-        """Get mouse controller."""
-        if self._mouse is None:
-            self._mouse = Mouse(runelite=self.runelite)
-        return self._mouse
+        """Get mouse controller singleton."""
+        return mouse
 
     @property
     def keyboard(self) -> Keyboard:
-        """Get keyboard controller."""
-        if self._keyboard is None:
-            self._keyboard = Keyboard(runelite=self.runelite)
-        return self._keyboard
+        """Get keyboard controller singleton."""
+        return keyboard
 
 
-__all__ = ["Input", "Keyboard", "Mouse", "RuneLite"]
+# Module-level singleton instance
+input = Input()
+
+
+__all__ = ["Input", "input", "Keyboard", "keyboard", "Mouse", "mouse", "RuneLite", "runelite"]

@@ -4,7 +4,6 @@ Inventory tab module.
 
 from typing import Any, Dict, List, Optional
 
-from shadowlib.globals import getClient
 from shadowlib.types.box import Box, createGrid
 from shadowlib.types.gametab import GameTab, GameTabs
 from shadowlib.types.item import Item
@@ -14,27 +13,34 @@ from shadowlib.utilities.item_names import getFormattedItemName, getItemName
 
 class Inventory(GameTabs, ItemContainer):
     """
-    Inventory operations class combining GameTab and ItemContainer functionality.
-    Can be used directly or via module-level functions.
+    Singleton inventory operations class combining GameTab and ItemContainer functionality.
+
+    Example:
+        from shadowlib.tabs.inventory import inventory
+
+        items = inventory.getItems()
+        inventory.clickItem(1511)
     """
 
     TAB_TYPE = GameTab.INVENTORY  # This tab represents the inventory
     INVENTORY_ID = 93  # RuneLite inventory container ID
 
-    def __init__(self, client=None):
-        """
-        Initialize inventory manager.
+    _instance = None
 
-        Args:
-            client: Optional Client instance. If None, uses global Client.
-        """
-        # Initialize GameTabs (which sets up client and tab areas)
-        GameTabs.__init__(self, client)
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance._init()
+        return cls._instance
+
+    def _init(self):
+        """Actual initialization, runs once."""
+        # Initialize GameTabs (which sets up tab areas)
+        GameTabs.__init__(self)
         # Set ItemContainer attributes directly (can't call __init__ because items is a property)
         self.containerId = self.INVENTORY_ID
         self.slotCount = 28
         self._items = []
-        self.client = getClient() if client is None else client
 
         # Create inventory slot grid (4 columns x 7 rows, 28 slots total)
         # Slot 0 starts at (563, 213), each slot is 36x32 pixels with 6px horizontal spacing
@@ -54,7 +60,9 @@ class Inventory(GameTabs, ItemContainer):
     @property
     def items(self):
         """Auto-sync items from cache when accessed."""
-        cached = self.client.cache.getItemContainer(self.INVENTORY_ID)
+        from shadowlib.client import client
+
+        cached = client.cache.getItemContainer(self.INVENTORY_ID)
         self._items = cached.items
         return self._items
 
@@ -105,13 +113,15 @@ class Inventory(GameTabs, ItemContainer):
             # Hover over first logs found
             inventory.hoverItem(client.ItemID.LOGS)
         """
+        from shadowlib.client import client
+
         found_slots = self.findItemSlots(item_id)
         if not found_slots:
             return False
 
         # Hover the first found slot
         if self.hoverSlot(found_slots[0]):
-            return self.client.interactions.menu.waitHasOption("Examine")
+            return client.interactions.menu.waitHasOption("Examine")
 
     def clickSlot(
         self, slot_index: int, option: str | None = None, type: str | None = None
@@ -134,15 +144,17 @@ class Inventory(GameTabs, ItemContainer):
             # Click "Use" option on slot 5
             inventory.clickSlot(5, option="Use")
         """
+        from shadowlib.client import client
+
         if not self.hoverSlot(slot_index):
             return False
 
         if option:
-            return self.client.interactions.menu.clickOption(option)
+            return client.interactions.menu.clickOption(option)
         if type:
-            return self.client.interactions.menu.clickOptionType(type)
+            return client.interactions.menu.clickOptionType(type)
 
-        self.client.input.mouse.leftClick()
+        client.input.mouse.leftClick()
         return True
 
     def clickItem(
@@ -207,10 +219,12 @@ class Inventory(GameTabs, ItemContainer):
         """
         import time
 
+        from shadowlib.client import client
+
         start_time = time.time()
 
         while time.time() - start_time < timeout:
-            if self.client.interactions.menu.hasOption("Drop"):
+            if client.interactions.menu.hasOption("Drop"):
                 return True
             time.sleep(0.001)  # Small delay before checking again
 
@@ -304,6 +318,10 @@ class Inventory(GameTabs, ItemContainer):
             # Drop entire inventory (all 28 slots)
             inventory.dropSlots(list(range(28)))
         """
+        from time import perf_counter, sleep
+
+        from shadowlib.client import client
+
         if not slot_indices:
             return 0
 
@@ -311,13 +329,12 @@ class Inventory(GameTabs, ItemContainer):
         use_shift_drop = force_shift or self.isShiftDropEnabled()
 
         dropped_count = 0
-        keyboard = self.client.input.keyboard
+        keyboard = client.input.keyboard
 
         if use_shift_drop:
             # Hold shift for all drops
             keyboard.hold("shift")
-
-        from time import perf_counter
+            sleep(0.025)
 
         try:
             for slot_index in slot_indices:
@@ -337,7 +354,7 @@ class Inventory(GameTabs, ItemContainer):
 
                 # Click Drop option with fresh cache
                 start_click = perf_counter()
-                if self.client.interactions.menu.clickOption("Drop"):
+                if client.interactions.menu.clickOption("Drop"):
                     dropped_count += 1
                 end_click = perf_counter()
                 print(f"Clicked Drop option in {end_click - start_click:.6f} seconds")
@@ -365,17 +382,74 @@ class Inventory(GameTabs, ItemContainer):
             if inventory.selectSlot(0):
                 print("Item in slot 0 selected!")
         """
+        import shadowlib.utilities.timing as timing
+        from shadowlib.client import client
+
         if not (0 <= slot_index < 28):
             return False
 
         # Click the item to select it
         if not self.hoverSlot(slot_index):
             return False
-        if not self.client.interactions.menu.waitHasType("WIDGET_TARGET"):
+        if not client.interactions.menu.waitHasType("WIDGET_TARGET"):
             print("WIDGET_TARGET type not found in menu")
             return False
         print("WIDGET_TARGET type found in menu")
-        return self.client.interactions.menu.clickOptionType("WIDGET_TARGET")
+        if client.interactions.menu.clickOptionType("WIDGET_TARGET"):
+            return timing.waitUntil(self.isItemSelected, 1, 0.01)
+
+    def isItemSelected(self) -> bool:
+        """
+        Check if an item is currently selected in the inventory (for 'Use item on...' actions).
+
+        Returns:
+            True if an item is selected, False otherwise
+        Example:
+            if inventory.isItemSelected():
+                print("An item is currently selected!")
+        """
+        from shadowlib.client import client
+
+        widget = client.cache.getLastSelectedWidget()
+        id = widget.get("selected_widget_id", -1)
+        return id == client.InterfaceID.Inventory.ITEMS
+
+    def getSelectedItemSlot(self) -> int:
+        """
+        Get the slot index of the currently selected item in the inventory.
+
+        Returns:
+            Slot index if an item is selected, else None
+
+        Example:
+            slot = inventory.getSelectedItemSlot()
+            if slot is not None:
+                print(f"Item in slot {slot} is currently selected!")
+        """
+        from shadowlib.client import client
+
+        widget = client.cache.getLastSelectedWidget()
+        selected_index = widget.get("index", -1)
+        return selected_index
+
+    def unselectItem(self) -> bool:
+        """
+        Unselect the currently selected item in the inventory.
+
+        Returns:
+            True if an item was unselected, False otherwise
+
+        Example:
+            if inventory.unselectItem():
+                print("Item unselected successfully!")
+        """
+        from shadowlib.client import client
+
+        if not self.isItemSelected():
+            return True
+
+        # Click outside the inventory to unselect
+        client.interactions.menu.clickOptionType("CANCEL")
 
     def selectItem(self, item_id: int) -> bool:
         """
@@ -427,3 +501,7 @@ class Inventory(GameTabs, ItemContainer):
             return self.useSlotOnSlot(slot_1, slot_2)
 
         return False
+
+
+# Module-level singleton instance
+inventory = Inventory()

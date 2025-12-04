@@ -2,26 +2,33 @@
 Pathfinder for navigation.
 """
 
-from typing import TYPE_CHECKING
-
 from ..types.packed_position import PackedPosition
 from ..types.path import Path
 
-if TYPE_CHECKING:
-    from ..client import Client
-
 
 class Pathfinder:
-    """Pathfinder for calculating routes."""
+    """
+    Singleton pathfinder for calculating routes.
 
-    def __init__(self, client: "Client"):
-        """
-        Initialize pathfinder.
+    Example:
+        from shadowlib.navigation.pathfinder import pathfinder
 
-        Args:
-            client: The Client instance
-        """
-        self.client = client
+        path = pathfinder.getPath(3200, 3200, 0)
+        if path:
+            print(f"Path length: {path.length()} tiles")
+    """
+
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance._init()
+        return cls._instance
+
+    def _init(self):
+        """Actual initialization, runs once."""
+        pass
 
     def getPath(
         self,
@@ -43,15 +50,18 @@ class Pathfinder:
             Path instance or None if no path found
 
         Example:
-            >>> path = client.pathfinder.getPath(3200, 3200, 0)
+            >>> from shadowlib.navigation.pathfinder import pathfinder
+            >>> path = pathfinder.getPath(3200, 3200, 0)
             >>> if path:
             ...     print(f"Path length: {path.length()} tiles")
             ...     print(f"Duration: {path.getTotalSeconds():.1f}s")
             ...     print(f"Obstacles: {len(path.obstacles)}")
         """
+        from shadowlib.client import client
+
         dest_packed = PackedPosition(destination_x, destination_y, destination_plane).packed
 
-        result = self.client.api.invokeCustomMethod(
+        result = client.api.invokeCustomMethod(
             target="BridgeHelpers",
             method="getPathWithObstaclesPacked",
             signature="(I)[B",
@@ -90,7 +100,8 @@ class Pathfinder:
             Path instance or None if no path found
 
         Example:
-            >>> path = client.pathfinder.getPathFromPosition(
+            >>> from shadowlib.navigation.pathfinder import pathfinder
+            >>> path = pathfinder.getPathFromPosition(
             ...     3100, 3100, 0,  # Start
             ...     3200, 3200, 0   # Destination
             ... )
@@ -119,8 +130,13 @@ class Pathfinder:
             True if reachable
 
         Example:
-            >>> if client.pathfinder.canReach(3200, 3200, 0):
+            >>> from shadowlib.navigation.pathfinder import pathfinder
+            >>> if pathfinder.canReach(3200, 3200, 0):
             ...     print("GE is reachable!")
         """
         path = self.getPath(destination_x, destination_y, destination_plane, use_transport)
         return path is not None and not path.isEmpty()
+
+
+# Module-level singleton instance
+pathfinder = Pathfinder()

@@ -1,27 +1,36 @@
 """Game viewport entities - NPCs, objects, players, items visible in 3D world."""
 
-from shadowlib.world.ground_items import GroundItems
+from shadowlib.world.ground_items import GroundItems, groundItems
 
 
 class World:
-    """Namespace for 3D world entities with lazy-loading."""
+    """
+    Namespace for 3D world entities - returns singleton instances.
 
-    def __init__(self, client):
-        """
-        Initialize world namespace.
+    Example:
+        from shadowlib.client import client
 
-        Args:
-            client: The Client instance
-        """
-        self._client = client
-        self._ground_items: GroundItems | None = None
+        items = client.world.groundItems.getAllItems()
+        # Or directly:
+        from shadowlib.world.ground_items import groundItems
+        items = groundItems.getAllItems()
+    """
+
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
 
     @property
-    def ground_items(self) -> GroundItems:
-        """Get ground items accessor."""
-        if self._ground_items is None:
-            self._ground_items = GroundItems(client=self._client)
-        return self._ground_items
+    def groundItems(self) -> GroundItems:
+        """Get ground items accessor singleton."""
+        return groundItems
 
 
-__all__ = ["World", "GroundItems"]
+# Module-level singleton instance
+world = World()
+
+
+__all__ = ["World", "world", "GroundItems", "groundItems"]

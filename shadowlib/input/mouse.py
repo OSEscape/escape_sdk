@@ -12,24 +12,36 @@ except ImportError:
 
 class Mouse:
     """
-    Mouse controller with human-like movement.
+    Singleton mouse controller with human-like movement.
     All coordinates are relative to RuneLite window by default.
     Uses pyautogui for cross-platform mouse control.
+
+    Example:
+        from shadowlib.input.mouse import mouse
+
+        mouse.moveTo(100, 200)
+        mouse.leftClick()
     """
 
-    def __init__(self, runelite, speed: float = 1.0):
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance._init()
+        return cls._instance
+
+    def _init(self, speed: float = 1.0):
         """
-        Initialize mouse controller.
+        Actual initialization, runs once.
 
         Args:
-            runelite: RuneLite instance for coordinate translation (required)
             speed: Movement speed multiplier (1.0 = ~20 pixels per 20ms step)
         """
+        from shadowlib.input.runelite import runelite
+
         if pag is None:
             raise ImportError("pyautogui is required. Install with: pip install pyautogui")
-
-        if runelite is None:
-            raise ValueError("RuneLite instance is required for Mouse controller")
 
         # Configure pyautogui for instant movement
         pag.PAUSE = 0
@@ -79,9 +91,19 @@ class Mouse:
             y: Target y coordinate (relative to game window)
             safe: If True, reject coordinates outside window bounds
         """
-        # Ensure window is ready (respects 10s cache)
+        # Ensure window is ready
         self.runelite.refreshWindowPosition()
+        # temp override for performance testing
 
+        start_time = time.perf_counter()
+        pag.moveTo(
+            x + self.runelite.getWindowOffset()[0],
+            y + self.runelite.getWindowOffset()[1],
+            _pause=False,
+        )
+        time.sleep(0.001)  # slight delay to ensure move completes
+        print(f"pag.moveTo took {time.perf_counter() - start_time:.6f} seconds")
+        return
         # Validate coordinates
         self._validateCoordinates(x, y, safe)
 
@@ -148,7 +170,7 @@ class Mouse:
         self.runelite.refreshWindowPosition()
 
         # Perform click
-        pag.click(button=button, _pause=False)
+        pag.click(button=button, _pause=False, tween=None)
 
     def _hold(self, button: str) -> None:
         """
@@ -175,9 +197,6 @@ class Mouse:
 
         # Release button
         pag.mouseUp(button=button, _pause=False)
-
-        # Small delay after release (human-like)
-        time.sleep(random.uniform(0.05, 0.1))
 
     def _scroll(self, clicks: int) -> None:
         """
@@ -225,10 +244,15 @@ class Mouse:
             >>> mouse.leftClick(100, 200)  # Move and click at (100, 200)
             >>> mouse.leftClick()  # Click at current position
         """
+        import time
+
+        start_time = time.perf_counter()
         if x is not None and y is not None:
             self._moveTo(x, y, safe=safe)
-
+        print(f"move took {time.perf_counter() - start_time:.6f} seconds")
         self._clickButton("left")
+        end_time = time.perf_counter()
+        print(f"leftClick took {end_time - start_time:.6f} seconds")
 
     def rightClick(self, x: int | None = None, y: int | None = None, safe: bool = True) -> None:
         """
@@ -333,3 +357,7 @@ class Mouse:
             # Add human-like delay between scrolls (~25-50ms)
             if i < count - 1:
                 time.sleep(random.uniform(0.025, 0.05))
+
+
+# Module-level singleton instance
+mouse = Mouse()

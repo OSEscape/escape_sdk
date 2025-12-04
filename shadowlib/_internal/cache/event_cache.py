@@ -271,18 +271,6 @@ class EventCache:
 
             return self._state.itemcontainers.get(container_id, None)
 
-    def getMenuState(self) -> Dict[str, Any]:
-        """
-        Get latest menu state.
-
-        Returns copy of menu data from StateBuilder.latest_states.
-
-        Returns:
-            Dict with _timestampt, menuX, menuY, width and height
-        """
-        with self._lock:
-            return self._state.latest_states.get("menu_opened", {}).copy()
-
     def getMenuOptions(self) -> List[Dict[str, Any]]:
         """
         Get latest menu options.
@@ -296,17 +284,29 @@ class EventCache:
             menu_state = self._state.latest_states.get("post_menu_sort", {}).copy()
             return menu_state
 
-    def getClientTickState(self) -> Dict[str, Any]:
+    def getMenuOpenState(self) -> Dict[str, Any]:
         """
-        Get latest client tick state.
+        Get latest menu open state.
 
-        Returns copy of client tick data from StateBuilder.latest_states.
+        Returns copy of menu open data from StateBuilder.latest_states.
 
         Returns:
-            Dict with client tick information
+            Dict with menu open information
         """
         with self._lock:
-            return self._state.latest_states.get("clienttick", {}).copy()
+            return self._state.latest_states.get("menu_open", {}).copy()
+
+    def getLastSelectedWidget(self) -> Dict[str, Any]:
+        """
+        Get latest selected widget state.
+
+        Returns copy of selected widget data from StateBuilder.latest_states.
+
+        Returns:
+            Dict with selected widget information
+        """
+        with self._lock:
+            return self._state.latest_states.get("selected_widget", {}).copy()
 
     def getMenuClickedState(self) -> Dict[str, Any]:
         """
@@ -319,6 +319,16 @@ class EventCache:
         """
         with self._lock:
             return self._state.latest_states.get("menu_option_clicked", {}).copy()
+
+    def consumeMenuClickedState(self) -> Dict[str, Any]:
+        with self._lock:
+            menu_clicked = self._state.latest_states.get("menu_option_clicked", {}).copy()
+            menu_clicked["consumed"] = True
+
+    def isMenuOptionClickedConsumed(self) -> bool:
+        with self._lock:
+            menu_clicked = self._state.latest_states.get("menu_option_clicked", {})
+            return menu_clicked.get("consumed", False)
 
 
 if __name__ == "__main__":

@@ -15,8 +15,36 @@ import shadowlib.utilities.timing as timing
 from shadowlib._internal.events.channels import LATEST_STATE_CHANNELS
 from shadowlib._internal.resources import varps as varps_resource
 from shadowlib.globals import getApi
-from shadowlib.tabs.skills import SKILL_NAMES
 from shadowlib.types import Item, ItemContainer
+
+# Skill names constant - defined here to avoid circular import with tabs.skills singleton
+# Note: Also defined in tabs/skills.py for public API access
+SKILL_NAMES = [
+    "Attack",
+    "Defence",
+    "Strength",
+    "Hitpoints",
+    "Ranged",
+    "Prayer",
+    "Magic",
+    "Cooking",
+    "Woodcutting",
+    "Fletching",
+    "Fishing",
+    "Firemaking",
+    "Crafting",
+    "Smithing",
+    "Mining",
+    "Herblore",
+    "Agility",
+    "Thieving",
+    "Slayer",
+    "Farming",
+    "Runecrafting",
+    "Hunter",
+    "Construction",
+    "Sailing",
+]
 
 
 class StateBuilder:
@@ -79,6 +107,8 @@ class StateBuilder:
             # Latest-state: just overwrite
             event["_timestamp"] = time()
             self.latest_states[channel] = event
+            if channel in ["selected_widget", "menu_open"]:
+                print(f"Updated latest state for channel {channel}: {event}")
         else:
             # Ring buffer: store history + update derived state
             self.recent_events[channel].append(event)

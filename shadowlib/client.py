@@ -1,6 +1,5 @@
 """
-Main Client class for advanced users who want explicit control.
-Most users won't need this - they can use the module-level functions directly.
+Main Client class - singleton that provides access to all game modules.
 """
 
 from typing import TYPE_CHECKING
@@ -27,48 +26,38 @@ if TYPE_CHECKING:
 
 class Client:
     """
-    Advanced client for explicit API management.
-
-    Most users should use the module-level functions (inventory.getItems(), etc)
-    which use a global auto-connected API. Use this Client class if you need:
-    - Multiple API instances
-    - Explicit connection management
-    - Custom API configuration
+    Singleton client providing access to all game modules.
 
     Example:
-        client = Client()
-        client.connect()
+        from shadowlib.client import client
 
-        items = client.getInventory().getItems()
-        client.getBank().depositAll()
+        items = client.tabs.inventory.getItems()
+        client.interfaces.bank.depositAll()
     """
 
-    def __init__(self, api: RuneLiteAPI | None = None):
-        """
-        Initialize client with optional custom API instance.
+    _instance = None
 
-        Args:
-            api: Optional RuneLiteAPI instance. If None, uses global API.
-        """
-        if api is None:
-            from shadowlib.globals import getApi
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance._init()
+        return cls._instance
 
-            self.api = getApi()
-        else:
-            self.api = api
+    def _init(self):
+        """Actual initialization, runs once."""
+        from shadowlib._internal.cache_manager import ensureResourcesLoaded
 
-        # If we got an API (global or passed), assume it's connected
-        # Users should call connect() explicitly if using a fresh API
+        print("🎮 Initializing Client...")
+
+        # Initialize API
+        self.api = RuneLiteAPI()
+        self.api.connect()
+
+        # Check for game resource updates
+        if not ensureResourcesLoaded():
+            print("⚠️  Some resources failed to load")
+
         self._connected = True
-
-        # Lazy-load namespace controllers
-        self._tabs = None
-        self._input = None
-        self._world = None
-        self._navigation = None
-        self._interactions = None
-        self._interfaces = None
-        self._player = None
 
         # Initialize event cache and consumer immediately
         from shadowlib._internal.cache.event_cache import EventCache
@@ -76,7 +65,8 @@ class Client:
 
         self._event_cache = EventCache(event_history_size=100)
         self._event_consumer = EventConsumer(self._event_cache, warn_on_gaps=False)
-        self._event_consumer.start()
+        # Don't wait for warmup during module import - causes deadlock due to import lock
+        self._event_consumer.start(wait_for_warmup=False)
 
         # Register for automatic cleanup on exit
         from shadowlib._internal.cleanup import registerApiForCleanup
@@ -87,6 +77,8 @@ class Client:
         from shadowlib._internal.cleanup import ensureCleanupOnSignal
 
         ensureCleanupOnSignal()
+
+        print("✅ Client ready")
 
     def connect(self):
         """Connect to RuneLite bridge."""
@@ -215,7 +207,7 @@ class Client:
 
             return VarClientID
 
-    # Namespace properties
+    # Namespace properties - return singleton instances
     @property
     def tabs(self) -> "Tabs":
         """
@@ -229,11 +221,9 @@ class Client:
             >>> skills = client.tabs.skills.getAllSkills()
             >>> client.tabs.prayer.activatePrayer("Protect from Melee")
         """
-        if self._tabs is None:
-            from shadowlib.tabs import Tabs
+        from shadowlib.tabs import tabs
 
-            self._tabs = Tabs(self)
-        return self._tabs
+        return tabs
 
     @property
     def input(self) -> "Input":
@@ -247,11 +237,9 @@ class Client:
             >>> client.input.mouse.leftClick(100, 200)
             >>> client.input.keyboard.type("Hello")
         """
-        if self._input is None:
-            from shadowlib.input import Input
+        from shadowlib.input import input
 
-            self._input = Input(self)
-        return self._input
+        return input
 
     @property
     def world(self) -> "World":
@@ -262,14 +250,12 @@ class Client:
             World namespace with 3D entities
 
         Example:
-            >>> items = client.world.ground_items.getAllItems()
+            >>> items = client.world.groundItems.getAllItems()
             >>> npcs = client.world.npcs.getNearby()
         """
-        if self._world is None:
-            from shadowlib.world import World
+        from shadowlib.world import world
 
-            self._world = World(self)
-        return self._world
+        return world
 
     @property
     def navigation(self) -> "Navigation":
@@ -283,11 +269,9 @@ class Client:
             >>> path = client.navigation.pathfinder.getPath(3200, 3200, 0)
             >>> client.navigation.walker.walkTo(3200, 3200)
         """
-        if self._navigation is None:
-            from shadowlib.navigation import Navigation
+        from shadowlib.navigation import navigation
 
-            self._navigation = Navigation(self)
-        return self._navigation
+        return navigation
 
     @property
     def interactions(self) -> "Interactions":
@@ -301,11 +285,9 @@ class Client:
             >>> client.interactions.menu.clickOption("Attack")
             >>> client.interactions.widgets.click(10551297)
         """
-        if self._interactions is None:
-            from shadowlib.interactions import Interactions
+        from shadowlib.interactions import interactions
 
-            self._interactions = Interactions(self)
-        return self._interactions
+        return interactions
 
     @property
     def interfaces(self) -> "Interfaces":
@@ -319,11 +301,9 @@ class Client:
             >>> client.interfaces.bank.depositAll()
             >>> client.interfaces.grand_exchange.sell(995, 1000, 100)
         """
-        if self._interfaces is None:
-            from shadowlib.interfaces import Interfaces
+        from shadowlib.interfaces import interfaces
 
-            self._interfaces = Interfaces(self)
-        return self._interfaces
+        return interfaces
 
     @property
     def player(self) -> "Player":
@@ -338,11 +318,9 @@ class Client:
             >>> energy = client.player.energy
             >>> distance = client.player.distanceTo(3200, 3200)
         """
-        if self._player is None:
-            from shadowlib.player import Player
+        from shadowlib.player.player import player
 
-            self._player = Player(self)
-        return self._player
+        return player
 
     # Resources namespace
     @property
@@ -419,3 +397,7 @@ class Client:
     def __exit__(self, *args):
         """Context manager exit."""
         self.disconnect()
+
+
+# Module-level singleton instance
+client = Client()

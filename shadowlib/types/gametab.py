@@ -4,7 +4,6 @@ Base GameTab class - parent class for all game tab modules.
 
 from enum import Enum
 
-from shadowlib.globals import getClient
 from shadowlib.types.box import Box
 from shadowlib.utilities.timing import waitUntil
 
@@ -39,19 +38,14 @@ class GameTabs:
     # Subclasses must override this
     TAB_TYPE: GameTab | None = None
 
-    def __init__(self, client=None):
+    def __init__(self):
         """
-        Initializes a GameTab instance, setting up the Client and defining the bounds and tab areas.
-            client (Optional[Any]): An optional Client instance. If None, uses the global Client.
+        Initializes a GameTab instance, setting up the bounds and tab areas.
+
         Attributes:
-            client (Any): The Client instance used by the GameTab.
             bounds (Box): The bounding Box for the GameTab.
             tab_box_array (List[Box]): A list of Box objects representing the clickable regions for each tab.
-
-        Args:
-            client: Optional Client instance. If None, uses global Client.
         """
-        self.client = client or getClient()
         x = 547
         y = 205
         w = 190
@@ -84,7 +78,9 @@ class GameTabs:
         Returns:
             True if this tab is open, False otherwise.
         """
-        current_tab = self.client.tabs.getOpenTab()
+        from shadowlib.client import client
+
+        current_tab = client.tabs.getOpenTab()
         return current_tab == self.TAB_TYPE
 
     def hover(self) -> bool:

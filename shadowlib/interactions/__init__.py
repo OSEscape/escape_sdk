@@ -1,27 +1,36 @@
 """Interaction systems - menu, clicking, hovering, widgets."""
 
-from shadowlib.interactions.menu import Menu
+from shadowlib.interactions.menu import Menu, menu
 
 
 class Interactions:
-    """Namespace for interaction systems with lazy-loading."""
+    """
+    Namespace for interaction systems - returns singleton instances.
 
-    def __init__(self, client):
-        """
-        Initialize interactions namespace.
+    Example:
+        from shadowlib.client import client
 
-        Args:
-            client: The Client instance
-        """
-        self._client = client
-        self._menu: Menu | None = None
+        client.interactions.menu.clickOption("Take")
+        # Or directly:
+        from shadowlib.interactions.menu import menu
+        menu.clickOption("Take")
+    """
+
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
 
     @property
     def menu(self) -> Menu:
-        """Get menu interaction handler."""
-        if self._menu is None:
-            self._menu = Menu()
-        return self._menu
+        """Get menu interaction handler singleton."""
+        return menu
 
 
-__all__ = ["Interactions", "Menu"]
+# Module-level singleton instance
+interactions = Interactions()
+
+
+__all__ = ["Interactions", "interactions", "Menu", "menu"]
