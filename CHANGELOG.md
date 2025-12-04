@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.1.0](https://github.com/ShadowLib/shadowlib/compare/v3.0.0...v3.1.0) (2025-12-04)
+
+### ✨ Features
+
+* add lazy-loaded interface ID to name lookup ([0aca0a0](https://github.com/ShadowLib/shadowlib/commit/0aca0a0a023517ac9b96478650fc26cc573e85dd))
+
+### 🐛 Bug Fixes
+
+* wait for event cache warmup after singleton creation ([4e844a4](https://github.com/ShadowLib/shadowlib/commit/4e844a43cb0b61c0b23087b647792504304b4e82))
+
 ## [3.0.0](https://github.com/ShadowLib/shadowlib/compare/v2.2.2...v3.0.0) (2025-12-04)
 
 ### ⚠ BREAKING CHANGES
