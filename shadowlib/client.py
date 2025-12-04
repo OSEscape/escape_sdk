@@ -80,6 +80,28 @@ class Client:
 
         print("✅ Client ready")
 
+    def waitForWarmup(self, timeout: float = 5.0) -> bool:
+        """
+        Wait for event cache warmup to complete.
+
+        Call this after importing if you need to ensure the cache is populated
+        before proceeding. The warmup processes all existing events in /dev/shm.
+
+        Args:
+            timeout: Maximum seconds to wait for warmup
+
+        Returns:
+            True if warmup completed, False if timeout
+
+        Example:
+            from shadowlib.client import client
+            client.waitForWarmup()  # Ensure cache is ready
+            items = client.tabs.inventory.getItems()
+        """
+        if self._event_consumer is None:
+            return True
+        return self._event_consumer.waitForWarmup(timeout=timeout)
+
     def connect(self):
         """Connect to RuneLite bridge."""
         if not self._connected:
@@ -401,3 +423,7 @@ class Client:
 
 # Module-level singleton instance
 client = Client()
+
+# Wait for warmup after singleton creation (import lock is released at this point)
+# This ensures the cache is populated before any user code runs
+client.waitForWarmup()
