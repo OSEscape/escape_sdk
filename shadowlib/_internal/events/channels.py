@@ -14,6 +14,8 @@ RING_BUFFER_CHANNELS = [
     "animation_changed",  # Animation events
     "var_client_int_changed",  # Client int changes
     "var_client_str_changed",  # Client string changes
+    "widget_loaded",  # Widget load events
+    "widget_closed",  # Widget unload events
 ]
 
 # Latest-state channels - only current state matters, file overwritten

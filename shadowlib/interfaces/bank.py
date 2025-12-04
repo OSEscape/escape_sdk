@@ -84,10 +84,10 @@ class Bank:
             True if bank is open, False otherwise
         """
 
-        if client.interfaces.is_id_open(src.InterfaceID.Bankmain.INFINITE):
+        if client.interfaces.is_id_open(client.InterfaceID.Bankmain.INFINITE):
             if not self.is_setup:
                 q = client.query()
-                cap = q.client.getWidget(src.InterfaceID.Bankmain.CAPACITY).getText()
+                cap = q.client.getWidget(client.InterfaceID.Bankmain.CAPACITY).getText()
                 result = q.execute({"capacity": cap})
                 try:
                     capstr = result["results"]["capacity"]
@@ -221,7 +221,7 @@ class Bank:
             return ""
 
         q = client.query()
-        search = q.client.getVarcStrValue(src.VarClientID.MESLAYERINPUT)
+        search = q.client.getVarcStrValue(client.VarClientID.MESLAYERINPUT)
         result = q.execute({"search": search})
         try:
             searchstr = result["results"]["search"]
@@ -273,7 +273,7 @@ class Bank:
             return None
 
         q = client.query()
-        items = q.client.getWidget(src.InterfaceID.Bankmain.ITEMS).getDynamicChildren()
+        items = q.client.getWidget(client.InterfaceID.Bankmain.ITEMS).getDynamicChildren()
         item = items[index]
         rect = item.getBounds()
         hidden = item.isHidden()

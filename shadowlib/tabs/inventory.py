@@ -8,7 +8,6 @@ from shadowlib.types.box import Box, createGrid
 from shadowlib.types.gametab import GameTab, GameTabs
 from shadowlib.types.item import Item
 from shadowlib.types.itemcontainer import ItemContainer
-from shadowlib.utilities.item_names import getFormattedItemName, getItemName
 
 
 class Inventory(GameTabs, ItemContainer):
