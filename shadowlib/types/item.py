@@ -5,6 +5,9 @@ Item type for representing game items.
 from dataclasses import dataclass
 from typing import Any, Dict
 
+# Type alias for item identification - can be ID (int) or name (str)
+ItemIdentifier = int | str
+
 
 @dataclass
 class Item:
@@ -66,3 +69,23 @@ class Item:
         """String representation."""
         noted_str = " (noted)" if self.noted else ""
         return f"Item({self.id}, '{self.name}' x{self.quantity}{noted_str})"
+
+    def matches(self, identifier: ItemIdentifier) -> bool:
+        """
+        Check if this item matches the given identifier.
+
+        Args:
+            identifier: Item ID (int) or name substring (str)
+
+        Returns:
+            True if item matches the identifier
+
+        Example:
+            item = Item(995, "Coins", 1000, False)
+            item.matches(995)      # True (by ID)
+            item.matches("Coins")  # True (by name)
+            item.matches("oin")    # True (substring match)
+        """
+        if isinstance(identifier, int):
+            return self.id == identifier
+        return identifier in self.name

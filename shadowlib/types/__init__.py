@@ -3,7 +3,7 @@
 from .box import Box, createGrid
 from .circle import Circle
 from .gametab import GameTab, GameTabs
-from .item import Item
+from .item import Item, ItemIdentifier
 from .itemcontainer import ItemContainer
 from .point import Point, Point3D
 from .polygon import Polygon
@@ -16,6 +16,7 @@ __all__ = [
     "GameTabs",
     "Item",
     "ItemContainer",
+    "ItemIdentifier",
     "Point",
     "Point3D",
     "Polygon",

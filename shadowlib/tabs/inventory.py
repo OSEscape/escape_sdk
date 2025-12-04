@@ -2,11 +2,11 @@
 Inventory tab module.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import List
 
 from shadowlib.types.box import Box, createGrid
 from shadowlib.types.gametab import GameTab, GameTabs
-from shadowlib.types.item import Item
+from shadowlib.types.item import ItemIdentifier
 from shadowlib.types.itemcontainer import ItemContainer
 
 
@@ -98,23 +98,23 @@ class Inventory(GameTabs, ItemContainer):
             return True
         return False
 
-    def hoverItem(self, item_id: int) -> bool:
+    def hoverItem(self, identifier: ItemIdentifier) -> bool:
         """
         Hover over an item in the inventory.
 
         Args:
-            item_id: The item ID to hover over
+            identifier: Item ID (int) or name (str) to hover over
 
         Returns:
             True if item was found and hovered, False otherwise
 
         Example:
-            # Hover over first logs found
-            inventory.hoverItem(client.ItemID.LOGS)
+            inventory.hoverItem(1511)        # By ID
+            inventory.hoverItem("Logs")      # By name
         """
         from shadowlib.client import client
 
-        found_slots = self.findItemSlots(item_id)
+        found_slots = self.findItemSlots(identifier)
         if not found_slots:
             return False
 
@@ -158,7 +158,7 @@ class Inventory(GameTabs, ItemContainer):
 
     def clickItem(
         self,
-        item_id: int,
+        identifier: ItemIdentifier,
         option: str | None = None,
         type: str | None = None,
     ) -> bool:
@@ -166,7 +166,7 @@ class Inventory(GameTabs, ItemContainer):
         Click an item in the inventory.
 
         Args:
-            item_id: The item ID to click
+            identifier: Item ID (int) or name (str) to click
             option: Specific menu option to click (if any)
             type: Specific menu type to click (if any)
 
@@ -174,13 +174,11 @@ class Inventory(GameTabs, ItemContainer):
             True if item was found and clicked, False otherwise
 
         Example:
-            # Click first logs found
-            inventory.clickItem(1511)
-
-            # Click "Use" option on logs
-            inventory.clickItem(1511, option="Use")
+            inventory.clickItem(1511)                 # By ID
+            inventory.clickItem("Logs")               # By name
+            inventory.clickItem(1511, option="Use")   # With menu option
         """
-        slot = self.findItemSlot(item_id)
+        slot = self.findItemSlot(identifier)
         if slot is None:
             return False
 
@@ -229,7 +227,7 @@ class Inventory(GameTabs, ItemContainer):
 
         return False
 
-    def dropItem(self, item_id: int, force_shift: bool = False) -> int:
+    def dropItem(self, identifier: ItemIdentifier, force_shift: bool = False) -> int:
         """
         Drop ALL occurrences of an item from the inventory.
 
@@ -237,57 +235,54 @@ class Inventory(GameTabs, ItemContainer):
         otherwise falls back to right-click menu.
 
         Args:
-            item_id: The item ID to drop (drops ALL slots containing this item)
+            identifier: Item ID (int) or name (str) to drop (drops ALL matching slots)
             force_shift: If True, forces shift-drop even if setting is disabled
 
         Returns:
             Number of items dropped
 
         Example:
-            # Drop ALL logs (auto-detects shift-drop)
-            count = inventory.dropItem(1511)
-            print(f"Dropped {count} logs")
-
-            # Force shift-drop
+            count = inventory.dropItem(1511)           # By ID
+            count = inventory.dropItem("Logs")         # By name
             count = inventory.dropItem(1511, force_shift=True)
 
         Note:
             To drop a specific slot, use dropSlots([slot_index]) instead.
         """
         # Find all slots containing this item
-        slots = self.findItemSlots(item_id)
+        slots = self.findItemSlots(identifier)
         if not slots:
             return 0
 
         # Use drop_slots for the actual dropping logic
         return self.dropSlots(slots, force_shift=force_shift)
 
-    def dropItems(self, item_ids: List[int], force_shift: bool = False) -> int:
+    def dropItems(self, identifiers: List[ItemIdentifier], force_shift: bool = False) -> int:
         """
         Drop ALL occurrences of multiple items from inventory.
 
         If shift-drop is enabled, holds shift for all drops (more efficient).
 
         Args:
-            item_ids: List of item IDs to drop (drops ALL slots for each item)
+            identifiers: List of item IDs (int) or names (str) to drop
             force_shift: If True, forces shift-drop even if setting is disabled
 
         Returns:
             Total number of items dropped
 
         Example:
-            # Drop ALL logs and ALL tinderboxes
-            count = inventory.dropItems([1511, 590])
-            print(f"Dropped {count} total items")
+            count = inventory.dropItems([1511, 590])           # By IDs
+            count = inventory.dropItems(["Logs", "Tinderbox"]) # By names
+            count = inventory.dropItems([1511, "Tinderbox"])   # Mixed
 
         Note:
-            This drops ALL slots containing each item ID.
+            This drops ALL slots containing each item.
             To drop specific slots, use dropSlots([slot1, slot2, ...]) instead.
         """
         # Collect all slots to drop (all occurrences of all items)
         all_slots = []
-        for item_id in item_ids:
-            slots = self.findItemSlots(item_id)
+        for identifier in identifiers:
+            slots = self.findItemSlots(identifier)
             all_slots.extend(slots)
 
         if not all_slots:
@@ -450,27 +445,26 @@ class Inventory(GameTabs, ItemContainer):
         # Click outside the inventory to unselect
         client.interactions.menu.clickOptionType("CANCEL")
 
-    def selectItem(self, item_id: int) -> bool:
+    def selectItem(self, identifier: ItemIdentifier) -> bool:
         """
         Select an item in the inventory (for 'Use item on...' actions).
 
         Verifies the item was successfully selected using cache validation.
 
         Args:
-            item_id: The item ID to select
+            identifier: Item ID (int) or name (str) to select
 
         Returns:
             True if item was selected successfully, False otherwise
 
         Example:
-            # Select tinderbox for use on logs
-            if inventory.selectItem(590):  # Tinderbox
-                print("Tinderbox selected!")
+            inventory.selectItem(590)           # By ID
+            inventory.selectItem("Tinderbox")   # By name
         """
         # Find the slot to click
-        target_slot = self.findItemSlot(item_id)
+        target_slot = self.findItemSlot(identifier)
 
-        if target_slot:
+        if target_slot is not None:
             return self.selectSlot(target_slot)
         return False
 
@@ -487,14 +481,24 @@ class Inventory(GameTabs, ItemContainer):
 
         return False
 
-    def useItemOnItem(self, item_1: int, item_2: int) -> bool:
+    def useItemOnItem(self, item_1: ItemIdentifier, item_2: ItemIdentifier) -> bool:
         """
         Use one inventory item on another (e.g. use item on item).
+
+        Args:
+            item_1: First item ID (int) or name (str) to select
+            item_2: Second item ID (int) or name (str) to use on
+
+        Returns:
+            True if action was performed, False otherwise
+
+        Example:
+            inventory.useItemOnItem(590, 1511)               # By IDs (tinderbox on logs)
+            inventory.useItemOnItem("Tinderbox", "Logs")     # By names
+            inventory.useItemOnItem(590, "Logs")             # Mixed
         """
         slot_1 = self.findItemSlot(item_1)
-        print(slot_1)
         slot_2 = self.findItemSlot(item_2)
-        print(slot_2)
 
         if slot_1 is not None and slot_2 is not None:
             return self.useSlotOnSlot(slot_1, slot_2)

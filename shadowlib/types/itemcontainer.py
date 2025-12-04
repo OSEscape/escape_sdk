@@ -2,10 +2,10 @@
 ItemContainer type for representing item containers like inventory, bank, equipment.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from shadowlib.globals import getClient
-from shadowlib.types.item import Item
+from shadowlib.types.item import Item, ItemIdentifier
 
 
 class ItemContainer:
@@ -14,6 +14,8 @@ class ItemContainer:
 
     Can be used standalone as a data container or inherited by tab classes
     for additional functionality.
+
+    All item lookup methods accept either an item ID (int) or item name (str).
 
     Attributes:
         containerId: Unique identifier for this container
@@ -91,53 +93,41 @@ class ItemContainer:
         """
         return sum(item.quantity for item in self.items if item is not None)
 
-    def getItemCount(self, id: int) -> int:
+    def getItemCount(self, identifier: ItemIdentifier) -> int:
         """
-        Get count of items matching the given ID.
+        Get count of items matching the given ID or name.
 
         Args:
-            id: Item ID to count
+            identifier: Item ID (int) or name (str) to count
 
         Returns:
-            Number of items with matching ID
-        """
-        return sum(1 for item in self.items if item is not None and item.id == id)
+            Number of matching items
 
-    def getItemCountByName(self, name: str) -> int:
+        Example:
+            count = container.getItemCount(995)        # By ID
+            count = container.getItemCount("Coins")    # By name
         """
-        Get count of items matching the given name.
+        if isinstance(identifier, int):
+            return sum(1 for item in self.items if item is not None and item.id == identifier)
+        return sum(1 for item in self.items if item is not None and identifier in item.name)
+
+    def getItems(self, identifier: ItemIdentifier) -> List[Item]:
+        """
+        Get all items matching the given ID or name.
 
         Args:
-            name: Item name to count
+            identifier: Item ID (int) or name (str) to search for
 
         Returns:
-            Number of items with matching name
+            List of all matching Items
+
+        Example:
+            items = container.getItems(995)        # By ID
+            items = container.getItems("Coins")    # By name
         """
-        return sum(1 for item in self.items if item is not None and item.name in name)
-
-    def getItemsById(self, itemId: int) -> List[Item]:
-        """
-        Get all items matching the given ID.
-
-        Args:
-            itemId: Item ID to search for
-
-        Returns:
-            List of all Items with matching ID
-        """
-        return [item for item in self.items if item is not None and item.id == itemId]
-
-    def getItemsByName(self, name: str) -> List[Item]:
-        """
-        Get all items matching the given name.
-
-        Args:
-            name: Item name to search for
-
-        Returns:
-            List of all Items with matching name
-        """
-        return [item for item in self.items if item is not None and item.name in name]
+        if isinstance(identifier, int):
+            return [item for item in self.items if item is not None and item.id == identifier]
+        return [item for item in self.items if item is not None and identifier in item.name]
 
     def getSlot(self, slotIndex: int) -> Item | None:
         """
@@ -171,101 +161,110 @@ class ItemContainer:
                 result.append(None)
         return result
 
-    def findItemSlot(self, id: int) -> int | None:
+    def findItemSlot(self, identifier: ItemIdentifier) -> int | None:
         """
-        Find the first slot index containing an item with the given ID.
+        Find the first slot index containing an item matching the ID or name.
 
         Args:
-            id: Item ID to search for
+            identifier: Item ID (int) or name (str) to search for
 
         Returns:
             Slot index if found, else None
+
+        Example:
+            slot = container.findItemSlot(995)        # By ID
+            slot = container.findItemSlot("Coins")    # By name
         """
-        for index, item in enumerate(self.items):
-            if item is not None and item.id == id:
-                return index
+        if isinstance(identifier, int):
+            for index, item in enumerate(self.items):
+                if item is not None and item.id == identifier:
+                    return index
+        else:
+            for index, item in enumerate(self.items):
+                if item is not None and identifier in item.name:
+                    return index
         return None
 
-    def findItemSlots(self, id: int) -> List[int]:
+    def findItemSlots(self, identifier: ItemIdentifier) -> List[int]:
         """
-        Find all slot indices containing items with the given ID.
+        Find all slot indices containing items matching the ID or name.
 
         Args:
-            id: Item ID to search for
+            identifier: Item ID (int) or name (str) to search for
 
         Returns:
             List of slot indices
+
+        Example:
+            slots = container.findItemSlots(995)        # By ID
+            slots = container.findItemSlots("Coins")    # By name
         """
         slots = []
-        for index, item in enumerate(self.items):
-            if item is not None and item.id == id:
-                slots.append(index)
+        if isinstance(identifier, int):
+            for index, item in enumerate(self.items):
+                if item is not None and item.id == identifier:
+                    slots.append(index)
+        else:
+            for index, item in enumerate(self.items):
+                if item is not None and identifier in item.name:
+                    slots.append(index)
         return slots
 
-    def findItemSlotsByName(self, name: str) -> List[int]:
+    def containsItem(self, identifier: ItemIdentifier) -> bool:
         """
-        Find all slot indices containing items with the given name.
+        Check if container contains an item matching the ID or name.
 
         Args:
-            name: Item name to search for
+            identifier: Item ID (int) or name (str) to check
 
         Returns:
-            List of slot indices
-        """
-        slots = []
-        for index, item in enumerate(self.items):
-            if item is not None and item.name in name:
-                slots.append(index)
-        return slots
+            True if matching item exists in container
 
-    def containsItem(self, id: int) -> bool:
+        Example:
+            has_coins = container.containsItem(995)        # By ID
+            has_coins = container.containsItem("Coins")    # By name
         """
-        Check if container contains an item with the given ID.
+        if isinstance(identifier, int):
+            return any(item is not None and item.id == identifier for item in self.items)
+        return any(item is not None and identifier in item.name for item in self.items)
+
+    def containsAllItems(self, identifiers: List[ItemIdentifier]) -> bool:
+        """
+        Check if container contains all items matching the given IDs or names.
 
         Args:
-            id: Item ID to check
+            identifiers: List of item IDs (int) or names (str) to check
 
         Returns:
-            True if item with ID exists in container
-        """
-        return any(item is not None and item.id == id for item in self.items)
+            True if all items exist in container
 
-    def containsItemByName(self, name: str) -> bool:
+        Example:
+            has_all = container.containsAllItems([995, 1511])           # By IDs
+            has_all = container.containsAllItems(["Coins", "Logs"])     # By names
+            has_all = container.containsAllItems([995, "Logs"])         # Mixed
         """
-        Check if container contains an item with the given name.
+        return all(self.containsItem(identifier) for identifier in identifiers)
+
+    def getItemQuantity(self, identifier: ItemIdentifier) -> int:
+        """
+        Get total quantity of items matching the given ID or name.
 
         Args:
-            name: Item name to check
+            identifier: Item ID (int) or name (str) to search for
 
         Returns:
-            True if item with name exists in container
+            Total quantity across all matching items
+
+        Example:
+            qty = container.getItemQuantity(995)        # By ID
+            qty = container.getItemQuantity("Coins")    # By name
         """
-        return any(item is not None and item.name in name for item in self.items)
-
-    def containsAllItems(self, ids: List[int]) -> bool:
-        """
-        Check if container contains all items with the given IDs.
-
-        Args:
-            ids: List of item IDs to check
-
-        Returns:
-            True if all item IDs exist in container
-        """
-        return all(any(item is not None and item.id == id for item in self.items) for id in ids)
-
-    def containsAllItemsByName(self, names: List[str]) -> bool:
-        """
-        Check if container contains all items with the given names.
-
-        Args:
-            names: List of item names to check
-
-        Returns:
-            True if all item names exist in container
-        """
-        return all(
-            any(item is not None and item.name in name for item in self.items) for name in names
+        if isinstance(identifier, int):
+            return sum(
+                item.quantity for item in self.items if item is not None and item.id == identifier
+            )
+        return sum(
+            item.quantity for item in self.items if item is not None and identifier in item.name
         )
 
     def isEmpty(self) -> bool:

@@ -6,6 +6,7 @@ from collections.abc import Callable
 from typing import List
 
 from .ground_item import GroundItem
+from .item import ItemIdentifier
 from .packed_position import PackedPosition
 
 
@@ -40,41 +41,25 @@ class GroundItemList:
         """
         return GroundItemList([item for item in self._items if predicate(item)])
 
-    def filterById(self, item_id: int) -> "GroundItemList":
+    def filterByItem(self, identifier: ItemIdentifier) -> "GroundItemList":
         """
-        Filter by item ID.
+        Filter by item ID or name.
 
         Args:
-            item_id: Item ID to filter by
+            identifier: Item ID (int) or name (str) to filter by
 
         Returns:
             Filtered GroundItemList
 
         Example:
-            >>> coins = items.filterById(995)
+            >>> coins = items.filterByItem(995)        # By ID
+            >>> coins = items.filterByItem("Coins")    # By name (substring match)
         """
-        return GroundItemList([item for item in self._items if item.id == item_id])
-
-    def filterByName(self, name: str, exact: bool = False) -> "GroundItemList":
-        """
-        Filter by item name.
-
-        Args:
-            name: Name to search for
-            exact: If True, exact match. If False, contains match (case-insensitive)
-
-        Returns:
-            Filtered GroundItemList
-
-        Example:
-            >>> coins = items.filterByName("coins")
-            >>> exact_coins = items.filterByName("Coins", exact=True)
-        """
-        if exact:
-            return GroundItemList([item for item in self._items if item.name == name])
-        else:
-            name_lower = name.lower()
-            return GroundItemList([item for item in self._items if name_lower in item.name.lower()])
+        if isinstance(identifier, int):
+            return GroundItemList([item for item in self._items if item.id == identifier])
+        return GroundItemList(
+            [item for item in self._items if identifier.lower() in item.name.lower()]
+        )
 
     def filterByOwnership(self, ownership: int) -> "GroundItemList":
         """
@@ -203,7 +188,7 @@ class GroundItemList:
             First GroundItem or None if empty
 
         Example:
-            >>> nearest_coin = items.filterById(995).sortByDistance(...).first()
+            >>> nearest_coin = items.filterByItem(995).sortByDistance(...).first()
         """
         return self._items[0] if self._items else None
 

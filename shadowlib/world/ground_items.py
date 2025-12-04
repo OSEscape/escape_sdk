@@ -15,7 +15,8 @@ class GroundItems:
         from shadowlib.world.ground_items import groundItems
 
         items = groundItems.getAllItems()
-        coins = items.filterById(995)
+        coins = items.filterByItem(995)        # By ID
+        coins = items.filterByItem("Coins")    # By name
     """
 
     _instance = None
@@ -46,19 +47,20 @@ class GroundItems:
             >>> # Get all items
             >>> items = groundItems.getAllItems()
             >>>
-            >>> # Filter coins
-            >>> coins = items.filterById(995)
+            >>> # Filter coins (by ID or name)
+            >>> coins = items.filterByItem(995)
+            >>> coins = items.filterByItem("Coins")
             >>>
             >>> # Filter nearby items
             >>> nearby = items.filterNearby(player.x, player.y, player.plane, 5)
             >>>
             >>> # Chain filters
-            >>> my_nearby_coins = items.filterById(995).filterYours().filterNearby(
+            >>> my_nearby_coins = items.filterByItem(995).filterYours().filterNearby(
             ...     player.x, player.y, player.plane, 10
             ... )
             >>>
             >>> # Get closest coin
-            >>> nearest_coin = items.filterById(995).sortByDistance(
+            >>> nearest_coin = items.filterByItem("Coins").sortByDistance(
             ...     player.x, player.y, player.plane
             ... ).first()
         """

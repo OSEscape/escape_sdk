@@ -4,30 +4,37 @@ Banking module - handles all banking operations.
 
 import math
 import random
-from typing import Any, Dict, List, Optional
+from typing import List
 
 from shadowlib.client import client
 from shadowlib.types.box import Box, createGrid
-from shadowlib.types.item import Item
+from shadowlib.types.item import Item, ItemIdentifier
 from shadowlib.types.itemcontainer import ItemContainer
 from shadowlib.types.widget import Widget, WidgetFields
 from shadowlib.utilities import timing
 
 
 class BankItem:
-    """Represents an item in the bank."""
+    """Represents an item to withdraw from the bank."""
 
-    def __init__(self, item_id: int, quantity: int, noted: bool = False):
+    def __init__(self, identifier: ItemIdentifier, quantity: int, noted: bool = False):
         """
-        Initialize a bank item.
+        Initialize a bank item for withdrawal.
 
         Args:
-            item_id: The ID of the item.
-            quantity: The quantity of the item.
+            identifier: Item ID (int) or name (str) of the item
+            quantity: The quantity to withdraw (use -1 or 0 for All)
+            noted: Whether to withdraw as noted
         """
-        self.item_id = item_id
+        self.identifier = identifier
         self.quantity = quantity
         self.noted = noted
+
+    # Backwards compatibility
+    @property
+    def item_id(self) -> ItemIdentifier:
+        """Deprecated: Use identifier instead."""
+        return self.identifier
 
 
 class Bank(ItemContainer):
@@ -223,14 +230,32 @@ class Bank(ItemContainer):
             counts.append(self.getItemcountInTab(i))
         return counts
 
-    def getIndex(self, item_id: int) -> int | None:
-        if not self.containsItem(item_id):
+    def getIndex(self, identifier: ItemIdentifier) -> int | None:
+        """
+        Get the slot index of an item in the bank.
+
+        Args:
+            identifier: Item ID (int) or name (str)
+
+        Returns:
+            Slot index if found, None otherwise
+        """
+        if not self.containsItem(identifier):
             return None
 
-        return self.findItemSlot(item_id)
+        return self.findItemSlot(identifier)
 
-    def getItemBox(self, item_id: int) -> Box | None:
-        index = self.getIndex(item_id)
+    def getItemBox(self, identifier: ItemIdentifier) -> Box | None:
+        """
+        Get the bounding box of an item in the bank.
+
+        Args:
+            identifier: Item ID (int) or name (str)
+
+        Returns:
+            Box if found, None otherwise
+        """
+        index = self.getIndex(identifier)
 
         if index is None:
             return None
@@ -289,20 +314,29 @@ class Bank(ItemContainer):
             k = random.randint(k_min, k_max)
             return k, scroll_up
 
-    def makeItemVisible(self, item_id: int) -> Box | None:
-        if not self.containsItem(item_id):
+    def makeItemVisible(self, identifier: ItemIdentifier) -> Box | None:
+        """
+        Scroll the bank view to make an item visible and clickable.
+
+        Args:
+            identifier: Item ID (int) or name (str)
+
+        Returns:
+            Box if item is now visible, None otherwise
+        """
+        if not self.containsItem(identifier):
             raise ValueError("Item not found in bank")
 
-        box = self.getItemBox(item_id)
+        box = self.getItemBox(identifier)
 
         if box is None:
             print("Opening correct tab for item...")
-            tab_index = self.getTabIndex(item_id)
+            tab_index = self.getTabIndex(identifier)
             if tab_index is None:
                 return None
             if not self.openTab(tab_index):
                 return None
-            box = self.getItemBox(item_id)
+            box = self.getItemBox(identifier)
 
         scroll_count, scroll_up = self.getScrollCount(box)
 
@@ -316,7 +350,7 @@ class Bank(ItemContainer):
             timing.sleep(0.05)
 
             # Verify visibility
-            box = self.getItemBox(item_id)
+            box = self.getItemBox(identifier)
 
         print(f"found box: {box}")
 
@@ -325,8 +359,17 @@ class Bank(ItemContainer):
         else:
             return None
 
-    def getTabIndex(self, item_id: int) -> int | None:
-        index = self.getIndex(item_id)
+    def getTabIndex(self, identifier: ItemIdentifier) -> int | None:
+        """
+        Get the bank tab index containing an item.
+
+        Args:
+            identifier: Item ID (int) or name (str)
+
+        Returns:
+            Tab index (0-8) if found, None otherwise
+        """
+        index = self.getIndex(identifier)
 
         if index is None:
             return None
@@ -450,38 +493,56 @@ class Bank(ItemContainer):
         return timing.waitUntil(lambda: client.tabs.equipment.getTotalCount() < start, timeout=2.0)
 
     def withdrawItems(self, bank_items: list[BankItem], safe: bool = True) -> bool:
+        """
+        Withdraw multiple items from the bank.
+
+        Args:
+            bank_items: List of BankItem objects specifying what to withdraw
+            safe: If True, raises ValueError when item not found
+
+        Returns:
+            True if all items withdrawn successfully
+
+        Example:
+            bank.withdrawItems([
+                BankItem(995, 1000),              # 1000 coins by ID
+                BankItem("Lobster", 5),           # 5 lobsters by name
+                BankItem("Dragon bones", 28, noted=True)  # 28 noted dragon bones
+            ])
+        """
         if not self.isOpen():
             return False
 
         for bank_item in bank_items:
-            item_id = bank_item.item_id
+            identifier = bank_item.identifier
             quantity = bank_item.quantity
             noted = bank_item.noted
 
-            print(f"Withdrawing {quantity} of item ID {item_id} (noted={noted})")
+            print(f"Withdrawing {quantity} of {identifier} (noted={noted})")
 
-            if not self.containsItem(item_id):
-                print(f"Item ID {item_id} not found in bank!")
+            if not self.containsItem(identifier):
+                print(f"Item {identifier} not found in bank!")
                 if safe:
-                    raise ValueError(f"Item ID {item_id} not found in bank!")
+                    raise ValueError(f"Item {identifier} not found in bank!")
                 return False
 
-            if self.items[self.findItemSlot(item_id)].quantity < quantity:
-                print(f"Not enough quantity of item ID {item_id} in bank!")
+            slot = self.findItemSlot(identifier)
+            if slot is not None and self.items[slot].quantity < quantity:
+                print(f"Not enough quantity of {identifier} in bank!")
                 if safe:
-                    raise ValueError(f"Not enough quantity of item ID {item_id} in bank!")
+                    raise ValueError(f"Not enough quantity of {identifier} in bank!")
                 return False
 
             if not self.isOpen():
                 print("Bank is not open!")
                 return False
 
-            area = self.makeItemVisible(item_id)
+            area = self.makeItemVisible(identifier)
 
             self.setNotedMode(noted)
 
             if area is None:
-                print(f"Item ID {item_id} not found in bank!")
+                print(f"Item {identifier} not visible in bank!")
                 return False
 
             area.hover()
@@ -503,18 +564,23 @@ class Bank(ItemContainer):
                 client.input.keyboard.type(str(quantity))
                 client.input.keyboard.pressEnter()
 
-            # # Wait for item to appear in inventory
-            # def checkWithdrawal():
-            #     inv_count = client.tabs.inventory.getTotalCount()
-            #     print(f"Current inventory count: {inv_count}, target: {quantity}")
-            #     return inv_count >= quantity and inv_count > 0
-
-            # if not timing.waitUntil(checkWithdrawal, timeout=5.0):
-            #     print(f"Failed to withdraw item ID {item_id}!")
-            #     return False
         return True
 
     def withdrawItem(self, bank_item: BankItem, safe: bool = True) -> bool:
+        """
+        Withdraw a single item from the bank.
+
+        Args:
+            bank_item: BankItem specifying what to withdraw
+            safe: If True, raises ValueError when item not found
+
+        Returns:
+            True if item withdrawn successfully
+
+        Example:
+            bank.withdrawItem(BankItem(995, 1000))           # By ID
+            bank.withdrawItem(BankItem("Lobster", 5))        # By name
+        """
         return self.withdrawItems([bank_item], safe=safe)
 
 
