@@ -103,13 +103,10 @@ class StateBuilder:
             channel: Event channel name
             event: Event data dict
         """
-        # print(f"Processing event on channel {channel}: {event}")
         if channel in LATEST_STATE_CHANNELS:
             # Latest-state: just overwrite
             event["_timestamp"] = time()
             self.latest_states[channel] = event
-            if channel in ["selected_widget", "menu_open"]:
-                print(f"Updated latest state for channel {channel}: {event}")
         else:
             # Ring buffer: store history + update derived state
             self.recent_events[channel].append(event)
@@ -128,7 +125,6 @@ class StateBuilder:
         elif channel in ["var_client_int_changed", "var_client_str_changed"]:
             self._processVarcChanged(event)
         elif channel in ["widget_loaded", "widget_closed"]:
-            print(f"Processing widget event on channel {channel}: {event}")
             widget_id = event.get("group_id")
             if widget_id is not None:
                 if channel == "widget_loaded":
@@ -266,9 +262,7 @@ class StateBuilder:
                 - varc_id: Varc index
                 - value: New value
         """
-
         varc_id = event.get("varc_id")
-        print(f"varc name: {varps_resource.getVarcName(varc_id)}")
         value = event.get("value")
 
         if varc_id is None:
