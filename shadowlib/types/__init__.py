@@ -7,6 +7,7 @@ from .item import Item, ItemIdentifier
 from .itemcontainer import ItemContainer
 from .point import Point, Point3D
 from .polygon import Polygon
+from .quad import Quad
 from .widget import Widget, WidgetField, WidgetFields
 
 __all__ = [
@@ -20,6 +21,7 @@ __all__ = [
     "Point",
     "Point3D",
     "Polygon",
+    "Quad",
     "Widget",
     "WidgetField",
     "WidgetFields",

@@ -11,6 +11,8 @@ from collections import defaultdict, deque
 from time import time
 from typing import Any, Deque, Dict, List
 
+import numpy as np
+
 import shadowlib.utilities.timing as timing
 from shadowlib._internal.events.channels import LATEST_STATE_CHANNELS
 from shadowlib._internal.resources import varps as varps_resource
@@ -106,8 +108,10 @@ class StateBuilder:
             # Latest-state: just overwrite
             event["_timestamp"] = time()
             self.latest_states[channel] = event
-            if channel in ["selected_widget", "menu_open", "active_interfaces"]:
-                print(f"Updated latest state for channel {channel}: {event}")
+
+            # Handle projection-related events immediately
+            if channel == "world_view_loaded":
+                self._processWorldViewLoaded(event)
         else:
             # Ring buffer: store history + update derived state
             self.recent_events[channel].append(event)
@@ -256,7 +260,6 @@ class StateBuilder:
                 - value: New value
         """
         varc_id = event.get("varc_id")
-        print(f"varc name: {varps_resource.getVarcName(varc_id)}")
         value = event.get("value")
 
         if varc_id is None:
@@ -381,3 +384,85 @@ class StateBuilder:
         except Exception as e:
             print(f"❌ Rebuild grounditems failed: {e}")
             return
+
+    def _processWorldViewLoaded(self, event: Dict[str, Any]) -> None:
+        """
+        Configure Projection singleton when world_view_loaded event is received.
+
+        This is called immediately when the event arrives, ensuring the projection
+        module always has correct scene data.
+
+        Args:
+            event: World view loaded event with keys:
+                - tile_heights: Flat list of heights [4 * sizeX * sizeY]
+                - bridge_flags: Flat list of bools (may be smaller than sizeX * sizeY)
+                - base_x, base_y: Scene base coordinates
+                - size_x, size_y: Scene dimensions
+                - boundsX, boundsY, boundsWidth, boundsHeight: Entity bounds (0 for top-level)
+                - plane: Current plane
+        """
+        from shadowlib.world.projection import EntityConfig, projection
+
+        # Extract scene data
+        sizeX = event.get("size_x", 104)
+        sizeY = event.get("size_y", 104)
+
+        # Convert flat tile_heights list to [4, sizeX, sizeY] array
+        tileHeightsList = event.get("tile_heights", [])
+        if tileHeightsList:
+            expectedTileSize = 4 * sizeX * sizeY
+            if len(tileHeightsList) == expectedTileSize:
+                tileHeights = np.array(tileHeightsList, dtype=np.int32).reshape(4, sizeX, sizeY)
+            else:
+                # Handle size mismatch - pad or truncate
+                arr = np.zeros(expectedTileSize, dtype=np.int32)
+                arr[: min(len(tileHeightsList), expectedTileSize)] = tileHeightsList[
+                    :expectedTileSize
+                ]
+                tileHeights = arr.reshape(4, sizeX, sizeY)
+        else:
+            # Fallback to zeros if no data
+            tileHeights = np.zeros((4, sizeX, sizeY), dtype=np.int32)
+
+        # Convert flat bridge_flags list to [sizeX, sizeY] array
+        # Note: bridge_flags may be (sizeX-1)*(sizeY-1) or other sizes
+        bridgeFlagsList = event.get("bridge_flags", [])
+        bridgeFlags = np.zeros((sizeX, sizeY), dtype=np.bool_)
+        if bridgeFlagsList:
+            flagLen = len(bridgeFlagsList)
+            # Try to infer the correct dimensions
+            if flagLen == sizeX * sizeY:
+                bridgeFlags = np.array(bridgeFlagsList, dtype=np.bool_).reshape(sizeX, sizeY)
+            elif flagLen == (sizeX - 1) * (sizeY - 1):
+                # Bridge flags may be for interior tiles only
+                inner = np.array(bridgeFlagsList, dtype=np.bool_).reshape(sizeX - 1, sizeY - 1)
+                bridgeFlags[:-1, :-1] = inner
+            else:
+                # Best effort: reshape to square if possible, otherwise fill what we can
+                side = int(np.sqrt(flagLen))
+                if side * side == flagLen and side <= sizeX and side <= sizeY:
+                    inner = np.array(bridgeFlagsList, dtype=np.bool_).reshape(side, side)
+                    bridgeFlags[:side, :side] = inner
+
+        baseX = event.get("base_x", 0)
+        baseY = event.get("base_y", 0)
+
+        # Set scene data on projection singleton
+        projection.setScene(tileHeights, bridgeFlags, baseX, baseY, sizeX, sizeY)
+
+        # Handle entity config (for WorldEntity instances)
+        # When on top-level, bounds are all 0, which means identity transform
+        boundsX = event.get("boundsX", 0)
+        boundsY = event.get("boundsY", 0)
+        boundsWidth = event.get("boundsWidth", 0)
+        boundsHeight = event.get("boundsHeight", 0)
+
+        # Only set entity config if we have non-zero bounds (inside a WorldEntity)
+        if boundsWidth > 0 or boundsHeight > 0:
+            config = EntityConfig(
+                boundsX=boundsX, boundsY=boundsY, boundsWidth=boundsWidth, boundsHeight=boundsHeight
+            )
+            projection.setEntityConfig(config)
+        else:
+            # Top-level world: use None for identity transform
+            projection.setEntityConfig(None)

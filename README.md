@@ -1,28 +1,29 @@
 # ShadowLib
 
-A Python SDK for Old School RuneScape (OSRS) bot development with an intuitive structure that mirrors the game's interface.
+A Python SDK for Old School RuneScape (OSRS) bot development that communicates with RuneLite via a high-performance bridge. The architecture mirrors the game's interface, making it intuitive for OSRS developers.
+
+## Requirements
+
+- **Python 3.12+**
+- **Linux** with inotify support (required for event system)
+- **RuneLite** with ShadowBot plugin running
 
 ## Features
 
-- **Game-Native Structure**: Directory layout based on OSRS client interface (world, tabs, interfaces)
-- **Type-Safe**: Full type hints for better IDE support and fewer runtime errors
-- **Well-Tested**: Comprehensive test coverage with pytest
-- **Clean Code**: Enforced coding standards with Ruff and custom naming convention checker
-- **Easy to Use**: Intuitive API that matches how players think about the game
+- **Game-Native Structure**: Directory layout mirrors OSRS client interface (tabs, interfaces, world)
+- **Event-Driven Architecture**: Zero-CPU inotify-based event system for real-time game state
+- **Singleton Pattern**: All modules are singletons with lazy initialization
+- **Type-Safe**: Full type hints with IDE autocomplete support
+- **Auto-Generated Constants**: ItemID, NpcID, ObjectID, InterfaceID, and more
+- **3D Projection**: Convert local/world coordinates to screen coordinates
 
 ## Installation
 
-### From Source
-
 ```bash
+# Clone the repository
 git clone https://github.com/shadowbot/shadowlib.git
 cd shadowlib
-pip install -e ".[dev]"
-```
 
-### For Development
-
-```bash
 # Install with development dependencies
 pip install -e ".[dev]"
 
@@ -33,152 +34,246 @@ pre-commit install
 ## Quick Start
 
 ```python
-from shadowlib import Client
+from shadowlib.client import client
 
-# Create and connect to the client
-client = Client()
-client.connect()
+# Client auto-connects on import and starts event consumer
+# All modules are singletons - no instantiation needed
 
-# Check connection status
-if client.isConnected():
-    print("Connected to OSRS client!")
+# Access inventory
+items = client.tabs.inventory.getItems()
+for item in items:
+    print(f"{item.name}: {item.quantity}")
 
-# Your bot logic here...
+# Check player state
+pos = client.player.position
+print(f"Player at: {pos}")
 
-# Disconnect when done
-client.disconnect()
+# Use bank interface
+if client.interfaces.bank.isOpen():
+    client.interfaces.bank.depositAll()
+
+# Direct module access (alternative pattern)
+from shadowlib.tabs.inventory import inventory
+from shadowlib.input.mouse import mouse
+
+inventory.clickItem(995)  # Click coins
+mouse.leftClick(100, 200)
 ```
 
-## Project Structure
+## Architecture
+
+### Module Structure
 
 ```
 shadowlib/
-├── world/              # Game viewport entities (NPCs, objects, players, ground items)
-├── tabs/               # Side panel tabs (inventory, equipment, skills, prayers)
-├── interfaces/         # Overlay windows (bank, GE, shop, dialogue)
-├── navigation/         # Movement systems (walking, teleports, webwalking)
-├── interactions/       # Interaction systems (menu, clicking, hovering)
-├── input/              # OS-level input (mouse, keyboard)
-├── types/              # Type definitions, enums, models
-├── utilities/          # Helper functions (timing, calculations, geometry)
-├── resources/          # Game data (varps, objects, items, NPCs)
-└── _internal/          # Bridge implementation (transport, protocol, cache)
+├── client.py           # Main singleton - auto-connects to RuneLite bridge
+├── globals.py          # Global accessors (getClient, getApi, getEventCache)
+│
+├── tabs/               # Side panel tabs (14 tabs)
+│   ├── inventory.py    # Inventory management
+│   ├── equipment.py    # Worn equipment
+│   ├── skills.py       # Skill levels and XP
+│   ├── prayer.py       # Prayer activation
+│   ├── magic.py        # Spellbook
+│   ├── combat.py       # Combat options
+│   └── ...             # friends, settings, logout, etc.
+│
+├── interfaces/         # Overlay windows
+│   ├── bank.py         # Bank interface
+│   └── ...             # GE, shop, dialogue (planned)
+│
+├── world/              # 3D world entities
+│   ├── ground_items.py # Items on the ground
+│   └── projection.py   # Coordinate projection (local → screen)
+│
+├── input/              # OS-level input
+│   ├── mouse.py        # Mouse control
+│   ├── keyboard.py     # Keyboard input
+│   └── runelite.py     # RuneLite window management
+│
+├── interactions/       # Game interactions
+│   └── menu.py         # Right-click menu handling
+│
+├── player/             # Player state
+│   └── player.py       # Position, stats, status
+│
+├── navigation/         # Movement systems
+│   └── pathfinder.py   # Pathfinding (planned)
+│
+├── types/              # Type definitions
+│   ├── item.py         # Item dataclass
+│   ├── widget.py       # Widget mask builder
+│   ├── packed_position.py  # Coordinate packing
+│   └── ...
+│
+├── utilities/          # Helper functions
+│   ├── timing.py       # sleep, waitUntil
+│   └── text.py         # Text utilities
+│
+└── _internal/          # Internal implementation
+    ├── api.py          # RuneLite bridge API
+    ├── query_builder.py # Fluent query interface
+    ├── cache/          # Event cache and state builder
+    ├── events/         # Inotify event consumer
+    └── resources/      # Varps, objects database
 ```
 
-### Placement Rules
+### Singleton Pattern
 
-1. **Visible in the 3D world** → `world/`
-2. **Side-panel tab** → `tabs/`
-3. **Overlay window** → `interfaces/`
-4. **Pathing/movement** → `navigation/`
-5. **Interaction primitives** → `interactions/`
-
-## Development
-
-### Code Style
-
-This project uses **camelCase** for function names (e.g., `getFoo()`, `doSomething()`), following the convention:
+All modules use the singleton pattern with `__new__` + `_init()`:
 
 ```python
-# ✅ Correct
-def getPlayerName():
-    pass
+# Two equivalent access patterns:
 
-def isInventoryFull():
-    pass
+# Via client namespace
+from shadowlib.client import client
+client.tabs.inventory.getItems()
 
-# ❌ Incorrect
-def get_player_name():
-    pass
-
-def is_inventory_full():
-    pass
+# Direct import
+from shadowlib.tabs.inventory import inventory
+inventory.getItems()
 ```
+
+### Event System
+
+The SDK uses an inotify-based event system for zero-CPU-usage when idle:
+
+```python
+from shadowlib.client import client
+
+# Access cached game state (updated automatically)
+tick = client.cache.tick
+energy = client.cache.energy
+position = client.cache.position
+
+# Get recent events
+chats = client.cache.getRecentEvents('chat_message', n=10)
+stats = client.cache.getRecentEvents('stat_changed', n=5)
+
+# Access varps/varbits
+quest_points = client.cache.getVarp(101)
+
+# Check data freshness
+if client.cache.isFresh(max_age=1.0):
+    print(f"Data age: {client.cache.getAge():.2f}s")
+```
+
+**Event Channels:**
+
+| Channel Type | Channels | Description |
+|-------------|----------|-------------|
+| Ring Buffer | `varbit_changed`, `chat_message`, `item_container_changed`, `stat_changed`, `animation_changed` | Guaranteed delivery, keeps history |
+| Latest State | `gametick`, `camera_changed`, `world_view_loaded`, `world_entity`, `menu_open`, `ground_items` | Current state only |
+
+### Projection System
+
+Convert local/world coordinates to screen coordinates:
+
+```python
+from shadowlib.world.projection import projection
+
+# Auto-configured from events - just use it
+screen_pos = projection.localToCanvasSingle(localX, localY, plane)
+if screen_pos:
+    screenX, screenY = screen_pos
+    print(f"Screen position: ({screenX}, {screenY})")
+
+# Batch projection
+import numpy as np
+xs = np.array([1000, 2000, 3000])
+ys = np.array([1000, 2000, 3000])
+screenX, screenY, valid = projection.localToCanvas(xs, ys, plane=0)
+```
+
+### Query Builder
+
+Direct RuneLite API access with fluent interface:
+
+```python
+from shadowlib.client import client
+
+# Build and execute queries
+q = client.query()
+result = q.execute({
+    "inventory": q.client.getItemContainer(93),
+    "position": q.localPlayer.getWorldLocation(),
+    "health": q.localPlayer.getHealthRatio()
+})
+```
+
+## Code Style
+
+### Naming Conventions
+
+| Element | Convention | Example |
+|---------|------------|---------|
+| Functions/Methods | camelCase | `getItems()`, `isInventoryFull()` |
+| Classes | PascalCase | `Inventory`, `BankInterface` |
+| Constants | UPPER_CASE | `MAX_INVENTORY_SIZE` |
+| Private | _camelCase | `_internalHelper()` |
+
+### Dependencies
+
+```python
+# Use dependency injection with global fallback
+class Inventory:
+    def __init__(self, client=None):
+        self.client = client or getClient()
+```
+
+## Development
 
 ### Running Tests
 
 ```bash
-# Run all tests
-pytest
-
-# Run with coverage
-pytest --cov=shadowlib
-
-# Run specific test file
-pytest tests/test_client.py
-
-# Run tests matching a pattern
-pytest -k "test_client"
+pytest                           # All tests
+pytest --cov=shadowlib           # With coverage
+pytest tests/test_inventory.py   # Specific file
+pytest -k "test_bank"            # Pattern match
 ```
 
 ### Linting and Formatting
 
 ```bash
-# Run Ruff linter
-ruff check .
-
-# Auto-fix issues
-ruff check --fix .
-
-# Format code
-ruff format .
-
-# Check naming conventions
-python check_naming.py
+ruff check .           # Lint
+ruff check --fix .     # Auto-fix
+ruff format .          # Format
+python check_naming.py # Verify naming conventions
 ```
 
 ### Pre-commit Hooks
 
-The project uses pre-commit hooks to ensure code quality:
-
 ```bash
-# Install hooks
-pre-commit install
-
-# Run manually
-pre-commit run --all-files
+pre-commit install       # Install hooks
+pre-commit run --all-files  # Run manually
 ```
 
-## Naming Conventions
+## Generated Files
 
-- **Functions/Methods**: `camelCase` (e.g., `getItem`, `moveToPosition`)
-- **Classes**: `PascalCase` (e.g., `Client`, `QueryBuilder`)
-- **Constants**: `UPPER_CASE` (e.g., `MAX_HEALTH`, `DEFAULT_TIMEOUT`)
-- **Private functions**: `_camelCase` (e.g., `_internalHelper`)
-- **Dunder methods**: `__method__` (e.g., `__init__`, `__repr__`)
+On first import, ShadowLib downloads and generates:
+
+```
+~/.cache/shadowlib/
+├── generated/           # Proxy classes, constants
+│   ├── constants/       # ItemID, NpcID, ObjectID, etc.
+│   └── proxies/         # API proxy classes
+└── data/                # Game data
+    ├── api_data.json    # API metadata
+    ├── varps.json       # Varp definitions
+    └── objects.json     # Object database
+```
 
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes following the code style
-4. Run tests and linting
-5. Commit your changes (`git commit -m 'Add amazing feature'`)
-6. Push to the branch (`git push origin feature/amazing-feature`)
-7. Open a Pull Request
+2. Create a feature branch (`git checkout -b feat/new-feature`)
+3. Follow naming conventions and code style
+4. Write tests for new functionality
+5. Commit with conventional commits (`feat:`, `fix:`, etc.)
+6. Open a Pull Request
 
-### Code Quality Checklist
-
-Before submitting a PR, ensure:
-
-- [ ] All tests pass (`pytest`)
-- [ ] Code follows naming conventions (`python check_naming.py`)
-- [ ] Linting passes (`ruff check .`)
-- [ ] Code is formatted (`ruff format .`)
-- [ ] New features have tests
-- [ ] Documentation is updated
-
-## Architecture Decision Records (ADRs)
-
-See `docs/adr/` for architectural decisions, including:
-
-- ADR-003: OSRS-Native SDK Structure
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ## License
 
-MIT License - see LICENSE file for details
-
-## Acknowledgments
-
-- Inspired by OSBot, TRiBot, and other OSRS botting frameworks
-- Built with love for the OSRS botting community
+MIT License - see LICENSE file for details.

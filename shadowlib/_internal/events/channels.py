@@ -28,6 +28,8 @@ LATEST_STATE_CHANNELS = [
     "menu_open",  # Current menu information when open
     "selected_widget",  # Currently selected widget information
     "active_interfaces",  # Currently active interface information
+    "world_entity",
+    "camera_changed",
 ]
 
 # Doorbell file path - Java rings this after writing any event

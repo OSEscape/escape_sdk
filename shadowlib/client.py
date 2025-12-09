@@ -65,6 +65,12 @@ class Client:
 
         self._event_cache = EventCache(event_history_size=100)
         self._event_consumer = EventConsumer(self._event_cache, warn_on_gaps=False)
+
+        # Pre-import projection module before warmup to avoid import deadlock.
+        # Warmup processes world_view_loaded which imports projection - if we don't
+        # pre-import, the warmup thread blocks on import lock held by main thread.
+        import shadowlib.world.projection  # noqa: F401
+
         self._event_consumer.start(wait_for_warmup=True)
 
         # Register for automatic cleanup on exit

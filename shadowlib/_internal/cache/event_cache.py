@@ -6,7 +6,7 @@ Wraps StateBuilder with thread safety and provides clean public methods.
 
 import threading
 import time
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 from shadowlib.types import ItemContainer
 from shadowlib.utilities.timing import waitUntil
@@ -345,6 +345,113 @@ class EventCache:
                 .get("active_interfaces", [])
                 .copy()
             )
+
+    # -------------------------------------------------------------------------
+    # Projection-related accessors
+    # -------------------------------------------------------------------------
+
+    def getCameraState(
+        self,
+    ) -> Tuple[float, float, float, float, float, int, int, int, int, int] | None:
+        """
+        Get current camera state for projection calculations.
+
+        Returns tuple of camera parameters from latest camera_changed event,
+        or None if no camera data available.
+
+        Returns:
+            Tuple of (cameraX, cameraY, cameraZ, cameraPitch, cameraYaw,
+                      scale, viewportWidth, viewportHeight, viewportXOffset, viewportYOffset)
+            or None if no camera data.
+        """
+        with self._lock:
+            camera = self._state.latest_states.get("camera_changed")
+            if not camera:
+                return None
+
+            return (
+                camera.get("cameraX", 0),
+                camera.get("cameraY", 0),
+                camera.get("cameraZ", 0),
+                camera.get("cameraPitch", 0.0),
+                camera.get("cameraYaw", 0.0),
+                camera.get("scale", 512),
+                camera.get("viewportWidth", 765),
+                camera.get("viewportHeight", 503),
+                camera.get("viewportXOffset", 0),
+                camera.get("viewportYOffset", 0),
+            )
+
+    def getCameraStateDict(self) -> Dict[str, Any]:
+        """
+        Get current camera state as a dictionary.
+
+        Returns copy of camera_changed event data.
+
+        Returns:
+            Dict with camera state, or empty dict if unavailable.
+        """
+        with self._lock:
+            return self._state.latest_states.get("camera_changed", {}).copy()
+
+    def getEntityTransform(self) -> Tuple[int, int, int, int] | None:
+        """
+        Get current WorldEntity transform for projection calculations.
+
+        Returns tuple of entity transform parameters from latest world_entity event,
+        or None if no entity data available (top-level world).
+
+        Returns:
+            Tuple of (entityX, entityY, orientation, groundHeightOffset)
+            or None if top-level world (no entity transform).
+        """
+        with self._lock:
+            entity = self._state.latest_states.get("world_entity")
+            if not entity:
+                return None
+
+            return (
+                entity.get("entityX", 0),
+                entity.get("entityY", 0),
+                entity.get("orientation", 0),
+                entity.get("groundHeightOffset", 0),
+            )
+
+    def getEntityTransformDict(self) -> Dict[str, Any]:
+        """
+        Get current WorldEntity transform as a dictionary.
+
+        Returns copy of world_entity event data.
+
+        Returns:
+            Dict with entity transform, or empty dict if unavailable.
+        """
+        with self._lock:
+            return self._state.latest_states.get("world_entity", {}).copy()
+
+    def getWorldViewState(self) -> Dict[str, Any]:
+        """
+        Get current world view state.
+
+        Returns copy of world_view_loaded event data which includes
+        scene dimensions, tile heights, entity bounds, etc.
+
+        Returns:
+            Dict with world view state, or empty dict if unavailable.
+        """
+        with self._lock:
+            return self._state.latest_states.get("world_view_loaded", {}).copy()
+
+    def getCurrentPlane(self) -> int:
+        """
+        Get current plane/level from world view state.
+
+        Returns:
+            Current plane (0-3), defaults to 0 if unavailable.
+        """
+        with self._lock:
+            worldView = self._state.latest_states.get("world_view_loaded", {})
+            return worldView.get("plane", 0)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,13 @@
 """Game viewport entities - NPCs, objects, players, items visible in 3D world."""
 
 from shadowlib.world.ground_items import GroundItems, groundItems
+from shadowlib.world.projection import (
+    CameraState,
+    EntityConfig,
+    EntityTransform,
+    Projection,
+    projection,
+)
 
 
 class World:
@@ -28,9 +35,24 @@ class World:
         """Get ground items accessor singleton."""
         return groundItems
 
+    @property
+    def projection(self) -> Projection:
+        """Get projection utility singleton."""
+        return projection
+
 
 # Module-level singleton instance
 world = World()
 
 
-__all__ = ["World", "world", "GroundItems", "groundItems"]
+__all__ = [
+    "World",
+    "world",
+    "GroundItems",
+    "groundItems",
+    "Projection",
+    "projection",
+    "CameraState",
+    "EntityConfig",
+    "EntityTransform",
+]

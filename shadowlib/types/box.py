@@ -1,7 +1,6 @@
 """Box (rectangular area) geometry type."""
 
 import random
-import time
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -155,12 +154,8 @@ class Box:
             >>> box.hover()  # Hover at random point
             >>> box.hover(randomize=False)  # Hover at center
         """
-
-        start_time = time.perf_counter()
         point = self.randomPoint() if randomize else self.center()
-        print(f"Box.hover randomPoint/center took {time.perf_counter() - start_time:.6f} seconds")
         point.hover()
-        print(f"Box.hover point.hover() took {time.perf_counter() - start_time:.6f} seconds")
 
     def rightClick(self, randomize: bool = True) -> None:
         """

@@ -8,6 +8,11 @@ Deprecated: Prefer importing directly from shadowlib.client
 This module is kept for backwards compatibility.
 """
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from shadowlib._internal.cache.event_cache import EventCache
+
 
 def getClient():
     """
@@ -35,8 +40,21 @@ def getApi():
     return RuneLiteAPI()
 
 
+def getEventCache() -> "EventCache":
+    """
+    Get the EventCache instance from the Client singleton.
+
+    Returns:
+        EventCache: The event cache with game state and event history
+    """
+    from shadowlib.client import client
+
+    return client.cache
+
+
 # Convenience exports
 __all__ = [
     "getApi",
     "getClient",
+    "getEventCache",
 ]

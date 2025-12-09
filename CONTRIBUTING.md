@@ -2,20 +2,19 @@
 
 Thank you for your interest in contributing to ShadowLib! This document provides guidelines and instructions for contributing.
 
-## 🚀 Getting Started
+## Getting Started
 
 1. Fork the repository
 2. Clone your fork: `git clone https://github.com/YOUR-USERNAME/shadowlib.git`
-3. Create a new branch: `git checkout -b feat/your-feature-name`
-4. Make your changes following our coding standards
-5. Commit using conventional commits (see below)
-6. Push and create a pull request
+3. Install dependencies: `pip install -e ".[dev]"`
+4. Install pre-commit hooks: `pre-commit install`
+5. Create a branch: `git checkout -b feat/your-feature-name`
 
-## 📝 Commit Message Convention
+## Commit Message Convention
 
 We use [Conventional Commits](https://www.conventionalcommits.org/) for automated versioning and changelog generation.
 
-### Commit Format
+### Format
 
 ```
 <type>(<scope>): <subject>
@@ -27,21 +26,22 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) for automate
 
 ### Types
 
-- **feat**: A new feature (triggers minor version bump)
-- **fix**: A bug fix (triggers patch version bump)
-- **docs**: Documentation only changes
-- **style**: Code style changes (formatting, semicolons, etc)
-- **refactor**: Code refactoring without feature changes
-- **perf**: Performance improvements
-- **test**: Adding or updating tests
-- **build**: Build system or dependency changes
-- **ci**: CI/CD configuration changes
-- **chore**: Other changes that don't modify src or test files
-- **revert**: Reverts a previous commit
+| Type | Description | Version Bump |
+|------|-------------|--------------|
+| `feat` | New feature | Minor |
+| `fix` | Bug fix | Patch |
+| `docs` | Documentation only | Patch |
+| `style` | Code style (formatting) | None |
+| `refactor` | Code refactoring | None |
+| `perf` | Performance improvement | Patch |
+| `test` | Adding/updating tests | None |
+| `build` | Build system changes | None |
+| `ci` | CI/CD changes | None |
+| `chore` | Other changes | None |
 
 ### Breaking Changes
 
-Add `BREAKING CHANGE:` in the footer or `!` after type to trigger a major version bump:
+Add `!` after type or `BREAKING CHANGE:` in footer for major version bump:
 
 ```bash
 feat!: redesign inventory API
@@ -52,87 +52,155 @@ BREAKING CHANGE: getItems() now returns Item objects instead of IDs
 ### Examples
 
 ```bash
-# Feature (minor version bump: 0.1.0 -> 0.2.0)
+# Feature
 feat(inventory): add getItemsByName method
 
-# Bug fix (patch version bump: 0.1.0 -> 0.1.1)
+# Bug fix
 fix(bank): resolve deposit all items issue
 
-# Documentation (patch version bump)
-docs(readme): add installation instructions
-
-# Breaking change (major version bump: 0.1.0 -> 1.0.0)
-feat(client)!: redesign connection API
-
-BREAKING CHANGE: connect() is now async and requires await
-
-# With scope
-fix(navigation): correct pathfinding edge cases
-
-# Multiple lines
+# With body
 feat(interfaces): add grand exchange module
 
-Implements buy/sell orders, price checking, and item search
-functionality for the Grand Exchange interface.
+Implements buy/sell orders, price checking, and item search.
 
 Closes #123
 ```
 
-## 🎨 Code Style
+## Code Style
 
 ### Naming Conventions
 
-- **Functions/Methods**: `camelCase` (e.g., `getItems()`, `scanNearby()`)
-- **Classes**: `PascalCase` (e.g., `Inventory`, `BankInterface`)
-- **Constants**: `UPPER_CASE` (e.g., `MAX_INVENTORY_SIZE`)
-- **Private functions**: `_camelCase` or `_snake_case` (e.g., `_getIo()`)
+| Element | Convention | Example |
+|---------|------------|---------|
+| Functions/Methods | camelCase | `getItems()`, `isInventoryFull()` |
+| Classes | PascalCase | `Inventory`, `BankInterface` |
+| Constants | UPPER_CASE | `MAX_INVENTORY_SIZE` |
+| Private | _camelCase | `_internalHelper()` |
 
-### Pre-commit Hooks
+### Singleton Pattern
 
-We use pre-commit hooks to ensure code quality:
+All major modules use the singleton pattern:
 
-```bash
-# Install pre-commit hooks
-pip install pre-commit
-pre-commit install
+```python
+class NewModule:
+    _instance = None
 
-# Run manually
-pre-commit run --all-files
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance._init()
+        return cls._instance
+
+    def _init(self):
+        """Actual initialization."""
+        pass
+
+# Module-level export
+newModule = NewModule()
 ```
 
-The hooks will automatically:
-- Lint code with ruff
-- Format code with ruff-format
-- Check naming conventions
-- Validate YAML/TOML files
-- Fix trailing whitespace
+### Property vs Method
 
-## 🏗️ Project Structure
+- `@property` → Namespace access, singleton access
+- Methods → Actions, queries, anything with parameters
+
+```python
+# Property for namespace
+@property
+def tabs(self) -> Tabs:
+    return tabs
+
+# Method for action
+def getItems(self) -> list[Item]:
+    return self._items
+```
+
+### Absolute Imports
+
+Always use absolute imports:
+
+```python
+# Correct
+from shadowlib.globals import getClient
+from shadowlib.tabs.inventory import inventory
+
+# Wrong
+from ...globals import getClient
+```
+
+## Project Structure
 
 ```
 shadowlib/
-├── tabs/           # Side panel tabs (inventory, equipment, etc.)
-├── interfaces/     # Overlay windows (bank, GE, shop, etc.)
-├── world/          # 3D world entities (NPCs, objects, players)
+├── tabs/           # Side panel tabs (inventory, skills, etc.)
+├── interfaces/     # Overlay windows (bank, GE, shop)
+├── world/          # 3D world entities (NPCs, objects, ground items)
+├── input/          # OS-level input (mouse, keyboard)
+├── interactions/   # Game interactions (menu)
+├── player/         # Player state
 ├── navigation/     # Movement and pathfinding
-├── interactions/   # Menu and clicking systems
-├── utilities/      # Helper functions
 ├── types/          # Type definitions and models
-└── _internal/      # Internal implementation details
+├── utilities/      # Helper functions
+└── _internal/      # Internal implementation
 ```
 
-## 📋 Pull Request Process
+### Placement Rules
 
-1. **Update documentation** if you've changed APIs
-2. **Add tests** for new functionality
-3. **Follow naming conventions** (enforced by pre-commit)
-4. **Use conventional commits** (validated by commitlint)
-5. **Keep PRs focused** - one feature/fix per PR
-6. **Update CHANGELOG.md** is automatic (semantic-release handles it)
+1. Visible in 3D world? → `world/`
+2. Side panel tab? → `tabs/`
+3. Overlay window? → `interfaces/`
+4. Movement/pathing? → `navigation/`
+5. Interaction primitives? → `interactions/`
+6. Low-level input? → `input/`
+7. Type/enum/model? → `types/`
+8. Helper function? → `utilities/`
+9. Internal implementation? → `_internal/`
 
-### PR Title Format
+## Testing
 
-PR titles should also follow conventional commits:
+```bash
+# Run all tests
+pytest
+
+# With coverage
+pytest --cov=shadowlib
+
+# Specific file
+pytest tests/test_inventory.py
+
+# Pattern match
+pytest -k "test_bank"
+```
+
+### Test Pattern
+
+Use dependency injection for testing:
+
+```python
+from shadowlib.tabs.inventory import Inventory
+from unittest.mock import Mock
+
+def testGetItems():
+    mockClient = Mock()
+    mockClient.cache.getItemContainer.return_value = [...]
+
+    inventory = Inventory.__new__(Inventory)
+    inventory.client = mockClient
+
+    items = inventory.getItems()
+    assert len(items) == 5
+```
+
+## Pull Request Process
+
+1. Update documentation if you changed APIs
+2. Add tests for new functionality
+3. Ensure all tests pass: `pytest`
+4. Ensure linting passes: `ruff check .`
+5. Ensure formatting is correct: `ruff format --check .`
+6. Use conventional commit format for PR title
+
+### PR Title Examples
 
 ```
 feat: add support for quest tracking
@@ -140,35 +208,21 @@ fix: resolve memory leak in event listener
 docs: improve bank interface examples
 ```
 
-## ✅ Testing
+## Pre-commit Checklist
 
-```bash
-# Run tests
-pytest tests/ -v
-
-# Run tests with coverage
-pytest tests/ --cov=shadowlib --cov-report=html
-
-# Test specific file
-pytest tests/test_inventory.py -v
-```
-
-## 🔍 Code Review Checklist
-
-Before submitting, ensure:
+Before submitting:
 
 - [ ] Code follows naming conventions (camelCase for functions)
 - [ ] All tests pass
 - [ ] Pre-commit hooks pass
 - [ ] Commit messages follow conventional commits
-- [ ] Documentation is updated
-- [ ] No breaking changes (or clearly marked with `!`)
 - [ ] Type hints are included
 - [ ] Docstrings use Google style
+- [ ] No breaking changes (or clearly marked with `!`)
 
-## 🐛 Reporting Bugs
+## Reporting Bugs
 
-Use GitHub Issues and include:
+Use GitHub Issues with:
 
 1. **Description**: Clear description of the bug
 2. **Reproduction**: Steps to reproduce
@@ -176,19 +230,14 @@ Use GitHub Issues and include:
 4. **Actual behavior**: What actually happens
 5. **Environment**: Python version, OS, shadowlib version
 
-## 💡 Feature Requests
+## Feature Requests
 
 Open an issue with:
 
 1. **Use case**: Why is this needed?
 2. **Proposed solution**: How should it work?
-3. **Alternatives**: Other approaches considered
-4. **API design**: Suggested function signatures
+3. **API design**: Suggested function signatures
 
-## 📜 License
+## License
 
 By contributing, you agree that your contributions will be licensed under the MIT License.
-
-## 🙏 Thank You!
-
-Your contributions help make ShadowLib better for everyone!

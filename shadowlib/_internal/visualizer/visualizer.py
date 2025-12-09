@@ -6,6 +6,7 @@ from shadowlib.types.box import Box
 from shadowlib.types.circle import Circle
 from shadowlib.types.point import Point
 from shadowlib.types.polygon import Polygon
+from shadowlib.types.quad import Quad
 
 from .capture import captureRuneLite
 from .window import DebugWindow
@@ -191,6 +192,37 @@ class Visualizer:
         if self._draw is None:
             return
         points = [(v.x, v.y) for v in polygon.vertices]
+        self._draw.polygon(points, outline=color, width=width, fill=fill)
+
+    def drawQuad(
+        self,
+        quad: Quad,
+        color: Color = "red",
+        width: int = 2,
+        fill: Color | None = None,
+    ) -> None:
+        """
+        Draw a Quad (quadrilateral) on the image.
+
+        Args:
+            quad: Quad to draw
+            color: Outline color (RGB tuple or name)
+            width: Line width in pixels
+            fill: Optional fill color
+
+        Example:
+            >>> viz.capture()
+            >>> viz.drawQuad(tile.quad, color="cyan")
+            >>> viz.render()
+        """
+        if self._draw is None:
+            return
+        points = [
+            (quad.p1.x, quad.p1.y),
+            (quad.p2.x, quad.p2.y),
+            (quad.p3.x, quad.p3.y),
+            (quad.p4.x, quad.p4.y),
+        ]
         self._draw.polygon(points, outline=color, width=width, fill=fill)
 
     def drawPoint(
