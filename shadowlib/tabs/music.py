@@ -2,6 +2,7 @@
 Music tab module.
 """
 
+from shadowlib.client import client
 from shadowlib.types.gametab import GameTab, GameTabs
 
 

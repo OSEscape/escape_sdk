@@ -1198,7 +1198,7 @@ def get_proxy_class(class_name: str) -> type:
                         # Escape strings properly
                         escaped_value = const_value.replace("\\", "\\\\").replace('"', '\\"')
                         code.append(f'    {const_name} = "{escaped_value}"')
-                    elif isinstance(const_value, (int, float)):
+                    elif isinstance(const_value, int | float):
                         code.append(f"    {const_name} = {const_value}")
                     else:
                         # For complex values, use repr
@@ -1296,7 +1296,7 @@ def get_proxy_class(class_name: str) -> type:
                 if isinstance(const_value, str):
                     escaped_value = const_value.replace("\\", "\\\\").replace('"', '\\"')
                     code.append(f'    {const_name} = "{escaped_value}"')
-                elif isinstance(const_value, (int, float)):
+                elif isinstance(const_value, int | float):
                     code.append(f"    {const_name} = {const_value}")
                 else:
                     code.append(f"    {const_name} = {repr(const_value)}")
@@ -1334,7 +1334,7 @@ def get_proxy_class(class_name: str) -> type:
                 code.append("    pass")
             else:
                 for const_name, const_value in sorted_constants:
-                    if isinstance(const_value, (int, float)):
+                    if isinstance(const_value, int | float):
                         code.append(f"    {const_name} = {const_value}")
                     else:
                         code.append(f"    {const_name} = {repr(const_value)}")
@@ -1376,7 +1376,7 @@ def get_proxy_class(class_name: str) -> type:
                 code.append("    pass")
             else:
                 for const_name, const_value in sorted_constants:
-                    if isinstance(const_value, (int, float)):
+                    if isinstance(const_value, int | float):
                         code.append(f"    {const_name} = {const_value}")
                     else:
                         code.append(f"    {const_name} = {repr(const_value)}")
@@ -1525,6 +1525,83 @@ def get_proxy_class(class_name: str) -> type:
 
         return "\n".join(code)
 
+    def _generateSpriteIdConstants(self) -> str | None:
+        """Generate SpriteID constants in a separate file."""
+        sprite_ids = self.api_data.get("sprite_ids", {})
+        if not sprite_ids:
+            return None
+
+        code = []
+        code.append('"""')
+        code.append("Auto-generated SpriteID constants from RuneLite API")
+        code.append("DO NOT EDIT MANUALLY")
+        code.append("")
+        code.append("Sprite IDs for game graphics and icons")
+        code.append('"""')
+        code.append("")
+        code.append("class SpriteID:")
+        code.append('    """')
+        code.append("    Sprite IDs from RuneLite API.")
+        code.append("    ")
+        code.append("    Structure:")
+        code.append("    - Top-level constants: Direct sprite IDs (e.g., SpriteID.COMPASS = 169)")
+        code.append("    - Nested classes: Grouped sprites (e.g., SpriteID.Staticons.ATTACK)")
+        code.append("    ")
+        code.append("    Example:")
+        code.append("        # Access top-level sprite")
+        code.append("        compass = SpriteID.COMPASS  # 169")
+        code.append("        ")
+        code.append("        # Access grouped sprite by index")
+        code.append("        attack_icon = SpriteID.Staticons._0  # 197")
+        code.append("        ")
+        code.append("        # Access grouped sprite by name")
+        code.append("        attack_icon = SpriteID.Staticons.ATTACK  # 197")
+        code.append('    """')
+        code.append("")
+
+        # Add top-level constants
+        constants = sprite_ids.get("constants", {})
+        if constants:
+            code.append("    # Top-level Sprite IDs")
+            sorted_constants = sorted(constants.items(), key=lambda x: x[1])
+            for const_name, const_value in sorted_constants:
+                code.append(f"    {const_name} = {const_value}")
+            code.append("")
+
+        # Add nested sprite classes
+        nested = sprite_ids.get("nested", {})
+        if nested:
+            code.append("    # Nested Sprite Classes")
+            for class_name, sprites in sorted(nested.items()):
+                code.append(f"    class {class_name}:")
+                code.append(f'        """Sprite constants for {class_name}."""')
+
+                # Sort by value, but put indexed constants (_0, _1, etc) first
+                indexed = {
+                    k: v for k, v in sprites.items() if k.startswith("_") and k[1:].isdigit()
+                }
+                named = {
+                    k: v for k, v in sprites.items() if not (k.startswith("_") and k[1:].isdigit())
+                }
+
+                # Output indexed constants first (sorted by index)
+                if indexed:
+                    sorted_indexed = sorted(indexed.items(), key=lambda x: int(x[0][1:]))
+                    for sprite_name, sprite_id in sorted_indexed:
+                        code.append(f"        {sprite_name} = {sprite_id}")
+
+                # Output named constants (sorted by value)
+                if named:
+                    if indexed:
+                        code.append("")  # Blank line between indexed and named
+                    sorted_named = sorted(named.items(), key=lambda x: x[1])
+                    for sprite_name, sprite_id in sorted_named:
+                        code.append(f"        {sprite_name} = {sprite_id}")
+
+                code.append("")
+
+        return "\n".join(code)
+
     def _generateConstantsInit(self, files_created: list) -> str:
         """Generate __init__.py for constants package."""
         code = []
@@ -1551,6 +1628,8 @@ def get_proxy_class(class_name: str) -> type:
             code.append("from .varclient_id import VarClientID")
         if "InterfaceID" in files_created:
             code.append("from .interface_id import InterfaceID")
+        if "SpriteID" in files_created:
+            code.append("from .sprite_id import SpriteID")
 
         code.append("")
         code.append("__all__ = [")
@@ -1664,6 +1743,13 @@ def get_proxy_class(class_name: str) -> type:
             with open(output_dir / "interface_id.py", "w") as f:
                 f.write(interface_code)
             files_created.append("InterfaceID")
+
+        # 8. Generate SpriteID (special handling for indexed + aliased constants)
+        sprite_code = self._generateSpriteIdConstants()
+        if sprite_code:
+            with open(output_dir / "sprite_id.py", "w") as f:
+                f.write(sprite_code)
+            files_created.append("SpriteID")
 
         # Note: We skip NullItemID, NullObjectID, NullNpcID etc. - they're huge bloat (50k+ lines)
 

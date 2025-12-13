@@ -4,6 +4,7 @@ Local RuneLite API Scraper
 Processes locally downloaded RuneLite API files to generate comprehensive API database
 """
 
+import contextlib
 import json
 import re
 import time
@@ -52,6 +53,7 @@ class EfficientRuneLiteScraper:
             Tuple[Path, str, str]
         ] = []  # [(file_path, class_name, package_path)]
         self.interface_ids: Dict[str, Any] = {}  # InterfaceID structure with nested classes
+        self.sprite_ids: Dict[str, Any] = {}  # SpriteID structure with nested classes
 
         # JNI type mappings
         self.type_map = {
@@ -146,6 +148,9 @@ class EfficientRuneLiteScraper:
         # Parse InterfaceID file if it exists
         self._parseInterfaceIds(api_path)
 
+        # Parse SpriteID file if it exists
+        self._parseSpriteIds(api_path)
+
         # Parse VarClientID file if it exists
         self._parseVarclientIds(api_path)
 
@@ -222,6 +227,97 @@ class EfficientRuneLiteScraper:
 
         except Exception as e:
             print(f"   ❌ Error parsing InterfaceID.java: {e}")
+            import traceback
+
+            traceback.print_exc()
+
+    def _parseSpriteIds(self, api_path: Path):
+        """
+        Parse the SpriteID.java file from gameval directory.
+        This file contains sprite IDs with nested classes that have:
+        - Indexed constants: _0, _1, _2 (actual sprite IDs)
+        - Semantic aliases: ATTACK = _0 (references to indexed constants)
+        """
+        sprite_id_path = api_path / "gameval" / "SpriteID.java"
+
+        if not sprite_id_path.exists():
+            print("\n⚠️  SpriteID.java not found, skipping sprite ID parsing")
+            return
+
+        print("\n🎨 Parsing SpriteID.java for sprite constants...")
+
+        try:
+            with open(sprite_id_path, encoding="utf-8") as f:
+                content = f.read()
+
+            # Structure: { 'constants': { 'NAME': id }, 'nested': { 'ClassName': { 'CONST': value } } }
+            self.sprite_ids = {
+                "constants": {},  # Top-level constants (e.g., COMPASS = 169)
+                "nested": {},  # Nested classes (e.g., Staticons._0, Staticons.ATTACK)
+            }
+
+            # Parse top-level constants
+            # Pattern: public static final int NAME = value;
+            # Only match constants NOT inside a class (before first nested class)
+            first_class_match = re.search(r"public\s+static\s+final\s+class\s+", content)
+            top_level_content = (
+                content[: first_class_match.start()] if first_class_match else content
+            )
+
+            top_level_pattern = (
+                r"^\s*public\s+static\s+final\s+int\s+([A-Z_][A-Z0-9_]*)\s*=\s*(\d+);"
+            )
+            for match in re.finditer(top_level_pattern, top_level_content, re.MULTILINE):
+                const_name = match.group(1)
+                const_value = int(match.group(2))
+                self.sprite_ids["constants"][const_name] = const_value
+
+            # Parse nested static classes
+            # Pattern: public static final class ClassName { ... }
+            nested_class_pattern = (
+                r"public\s+static\s+final\s+class\s+([A-Za-z0-9_]+)\s*\{([^}]+)\}"
+            )
+
+            for match in re.finditer(nested_class_pattern, content, re.DOTALL):
+                class_name = match.group(1)
+                class_body = match.group(2)
+
+                # First pass: parse ALL constants (both indexed and aliases)
+                # Pattern matches: _0 = 197 OR ATTACK = _0 OR ATTACK = 197
+                const_pattern = (
+                    r"public\s+static\s+final\s+int\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*([^;]+);"
+                )
+
+                raw_constants = {}
+                for const_match in re.finditer(const_pattern, class_body):
+                    const_name = const_match.group(1)
+                    const_value_str = const_match.group(2).strip()
+                    raw_constants[const_name] = const_value_str
+
+                # Second pass: resolve references
+                resolved_constants = {}
+                for name, value_str in raw_constants.items():
+                    # Try to parse as integer
+                    try:
+                        resolved_constants[name] = int(value_str)
+                    except ValueError:
+                        # It's a reference to another constant
+                        if value_str in raw_constants:
+                            # Try to resolve the reference
+                            ref_value_str = raw_constants[value_str]
+                            with contextlib.suppress(ValueError):
+                                resolved_constants[name] = int(ref_value_str)
+
+                if resolved_constants:
+                    self.sprite_ids["nested"][class_name] = resolved_constants
+
+            print(f"   ✅ Found {len(self.sprite_ids['constants'])} top-level sprite IDs")
+            print(f"   ✅ Found {len(self.sprite_ids['nested'])} nested sprite classes")
+            total_sprites = sum(len(v) for v in self.sprite_ids["nested"].values())
+            print(f"   ✅ Total nested sprite constants: {total_sprites}")
+
+        except Exception as e:
+            print(f"   ❌ Error parsing SpriteID.java: {e}")
             import traceback
 
             traceback.print_exc()
@@ -1400,6 +1496,7 @@ class EfficientRuneLiteScraper:
             "class_packages": self.class_packages,  # Add class-to-package mapping
             "type_conversion": type_conversion_db,
             "interface_ids": self.interface_ids,  # Add InterfaceID widget constants
+            "sprite_ids": self.sprite_ids,  # Add SpriteID sprite constants
         }
 
         with open(filename, "w") as f:

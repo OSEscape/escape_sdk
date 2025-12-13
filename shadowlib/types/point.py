@@ -87,24 +87,28 @@ class Point:
     def __repr__(self) -> str:
         return f"Point({self.x}, {self.y})"
 
-    def debug(self, color: tuple[int, int, int] | str = "red", size: int = 5) -> None:
+    def debug(
+        self, argbColor: int = 0xFFFF0000, size: int = 5, thickness: int = 2, tag: str | None = None
+    ) -> None:
         """
-        Visualize this point on a fresh capture of the game window.
+        Draw this point as a crosshair overlay on RuneLite.
 
         Args:
-            color: Color (RGB tuple or name)
-            size: Size of the crosshair in pixels
+            argbColor: Color in ARGB format (0xAARRGGBB), default opaque red
+            size: Size of the crosshair arms in pixels
+            thickness: Line thickness in pixels
+            tag: Optional tag for selective clearing
 
         Example:
             >>> point = Point(150, 150)
-            >>> point.debug()  # Shows crosshair on game screenshot
+            >>> point.debug()  # Red crosshair
+            >>> point.debug(0xFF00FF00, size=10)  # Green, larger crosshair
         """
-        from shadowlib._internal.visualizer import Visualizer
+        from shadowlib.input.drawing import drawing
 
-        viz = Visualizer()
-        if viz.capture():
-            viz.drawPoint(self, color=color, size=size)
-            viz.render()
+        # Draw crosshair (two lines)
+        drawing.addLine(self.x - size, self.y, self.x + size, self.y, argbColor, thickness, tag)
+        drawing.addLine(self.x, self.y - size, self.x, self.y + size, argbColor, thickness, tag)
 
 
 @dataclass

@@ -862,6 +862,7 @@ class RuneLiteAPI:
         signature: str,
         args: List[Any] | None = None,
         async_exec: bool = False,
+        declaring_class: str | None = None,
     ) -> Any:
         """
         Invoke a custom Java method directly.
@@ -893,6 +894,8 @@ class RuneLiteAPI:
             "signature": signature,
             "args": args if args is not None else [],
         }
+        if declaring_class:
+            operation["declaring_class"] = declaring_class
 
         response = self.executeBatchQuery([operation])
 

@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from shadowlib.generated.constants.item_id import ItemID
     from shadowlib.generated.constants.npc_id import NpcID
     from shadowlib.generated.constants.object_id import ObjectID
+    from shadowlib.generated.constants.sprite_id import SpriteID
     from shadowlib.generated.constants.varclient_id import VarClientID
     from shadowlib.input import Input
     from shadowlib.interactions import Interactions
@@ -233,6 +234,18 @@ class Client:
             from constants import VarClientID
 
             return VarClientID
+
+    @property
+    def SpriteID(self) -> type["SpriteID"]:
+        """Access SpriteID constants."""
+        try:
+            from .generated.constants import SpriteID
+
+            return SpriteID
+        except ImportError:
+            from constants import SpriteID
+
+            return SpriteID
 
     # Namespace properties - return singleton instances
     @property

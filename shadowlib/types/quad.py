@@ -361,21 +361,24 @@ class Quad:
     def __repr__(self) -> str:
         return f"Quad({self.p1}, {self.p2}, {self.p3}, {self.p4})"
 
-    def debug(self, color: tuple[int, int, int] | str = "red", width: int = 2) -> None:
+    def debug(
+        self, argbColor: int = 0xFFFF0000, filled: bool = False, tag: str | None = None
+    ) -> None:
         """
-        Visualize this quad on a fresh capture of the game window.
+        Draw this quad as an overlay on RuneLite.
 
         Args:
-            color: Outline color (RGB tuple or name)
-            width: Line width in pixels
+            argbColor: Color in ARGB format (0xAARRGGBB), default opaque red
+            filled: If True, fill the quad. If False, outline only.
+            tag: Optional tag for selective clearing
 
         Example:
             >>> quad = Quad.fromCoords([(100, 100), (200, 110), (190, 200), (90, 190)])
-            >>> quad.debug()  # Shows quad on game screenshot
+            >>> quad.debug()  # Red outline
+            >>> quad.debug(0x8000FF00, filled=True)  # Semi-transparent green fill
         """
-        from shadowlib._internal.visualizer import Visualizer
+        from shadowlib.input.drawing import drawing
 
-        viz = Visualizer()
-        if viz.capture():
-            viz.drawQuad(self, color=color, width=width)
-            viz.render()
+        xPoints = [self.p1.x, self.p2.x, self.p3.x, self.p4.x]
+        yPoints = [self.p1.y, self.p2.y, self.p3.y, self.p4.y]
+        drawing.addPolygon(xPoints, yPoints, argbColor, filled, tag)

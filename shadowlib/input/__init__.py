@@ -1,5 +1,6 @@
-"""OS-level input handling - mouse and keyboard."""
+"""OS-level input handling - mouse, keyboard, and drawing."""
 
+from shadowlib.input.drawing import Drawing, drawing
 from shadowlib.input.keyboard import Keyboard, keyboard
 from shadowlib.input.mouse import Mouse, mouse
 from shadowlib.input.runelite import RuneLite, runelite
@@ -40,9 +41,25 @@ class Input:
         """Get keyboard controller singleton."""
         return keyboard
 
+    @property
+    def drawing(self) -> Drawing:
+        """Get drawing overlay singleton."""
+        return drawing
+
 
 # Module-level singleton instance
 input = Input()
 
 
-__all__ = ["Input", "input", "Keyboard", "keyboard", "Mouse", "mouse", "RuneLite", "runelite"]
+__all__ = [
+    "Input",
+    "input",
+    "Drawing",
+    "drawing",
+    "Keyboard",
+    "keyboard",
+    "Mouse",
+    "mouse",
+    "RuneLite",
+    "runelite",
+]

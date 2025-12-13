@@ -286,3 +286,83 @@ class Widget:
         """
         parent_fields = self._FIELD_BITS["getParent"] | self._FIELD_BITS["getParentId"]
         return (self._mask & parent_fields) == 0
+
+    @staticmethod
+    def getBatch(widgets: list["Widget"]) -> list[dict[str, typing.Any]]:
+        """
+        Get properties for multiple widgets in a single batch request.
+
+        Each widget can have its own mask, allowing different fields
+        to be queried for different widgets.
+
+        Args:
+            widgets: List of Widget instances with their masks configured
+
+        Returns:
+            List of property dicts, one per widget in the same order
+
+        Example:
+            w1 = Widget(id1).enable(WidgetFields.getBounds)
+            w2 = Widget(id2).enable(WidgetFields.getSpriteId)
+            results = Widget.getBatch([w1, w2])
+        """
+        if not widgets:
+            return []
+
+        ids = [w.id for w in widgets]
+        masks = [w.mask for w in widgets]
+
+        # Check if any widget has parent fields - if so, use sync mode
+        parent_fields = Widget._FIELD_BITS["getParent"] | Widget._FIELD_BITS["getParentId"]
+        async_safe = all((w.mask & parent_fields) == 0 for w in widgets)
+
+        client = getClient()
+        result = client.api.invokeCustomMethod(
+            target="WidgetInspector",
+            method="getWidgetPropertiesBatch",
+            signature="([I[J)[B",
+            args=[ids, masks],
+            async_exec=async_safe,
+        )
+
+        return result if result else []
+
+    @staticmethod
+    def getBatchChildren(widgets: list["Widget"]) -> list[dict[str, typing.Any]]:
+        """
+        Get properties of children for multiple widgets in a single batch request.
+
+        Each widget can have its own mask, allowing different fields
+        to be queried for different widgets.
+
+        Args:
+            widgets: List of Widget instances with their masks configured
+
+        Returns:
+            List of property dicts for children, one per widget in the same order
+
+        Example:
+            w1 = Widget(id1).enable(WidgetFields.getBounds)
+            w2 = Widget(id2).enable(WidgetFields.getSpriteId)
+            results = Widget.getBatchChildren([w1, w2])
+        """
+        if not widgets:
+            return []
+
+        ids = [w.id for w in widgets]
+        masks = [w.mask for w in widgets]
+
+        # Check if any widget has parent fields - if so, use sync mode
+        parent_fields = Widget._FIELD_BITS["getParent"] | Widget._FIELD_BITS["getParentId"]
+        async_safe = all((w.mask & parent_fields) == 0 for w in widgets)
+
+        client = getClient()
+        result = client.api.invokeCustomMethod(
+            target="WidgetInspector",
+            method="getWidgetChildrenBatch",
+            signature="([I[J)[B",
+            args=[ids, masks],
+            async_exec=async_safe,
+        )
+
+        return result if result else []

@@ -2,6 +2,8 @@
 
 from shadowlib.client import client
 from shadowlib.interfaces.bank import Bank, bank
+from shadowlib.types.interfaces.general_interface import GeneralInterface
+from shadowlib.types.widget import Widget
 
 # Lazy-loaded reverse lookup: group_id -> name
 _interface_id_to_name: dict[int, str] | None = None
@@ -61,6 +63,64 @@ def getInterfaceName(group_id: int) -> str | None:
     return _getInterfaceIdToNameMap().get(group_id)
 
 
+class ScrollInterface(GeneralInterface):
+    """
+    Interface-type class for the interface that looks like a scroll.
+    """
+
+    def __init__(self):
+        super().__init__(
+            client.InterfaceID.MENU,
+            [client.InterfaceID.Menu.LJ_LAYER1],
+            get_children=False,
+            menu_text="Continue",
+        )
+
+
+class GliderInterface(GeneralInterface):
+    """
+    Interface-type class for the glider interface.
+    """
+
+    def __init__(self):
+        super().__init__(
+            client.InterfaceID.GLIDERMAP,
+            [
+                client.InterfaceID.Glidermap.GRANDTREE_BUTTON,
+                client.InterfaceID.Glidermap.WHITEWOLFMOUNTAIN_BUTTON,
+                client.InterfaceID.Glidermap.VARROCK_BUTTON,
+                client.InterfaceID.Glidermap.ALKHARID_BUTTON,
+                client.InterfaceID.Glidermap.KARAMJA_BUTTON,
+                client.InterfaceID.Glidermap.OGREAREA_BUTTON,
+                client.InterfaceID.Glidermap.APEATOLL_BUTTON,
+            ],
+            get_children=False,
+        )
+
+        self.names = [
+            "Ta Quir Priw",
+            "Sindarpos",
+            "Lemanto Andra",
+            "Kar-Hewo",
+            "Gandius",
+            "Lemantolly Undri",
+            "Ookookolly Undri",
+        ]
+
+    def getWidgetInfo(self) -> dict:
+        res = Widget.getBatch(self.buttons)
+
+        for i in range(len(res)):
+            res[i]["text"] = self.names[i]
+        return res
+
+    def isRightOption(self, widget_info, option_text=""):
+        b = widget_info.get("bounds", "")
+        text = widget_info.get("text", "")
+        if option_text:
+            return option_text in text and b[0] >= 0
+
+
 class Interfaces:
     """
     Namespace for overlay interfaces - returns singleton instances.
@@ -79,7 +139,38 @@ class Interfaces:
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
+            cls._instance._init()
         return cls._instance
+
+    def _init(self):
+        self.spirit_tree = ScrollInterface()
+        self.mushtree = GeneralInterface(
+            client.InterfaceID.FOSSIL_MUSHTREES,
+            [
+                client.InterfaceID.FossilMushtrees.TREE1,
+                client.InterfaceID.FossilMushtrees.TREE2,
+                client.InterfaceID.FossilMushtrees.TREE3,
+                client.InterfaceID.FossilMushtrees.TREE4,
+            ],
+            get_children=False,
+            wrong_text="Not yet",
+            menu_text="Continue",
+        )
+        self.zeah_minecart = ScrollInterface()
+        self.jewellery_box = GeneralInterface(
+            client.InterfaceID.POH_JEWELLERY_BOX,
+            [
+                client.InterfaceID.PohJewelleryBox.DUELING,
+                client.InterfaceID.PohJewelleryBox.GAMING,
+                client.InterfaceID.PohJewelleryBox.COMBAT,
+                client.InterfaceID.PohJewelleryBox.SKILLS,
+                client.InterfaceID.PohJewelleryBox.WEALTH,
+                client.InterfaceID.PohJewelleryBox.GLORY,
+            ],
+            get_children=True,
+            wrong_text="</str>",
+        )
+        self.gnome_glider = GliderInterface()
 
     @property
     def bank(self) -> Bank:

@@ -39,6 +39,25 @@ class Box:
         if self.y1 > self.y2:
             self.y1, self.y2 = self.y2, self.y1
 
+    @classmethod
+    def fromRect(cls, x: int, y: int, width: int, height: int) -> "Box":
+        """
+        Create a Box from Java Rectangle format (x, y, width, height).
+
+        Args:
+            x: Left edge x-coordinate
+            y: Top edge y-coordinate
+            width: Width in pixels
+            height: Height in pixels
+
+        Returns:
+            New Box instance
+
+        Example:
+            >>> box = Box.fromRect(100, 100, 50, 50)  # Same as Box(100, 100, 150, 150)
+        """
+        return cls(x, y, x + width, y + height)
+
     def width(self) -> int:
         """
         Get width of the box.
@@ -169,6 +188,26 @@ class Box:
             >>> box.rightClick()
         """
         self.click(button="right", randomize=randomize)
+
+    def clickOption(self, option: str, randomize: bool = True) -> bool:
+        """
+        Click a specific option from the context menu after right-clicking within this box.
+
+        Args:
+            option: Menu option to click
+            randomize: If True, right-clicks at random point. If False, right-clicks at center.
+        Returns:
+            True if option was clicked, False otherwise.
+        Example:
+            >>> box = Box(100, 100, 200, 200)
+            >>> box.clickOption("Examine")
+        """
+        from shadowlib.client import client
+
+        self.hover(randomize=randomize)
+        if client.interactions.menu.waitHasOption(option):
+            return client.interactions.menu.clickOption(option)
+        return False
 
     def __repr__(self) -> str:
         return f"Box({self.x1}, {self.y1}, {self.x2}, {self.y2})"

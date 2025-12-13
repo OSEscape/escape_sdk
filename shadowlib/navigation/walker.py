@@ -218,6 +218,16 @@ class Walker:
         if len(validIndices) == 0:
             return None
 
+        # Filter by Chebyshev distance <= 19 (same as Java isTileClickable)
+        worldX = path.worldX[validIndices]
+        worldY = path.worldY[validIndices]
+        dist = np.maximum(np.abs(worldX - playerX), np.abs(worldY - playerY))
+        withinRange = dist <= 19
+        validIndices = validIndices[withinRange]
+
+        if len(validIndices) == 0:
+            return None
+
         # Get tile grid for viewport bounds
         grid = scene._getTileGrid()
         if grid is None:

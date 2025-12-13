@@ -209,21 +209,24 @@ class Polygon:
     def __repr__(self) -> str:
         return f"Polygon({len(self.vertices)} vertices, area={self.area():.2f})"
 
-    def debug(self, color: tuple[int, int, int] | str = "red", width: int = 2) -> None:
+    def debug(
+        self, argbColor: int = 0xFFFF0000, filled: bool = False, tag: str | None = None
+    ) -> None:
         """
-        Visualize this polygon on a fresh capture of the game window.
+        Draw this polygon as an overlay on RuneLite.
 
         Args:
-            color: Outline color (RGB tuple or name)
-            width: Line width in pixels
+            argbColor: Color in ARGB format (0xAARRGGBB), default opaque red
+            filled: If True, fill the polygon. If False, outline only.
+            tag: Optional tag for selective clearing
 
         Example:
             >>> polygon = Polygon([Point(100, 100), Point(200, 100), Point(150, 200)])
-            >>> polygon.debug()  # Shows polygon on game screenshot
+            >>> polygon.debug()  # Red outline
+            >>> polygon.debug(0x8000FF00, filled=True)  # Semi-transparent green fill
         """
-        from shadowlib._internal.visualizer import Visualizer
+        from shadowlib.input.drawing import drawing
 
-        viz = Visualizer()
-        if viz.capture():
-            viz.drawPolygon(self, color=color, width=width)
-            viz.render()
+        xPoints = [v.x for v in self.vertices]
+        yPoints = [v.y for v in self.vertices]
+        drawing.addPolygon(xPoints, yPoints, argbColor, filled, tag)

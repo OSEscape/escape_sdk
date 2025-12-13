@@ -147,21 +147,22 @@ class Circle:
     def __repr__(self) -> str:
         return f"Circle(center=({self.centerX}, {self.centerY}), radius={self.radius})"
 
-    def debug(self, color: tuple[int, int, int] | str = "red", width: int = 2) -> None:
+    def debug(
+        self, argbColor: int = 0xFFFF0000, filled: bool = False, tag: str | None = None
+    ) -> None:
         """
-        Visualize this circle on a fresh capture of the game window.
+        Draw this circle as an overlay on RuneLite.
 
         Args:
-            color: Outline color (RGB tuple or name)
-            width: Line width in pixels
+            argbColor: Color in ARGB format (0xAARRGGBB), default opaque red
+            filled: If True, fill the circle. If False, outline only.
+            tag: Optional tag for selective clearing
 
         Example:
             >>> circle = Circle(150, 150, 50)
-            >>> circle.debug()  # Shows circle on game screenshot
+            >>> circle.debug()  # Red outline
+            >>> circle.debug(0x8000FF00, filled=True)  # Semi-transparent green fill
         """
-        from shadowlib._internal.visualizer import Visualizer
+        from shadowlib.input.drawing import drawing
 
-        viz = Visualizer()
-        if viz.capture():
-            viz.drawCircle(self, color=color, width=width)
-            viz.render()
+        drawing.addCircle(self.centerX, self.centerY, int(self.radius), argbColor, filled, tag)
