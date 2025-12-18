@@ -1,0 +1,17 @@
+include README.md
+include LICENSE
+include pyproject.toml
+recursive-include escape_sdk *.py *.pyi
+recursive-include tests *.py
+
+# Exclude generated files (downloaded to ~/.cache/escape_sdk/ at runtime)
+exclude escape_sdk/generated/query_proxies.py
+exclude escape_sdk/generated/constants.py
+recursive-exclude escape_sdk/generated/constants *.py
+
+# Exclude caches
+prune tests/__pycache__
+prune escape_sdk/__pycache__
+
+# Exclude data directory
+prune data

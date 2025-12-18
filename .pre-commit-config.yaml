@@ -1,0 +1,48 @@
+repos:
+  # Ruff - fast Python linter and formatter
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.4
+    hooks:
+      # Run the linter
+      - id: ruff
+        args: [--fix]
+        exclude: ^(escape_sdk/generated/|scripts/)
+      # Run the formatter
+      - id: ruff-format
+        exclude: ^(escape_sdk/generated/|scripts/)
+
+  # Custom naming convention checker
+  - repo: local
+    hooks:
+      - id: naming-convention
+        name: Check camelCase naming convention
+        entry: python3 scripts/check_naming.py
+        language: system
+        types: [python]
+        pass_filenames: false
+        exclude: ^escape_sdk/generated/
+
+  # Note: mypy disabled in pre-commit (too slow, run manually with: mypy escape_sdk/)
+  # Type checking with mypy
+  # - repo: https://github.com/pre-commit/mirrors-mypy
+  #   rev: v1.7.1
+  #   hooks:
+  #     - id: mypy
+  #       additional_dependencies: [types-all]
+  #       args: [--ignore-missing-imports]
+  #       exclude: ^escape_sdk/generated/
+
+  # Basic file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: debug-statements
+      - id: mixed-line-ending
+        args: [--fix=lf]

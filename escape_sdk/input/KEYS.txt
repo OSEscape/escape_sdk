@@ -1,0 +1,178 @@
+================================================================================
+                         INPUT KEY REFERENCE LEGEND
+================================================================================
+
+This file documents all valid key names for the Mouse and Keyboard modules.
+These are passed to pyautogui and follow its key naming conventions.
+
+================================================================================
+                              MOUSE BUTTONS
+================================================================================
+
+Button Name     Description
+-----------     -----------
+left            Left mouse button (primary click)
+right           Right mouse button (context menu)
+middle          Middle mouse button (scroll wheel click)
+
+Note: Scroll wheel is handled separately via pyautogui.scroll()
+
+================================================================================
+                           KEYBOARD - LETTERS
+================================================================================
+
+a b c d e f g h i j k l m n o p q r s t u v w x y z
+
+Note: Case-insensitive. Use shift+letter for uppercase.
+
+================================================================================
+                           KEYBOARD - NUMBERS
+================================================================================
+
+0 1 2 3 4 5 6 7 8 9
+
+================================================================================
+                        KEYBOARD - FUNCTION KEYS
+================================================================================
+
+f1  f2  f3  f4  f5  f6  f7  f8  f9  f10  f11  f12
+
+Extended (some keyboards):
+f13  f14  f15  f16  f17  f18  f19  f20  f21  f22  f23  f24
+
+================================================================================
+                        KEYBOARD - MODIFIER KEYS
+================================================================================
+
+Key Name        Aliases         Description
+--------        -------         -----------
+shift           shiftleft       Left Shift key
+shiftright                      Right Shift key
+ctrl            ctrlleft        Left Control key
+ctrlright                       Right Control key
+alt             altleft         Left Alt key
+altright                        Right Alt key
+win             winleft         Left Windows/Super key
+winright                        Right Windows/Super key
+
+================================================================================
+                       KEYBOARD - NAVIGATION KEYS
+================================================================================
+
+Key Name        Description
+--------        -----------
+up              Up arrow
+down            Down arrow
+left            Left arrow
+right           Right arrow
+home            Home key
+end             End key
+pageup          Page Up
+pagedown        Page Down
+
+================================================================================
+                        KEYBOARD - EDITING KEYS
+================================================================================
+
+Key Name        Description
+--------        -----------
+backspace       Backspace (delete left)
+delete          Delete (delete right)
+insert          Insert key
+tab             Tab key
+enter           Enter/Return key
+return          Same as enter
+
+================================================================================
+                        KEYBOARD - SPECIAL KEYS
+================================================================================
+
+Key Name        Description
+--------        -----------
+space           Spacebar
+escape          Escape key (Esc)
+esc             Same as escape
+capslock        Caps Lock
+numlock         Num Lock
+scrolllock      Scroll Lock
+printscreen     Print Screen / PrtSc
+pause           Pause/Break key
+
+================================================================================
+                         KEYBOARD - NUMPAD KEYS
+================================================================================
+
+Key Name        Description
+--------        -----------
+num0            Numpad 0
+num1            Numpad 1
+num2            Numpad 2
+num3            Numpad 3
+num4            Numpad 4
+num5            Numpad 5
+num6            Numpad 6
+num7            Numpad 7
+num8            Numpad 8
+num9            Numpad 9
+numlock         Num Lock
+divide          Numpad /
+multiply        Numpad *
+subtract        Numpad -
+add             Numpad +
+decimal         Numpad .
+numpadenter     Numpad Enter (if separate from main Enter)
+
+================================================================================
+                      KEYBOARD - PUNCTUATION & SYMBOLS
+================================================================================
+
+Key Name        Character       Description
+--------        ---------       -----------
+space           ' '             Spacebar
+tab             '\t'            Tab character
+enter           '\n'            Newline
+
+For typing symbols, use keyboard.type() with the character directly:
+  ! @ # $ % ^ & * ( ) - _ = + [ ] { } \ | ; : ' " , . < > / ? ` ~
+
+================================================================================
+                          COMMON HOTKEY EXAMPLES
+================================================================================
+
+Action                  Code
+------                  ----
+Select All              keyboard.hotkey('ctrl', 'a')
+Copy                    keyboard.hotkey('ctrl', 'c')
+Paste                   keyboard.hotkey('ctrl', 'v')
+Cut                     keyboard.hotkey('ctrl', 'x')
+Undo                    keyboard.hotkey('ctrl', 'z')
+Redo                    keyboard.hotkey('ctrl', 'y')
+Save                    keyboard.hotkey('ctrl', 's')
+Find                    keyboard.hotkey('ctrl', 'f')
+Close Window            keyboard.hotkey('alt', 'f4')
+Switch Window           keyboard.hotkey('alt', 'tab')
+Task Manager            keyboard.hotkey('ctrl', 'shift', 'escape')
+
+================================================================================
+                         OSRS-SPECIFIC SHORTCUTS
+================================================================================
+
+Action                  Code
+------                  ----
+Open Inventory          keyboard.pressFKey(1)   or keyboard.press('f1')
+Open Equipment          keyboard.pressFKey(2)   or keyboard.press('f2')
+Open Prayer             keyboard.pressFKey(3)   or keyboard.press('f3')
+Open Spellbook          keyboard.pressFKey(4)   or keyboard.press('f4')
+Open Combat Options     keyboard.pressFKey(5)   or keyboard.press('f5')
+Open Skills             keyboard.pressFKey(6)   or keyboard.press('f6')
+Open Quest List         keyboard.pressFKey(7)   or keyboard.press('f7')
+Open Clan Chat          keyboard.pressFKey(8)   or keyboard.press('f8')
+Open Friends List       keyboard.pressFKey(9)   or keyboard.press('f9')
+Open Account Mgmt       keyboard.pressFKey(10)  or keyboard.press('f10')
+Open Logout             keyboard.pressFKey(11)  or keyboard.press('f11')
+Open Settings           keyboard.pressFKey(12)  or keyboard.press('f12')
+Close Interface         keyboard.pressEscape()  or keyboard.press('escape')
+Continue Dialogue       keyboard.pressSpace()   or keyboard.press('space')
+Select Option 1-5       keyboard.pressNumber(1) or keyboard.press('1')
+
+================================================================================
