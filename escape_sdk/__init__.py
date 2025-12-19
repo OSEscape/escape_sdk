@@ -9,9 +9,9 @@ __version__ = "3.4.0"
 __author__ = "Escape Team"
 
 # Ensure generated files path is available for imports
-from escape_sdk._internal.cache_manager import ensureGeneratedInPath
+from escape_sdk._internal.cache_manager import ensureGeneratedFiles
 
-ensureGeneratedInPath()
+ensureGeneratedFiles()
 
 from escape_sdk.client import Client  # noqa: E402
 
