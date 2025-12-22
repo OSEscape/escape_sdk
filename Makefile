@@ -1,7 +1,7 @@
 .PHONY: help install test lint format check clean build
 
 help:
-	@echo "ShadowLib Development Commands:"
+	@echo "Escape Development Commands:"
 	@echo ""
 	@echo "  make install       Install package and dev dependencies"
 	@echo "  make test          Run tests with pytest"
@@ -22,7 +22,7 @@ test:
 	pytest -v
 
 test-cov:
-	pytest --cov=shadowlib --cov-report=html --cov-report=term
+	pytest --cov=escape --cov-report=html --cov-report=term
 
 lint:
 	ruff check .

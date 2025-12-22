@@ -3,7 +3,7 @@
 Convert all function names from snake_case to camelCase throughout the codebase.
 
 This script:
-1. Scans all Python files in shadowlib/
+1. Scans all Python files in escape/
 2. Identifies function definitions with snake_case names
 3. Converts them to camelCase
 4. Updates all calls to those functions throughout the codebase
@@ -172,16 +172,16 @@ def replaceFunctionNames(filepath: Path, replacements: Dict[str, str]) -> Tuple[
 
 def main():
     """Main conversion process."""
-    shadowlib_dir = Path(__file__).parent.parent / "shadowlib"
+    escape_dir = Path(__file__).parent.parent / "escape"
 
-    if not shadowlib_dir.exists():
-        print(f"❌ Error: {shadowlib_dir} not found")
+    if not escape_dir.exists():
+        print(f"❌ Error: {escape_dir} not found")
         return 1
 
     print("🔍 Step 1: Collecting all function names...")
     print("=" * 70)
 
-    function_map = collectAllFunctionNames(shadowlib_dir)
+    function_map = collectAllFunctionNames(escape_dir)
 
     if not function_map:
         print("✅ No snake_case functions found - all functions already camelCase!")
@@ -198,7 +198,7 @@ def main():
     print("🔄 Step 2: Converting function names in all files...")
     print("=" * 70)
 
-    python_files = list(shadowlib_dir.rglob("*.py"))
+    python_files = list(escape_dir.rglob("*.py"))
     total_files_changed = 0
     total_replacements = 0
 
@@ -209,7 +209,7 @@ def main():
             total_files_changed += 1
             total_replacements += sum(count for _, _, count in changes)
 
-            print(f"\n📝 {filepath.relative_to(shadowlib_dir.parent)}:")
+            print(f"\n📝 {filepath.relative_to(escape_dir.parent)}:")
             for old_name, new_name, count in changes[:10]:  # Show first 10
                 print(f"  ✓ {old_name} → {new_name} ({count} occurrences)")
 
@@ -226,7 +226,7 @@ def main():
     print("\n💡 Next steps:")
     print("   1. Run: python check_naming.py")
     print("   2. Run: python verify_setup.py")
-    print("   3. Test imports: python -c 'import shadowlib'")
+    print("   3. Test imports: python -c 'import escape'")
 
     return 0
 

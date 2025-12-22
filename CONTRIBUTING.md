@@ -1,11 +1,11 @@
-# Contributing to ShadowLib
+# Contributing to Escape
 
-Thank you for your interest in contributing to ShadowLib! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to Escape! This document provides guidelines and instructions for contributing.
 
 ## Getting Started
 
 1. Fork the repository
-2. Clone your fork: `git clone https://github.com/YOUR-USERNAME/shadowlib.git`
+2. Clone your fork: `git clone https://github.com/YOUR-USERNAME/escape.git`
 3. Install dependencies: `pip install -e ".[dev]"`
 4. Install pre-commit hooks: `pre-commit install`
 5. Create a branch: `git checkout -b feat/your-feature-name`
@@ -121,8 +121,8 @@ Always use absolute imports:
 
 ```python
 # Correct
-from shadowlib.globals import getClient
-from shadowlib.tabs.inventory import inventory
+from escape.globals import getClient
+from escape.tabs.inventory import inventory
 
 # Wrong
 from ...globals import getClient
@@ -131,7 +131,7 @@ from ...globals import getClient
 ## Project Structure
 
 ```
-shadowlib/
+escape/
 ├── tabs/           # Side panel tabs (inventory, skills, etc.)
 ├── interfaces/     # Overlay windows (bank, GE, shop)
 ├── world/          # 3D world entities (NPCs, objects, ground items)
@@ -163,7 +163,7 @@ shadowlib/
 pytest
 
 # With coverage
-pytest --cov=shadowlib
+pytest --cov=escape
 
 # Specific file
 pytest tests/test_inventory.py
@@ -177,7 +177,7 @@ pytest -k "test_bank"
 Use dependency injection for testing:
 
 ```python
-from shadowlib.tabs.inventory import Inventory
+from escape.tabs.inventory import Inventory
 from unittest.mock import Mock
 
 def testGetItems():
@@ -228,7 +228,7 @@ Use GitHub Issues with:
 2. **Reproduction**: Steps to reproduce
 3. **Expected behavior**: What should happen
 4. **Actual behavior**: What actually happens
-5. **Environment**: Python version, OS, shadowlib version
+5. **Environment**: Python version, OS, escape version
 
 ## Feature Requests
 

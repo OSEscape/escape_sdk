@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Verify that the ShadowLib package is set up correctly.
+Verify that the Escape package is set up correctly.
 
 This script checks:
 - Package structure
@@ -18,17 +18,17 @@ def checkPackageStructure() -> bool:
     print("Checking package structure...")
 
     required_dirs = [
-        "shadowlib",
-        "shadowlib/world",
-        "shadowlib/tabs",
-        "shadowlib/interfaces",
-        "shadowlib/navigation",
-        "shadowlib/interactions",
-        "shadowlib/input",
-        "shadowlib/types",
-        "shadowlib/utilities",
-        "shadowlib/resources",
-        "shadowlib/_internal",
+        "escape",
+        "escape/world",
+        "escape/tabs",
+        "escape/interfaces",
+        "escape/navigation",
+        "escape/interactions",
+        "escape/input",
+        "escape/types",
+        "escape/utilities",
+        "escape/resources",
+        "escape/_internal",
         "tests",
     ]
 
@@ -57,9 +57,9 @@ def checkRequiredFiles() -> bool:
         ".pre-commit-config.yaml",
         ".gitignore",
         "Makefile",
-        "shadowlib/__init__.py",
-        "shadowlib/client.py",
-        "shadowlib/_internal/query.py",
+        "escape/__init__.py",
+        "escape/client.py",
+        "escape/_internal/query.py",
     ]
 
     missing_files = []
@@ -80,15 +80,15 @@ def checkImports() -> bool:
     print("\nChecking imports...")
 
     try:
-        import shadowlib
+        import escape
 
-        print(f"  ✅ Successfully imported shadowlib (version {shadowlib.__version__})")
+        print(f"  ✅ Successfully imported escape (version {escape.__version__})")
 
-        from shadowlib import Client
+        from escape import Client
 
         print("  ✅ Successfully imported Client")
 
-        from shadowlib._internal.query import QueryBuilder
+        from escape._internal.query import QueryBuilder
 
         print("  ✅ Successfully imported QueryBuilder")
 
@@ -104,7 +104,7 @@ def checkBasicFunctionality() -> bool:
     print("\nChecking basic functionality...")
 
     try:
-        from shadowlib import Client
+        from escape import Client
 
         client = Client()
         print("  ✅ Client instantiation works")
@@ -151,7 +151,7 @@ def main() -> int:
         int: Exit code (0 for success, 1 for failure)
     """
     print("=" * 60)
-    print("ShadowLib Setup Verification")
+    print("Escape Setup Verification")
     print("=" * 60)
 
     checks = [

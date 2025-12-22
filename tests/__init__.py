@@ -1,1 +1,1 @@
-"""Test suite for shadowlib."""
+"""Test suite for escape."""

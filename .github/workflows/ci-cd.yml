@@ -47,7 +47,7 @@ jobs:
         run: python scripts/check_naming.py
 
       - name: Run mypy type checking
-        run: mypy shadowlib --ignore-missing-imports || echo "⚠️ Mypy check completed with warnings"
+        run: mypy escape --ignore-missing-imports || echo "⚠️ Mypy check completed with warnings"
         continue-on-error: true
 
       - name: Validate YAML files

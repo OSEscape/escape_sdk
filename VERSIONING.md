@@ -1,6 +1,6 @@
 # Versioning and Release Process
 
-ShadowLib uses automated semantic versioning with conventional commits.
+Escape uses automated semantic versioning with conventional commits.
 
 ## How It Works
 
@@ -29,7 +29,7 @@ BREAKING CHANGE: getItems() now returns Item objects instead of IDs
 When you push to `main`:
 
 1. **Semantic-release analyzes commits** - determines version bump
-2. **Updates version files** - `pyproject.toml`, `shadowlib/__init__.py`, `CHANGELOG.md`
+2. **Updates version files** - `pyproject.toml`, `escape/__init__.py`, `CHANGELOG.md`
 3. **Creates git tag and GitHub release** - with release notes
 4. **Builds and publishes to PyPI** - automatically
 

@@ -3,14 +3,14 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "shadowlib"
+name = "escape"
 version = "3.3.0"
 description = "OSRS Bot Development SDK with game-native structure"
 readme = "README.md"
 requires-python = ">=3.12"
 license = {text = "MIT"}
 authors = [
-    {name = "ShadowBot Team"}
+    {name = "Escape Team"}
 ]
 keywords = ["osrs", "runescape", "bot", "automation", "sdk"]
 classifiers = [
@@ -43,20 +43,20 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/ShadowLib/shadowlib"
-Repository = "https://github.com/ShadowLib/shadowlib"
-Issues = "https://github.com/ShadowLib/shadowlib/issues"
+Homepage = "https://github.com/escape/escape"
+Repository = "https://github.com/escape/escape"
+Issues = "https://github.com/escape/escape/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["shadowlib*"]
+include = ["escape*"]
 exclude = [
     "tests*",
     "docs*",
 ]
 
 [tool.setuptools.package-data]
-shadowlib = [
+escape = [
     "py.typed",
     "_internal/**/*.pyi",
 ]
@@ -127,7 +127,7 @@ skip-magic-trailing-comma = false
 line-ending = "auto"
 
 [tool.ruff.lint.isort]
-known-first-party = ["shadowlib"]
+known-first-party = ["escape"]
 
 # Pytest configuration
 [tool.pytest.ini_options]
@@ -140,7 +140,7 @@ addopts = [
     "-ra",
     "--strict-markers",
     "--strict-config",
-    "--cov=shadowlib",
+    "--cov=escape",
     "--cov-report=term-missing",
     "--cov-report=html",
     "--cov-report=xml",
@@ -153,7 +153,7 @@ markers = [
 
 # Coverage configuration
 [tool.coverage.run]
-source = ["shadowlib"]
+source = ["escape"]
 branch = true
 omit = [
     "*/tests/*",

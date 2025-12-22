@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Custom naming convention checker for shadowlib.
+Custom naming convention checker for escape.
 
 Enforces camelCase for function names (e.g., getFoo, doSomething)
 while allowing PascalCase for classes and UPPER_CASE for constants.
@@ -207,17 +207,17 @@ def main() -> int:
     Returns:
         int: Exit code (0 for success, 1 for failures)
     """
-    # Get all Python files in shadowlib directory
-    shadowlib_dir = Path(__file__).parent.parent / "shadowlib"
+    # Get all Python files in escape directory
+    escape_dir = Path(__file__).parent.parent / "escape"
 
-    if not shadowlib_dir.exists():
-        print(f"Error: {shadowlib_dir} does not exist")
+    if not escape_dir.exists():
+        print(f"Error: {escape_dir} does not exist")
         return 1
 
-    python_files = list(shadowlib_dir.rglob("*.py"))
+    python_files = list(escape_dir.rglob("*.py"))
 
     if not python_files:
-        print("No Python files found in shadowlib/")
+        print("No Python files found in escape/")
         return 0
 
     # Exclude patterns (generated code only)

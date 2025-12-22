@@ -142,8 +142,8 @@ docs/
 /docs/
 
 # Generated code (regenerated from RuneLite API)
-shadowlib/generated/*.py
-!shadowlib/generated/__init__.py
+escape/generated/*.py
+!escape/generated/__init__.py
 
 # Temporary download files (auto-cleaned after scraping)
 data/api/temp/
@@ -157,7 +157,7 @@ data/api/runelite_version.json
 # Game resources (varps, objects database - auto-downloaded)
 data/resources/
 
-# Block .py files in project root (only shadowlib/ and tests/ should have code)
+# Block .py files in project root (only escape/ and tests/ should have code)
 /*.py
 
 # Block entire data directory

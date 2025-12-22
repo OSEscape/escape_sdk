@@ -1,4 +1,4 @@
-# ShadowLib
+# Escape
 
 A Python SDK for Old School RuneScape (OSRS) bot development that communicates with RuneLite via a high-performance bridge. The architecture mirrors the game's interface, making it intuitive for OSRS developers.
 
@@ -6,7 +6,7 @@ A Python SDK for Old School RuneScape (OSRS) bot development that communicates w
 
 - **Python 3.12+**
 - **Linux** with inotify support (required for event system)
-- **RuneLite** with ShadowBot plugin running
+- **RuneLite** with Escape plugin running
 
 ## Features
 
@@ -21,8 +21,8 @@ A Python SDK for Old School RuneScape (OSRS) bot development that communicates w
 
 ```bash
 # Clone the repository
-git clone https://github.com/shadowbot/shadowlib.git
-cd shadowlib
+git clone https://github.com/escape/escape.git
+cd escape
 
 # Install with development dependencies
 pip install -e ".[dev]"
@@ -34,7 +34,7 @@ pre-commit install
 ## Quick Start
 
 ```python
-from shadowlib.client import client
+from escape.client import client
 
 # Client auto-connects on import and starts event consumer
 # All modules are singletons - no instantiation needed
@@ -53,8 +53,8 @@ if client.interfaces.bank.isOpen():
     client.interfaces.bank.depositAll()
 
 # Direct module access (alternative pattern)
-from shadowlib.tabs.inventory import inventory
-from shadowlib.input.mouse import mouse
+from escape.tabs.inventory import inventory
+from escape.input.mouse import mouse
 
 inventory.clickItem(995)  # Click coins
 mouse.leftClick(100, 200)
@@ -65,7 +65,7 @@ mouse.leftClick(100, 200)
 ### Module Structure
 
 ```
-shadowlib/
+escape/
 ├── client.py           # Main singleton - auto-connects to RuneLite bridge
 ├── globals.py          # Global accessors (getClient, getApi, getEventCache)
 │
@@ -126,11 +126,11 @@ All modules use the singleton pattern with `__new__` + `_init()`:
 # Two equivalent access patterns:
 
 # Via client namespace
-from shadowlib.client import client
+from escape.client import client
 client.tabs.inventory.getItems()
 
 # Direct import
-from shadowlib.tabs.inventory import inventory
+from escape.tabs.inventory import inventory
 inventory.getItems()
 ```
 
@@ -139,7 +139,7 @@ inventory.getItems()
 The SDK uses an inotify-based event system for zero-CPU-usage when idle:
 
 ```python
-from shadowlib.client import client
+from escape.client import client
 
 # Access cached game state (updated automatically)
 tick = client.cache.tick
@@ -170,7 +170,7 @@ if client.cache.isFresh(max_age=1.0):
 Convert local/world coordinates to screen coordinates:
 
 ```python
-from shadowlib.world.projection import projection
+from escape.world.projection import projection
 
 # Auto-configured from events - just use it
 screen_pos = projection.localToCanvasSingle(localX, localY, plane)
@@ -190,7 +190,7 @@ screenX, screenY, valid = projection.localToCanvas(xs, ys, plane=0)
 Direct RuneLite API access with fluent interface:
 
 ```python
-from shadowlib.client import client
+from escape.client import client
 
 # Build and execute queries
 q = client.query()
@@ -227,7 +227,7 @@ class Inventory:
 
 ```bash
 pytest                           # All tests
-pytest --cov=shadowlib           # With coverage
+pytest --cov=escape           # With coverage
 pytest tests/test_inventory.py   # Specific file
 pytest -k "test_bank"            # Pattern match
 ```
@@ -250,10 +250,10 @@ pre-commit run --all-files  # Run manually
 
 ## Generated Files
 
-On first import, ShadowLib downloads and generates:
+On first import, Escape downloads and generates:
 
 ```
-~/.cache/shadowlib/
+~/.cache/escape/
 ├── generated/           # Proxy classes, constants
 │   ├── constants/       # ItemID, NpcID, ObjectID, etc.
 │   └── proxies/         # API proxy classes

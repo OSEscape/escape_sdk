@@ -1,6 +1,6 @@
 """Tests for the main Client class."""
 
-from shadowlib.client import Client
+from escape.client import Client
 
 
 class TestClient:

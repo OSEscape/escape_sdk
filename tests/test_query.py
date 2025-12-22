@@ -1,6 +1,6 @@
 """Tests for the QueryBuilder class."""
 
-from shadowlib._internal.query import QueryBuilder
+from escape._internal.query import QueryBuilder
 
 
 class TestQueryBuilder:

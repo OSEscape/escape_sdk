@@ -2,7 +2,7 @@
 
 import pytest
 
-from shadowlib.client import Client
+from escape.client import Client
 
 
 @pytest.fixture

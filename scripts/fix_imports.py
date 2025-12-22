@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Fix import paths to match new shadowlib structure.
+Fix import paths to match new escape structure.
 
-Old structure: shadowlib/osrs/*, shadowlib/runeliteBridge/*
-New structure: shadowlib/tabs/*, shadowlib/_internal/*, etc.
+Old structure: escape/osrs/*, escape/runeliteBridge/*
+New structure: escape/tabs/*, escape/_internal/*, etc.
 """
 
 import re
@@ -13,20 +13,20 @@ from typing import List, Tuple
 # Mapping of old import paths to new paths
 IMPORT_REPLACEMENTS = {
     # Old relative imports from nested structure
-    r"from \.\.\.globals import": "from shadowlib.globals import",
-    r"from \.\.\.runeliteBridge import": "from shadowlib._internal import",
-    r"from \.\.\.runeliteBridge\.": "from shadowlib._internal.",
-    r"from \.\.\.utils\.": "from shadowlib.utilities.",
-    r"from \.\.\.resources import": "from shadowlib.resources import",
-    r"from \.\.\.resources\.": "from shadowlib.resources.",
-    r"from \.\.\.io\.": "from shadowlib.input.",
-    r"from \.\.\.osrs\.": "from shadowlib.",  # Remove osrs prefix
+    r"from \.\.\.globals import": "from escape.globals import",
+    r"from \.\.\.runeliteBridge import": "from escape._internal import",
+    r"from \.\.\.runeliteBridge\.": "from escape._internal.",
+    r"from \.\.\.utils\.": "from escape.utilities.",
+    r"from \.\.\.resources import": "from escape.resources import",
+    r"from \.\.\.resources\.": "from escape.resources.",
+    r"from \.\.\.io\.": "from escape.input.",
+    r"from \.\.\.osrs\.": "from escape.",  # Remove osrs prefix
     # Fix specific paths
-    r"from \.\.globals import": "from shadowlib.globals import",
-    r"from \.runeliteBridge import": "from shadowlib._internal import",
-    r"from \.runeliteBridge\.": "from shadowlib._internal.",
+    r"from \.\.globals import": "from escape.globals import",
+    r"from \.runeliteBridge import": "from escape._internal import",
+    r"from \.runeliteBridge\.": "from escape._internal.",
     # Fix incorrect src imports
-    r"from src\.utils\.": "from shadowlib.utilities.",
+    r"from src\.utils\.": "from escape.utilities.",
     # Fix function names (snake_case to camelCase)
     r"\bget_client\b": "getClient",
     r"\bget_api\b": "getApi",
@@ -74,14 +74,14 @@ def fixImportsInFile(filepath: Path) -> Tuple[int, List[str]]:
 
 
 def main():
-    """Fix imports across all Python files in shadowlib."""
-    shadowlib_dir = Path(__file__).parent.parent / "shadowlib"
+    """Fix imports across all Python files in escape."""
+    escape_dir = Path(__file__).parent.parent / "escape"
 
-    if not shadowlib_dir.exists():
-        print(f"Error: {shadowlib_dir} not found")
+    if not escape_dir.exists():
+        print(f"Error: {escape_dir} not found")
         return 1
 
-    python_files = list(shadowlib_dir.rglob("*.py"))
+    python_files = list(escape_dir.rglob("*.py"))
     print(f"Found {len(python_files)} Python files")
     print("=" * 60)
 
@@ -94,7 +94,7 @@ def main():
         if num_changes > 0:
             total_files_changed += 1
             total_changes += num_changes
-            print(f"\n📝 {filepath.relative_to(shadowlib_dir.parent)}:")
+            print(f"\n📝 {filepath.relative_to(escape_dir.parent)}:")
             for change in changes:
                 print(change)
 
