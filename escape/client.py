@@ -2,11 +2,61 @@
 Main Client class - singleton that provides access to all game modules.
 """
 
+import os
+from pathlib import Path
 from typing import TYPE_CHECKING
 
+
+def _ensureGeneratedSymlink() -> None:
+    """
+    Ensure the escape/generated symlink points to ~/.cache/escape/generated.
+
+    If the symlink is broken or missing, it will be recreated.
+    """
+    escape_dir = Path(__file__).parent
+    generated_link = escape_dir / "generated"
+
+    # Determine target cache directory
+    xdg_cache = os.getenv("XDG_CACHE_HOME")
+    if xdg_cache:
+        cache_base = Path(xdg_cache)
+    else:
+        cache_base = Path.home() / ".cache"
+    generated_target = cache_base / "escape" / "generated"
+
+    # Ensure target directory exists
+    generated_target.mkdir(parents=True, exist_ok=True)
+
+    # Check if symlink is valid
+    needs_creation = False
+    if generated_link.is_symlink():
+        try:
+            if generated_link.resolve() != generated_target.resolve():
+                needs_creation = True
+                generated_link.unlink()
+        except OSError:
+            # Broken symlink
+            needs_creation = True
+            generated_link.unlink()
+    elif generated_link.exists():
+        if generated_link.is_file():
+            # Regular file (possibly leftover), remove it
+            needs_creation = True
+            generated_link.unlink()
+        else:
+            # Real directory - don't touch it
+            return
+    else:
+        needs_creation = True
+
+    if needs_creation:
+        generated_link.symlink_to(generated_target)
+
+
+# Ensure symlink is active before importing generated modules
+_ensureGeneratedSymlink()
+
 from escape._internal.api import RuneLiteAPI
-import sys
-print(sys.path)
 from escape.generated.constants.varclient import VarClientStr
 
 if TYPE_CHECKING:
