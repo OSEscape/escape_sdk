@@ -56,8 +56,8 @@ def _ensureGeneratedSymlink() -> None:
 # Ensure symlink is active before importing generated modules
 _ensureGeneratedSymlink()
 
-from escape._internal.api import RuneLiteAPI
-from escape.generated.constants.varclient import VarClientStr
+from escape._internal.api import RuneLiteAPI  # noqa: E402
+from escape.generated.constants.varclient import VarClientStr  # noqa: E402
 
 if TYPE_CHECKING:
     from escape._internal.cache.event_cache import EventCache

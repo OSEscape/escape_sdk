@@ -3,8 +3,8 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "escape"
-version = "3.3.0"
+name = "escape-sdk"
+version = "0.1.0"
 description = "OSRS Bot Development SDK with game-native structure"
 readme = "README.md"
 requires-python = ">=3.12"

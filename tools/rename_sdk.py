@@ -14,7 +14,6 @@ import shutil
 from pathlib import Path
 from typing import List, Tuple
 
-
 # Replacement patterns (longest/most specific first to avoid partial matches)
 REPLACEMENTS = [
     # GitHub URLs (most specific first)
@@ -57,9 +56,20 @@ SKIP_PATTERNS = [
 
 # File extensions to process
 TEXT_EXTENSIONS = {
-    ".py", ".pyi", ".toml", ".json", ".yaml", ".yml",
-    ".md", ".rst", ".txt", ".in", ".cfg", ".ini",
-    ".sh", ".bash",
+    ".py",
+    ".pyi",
+    ".toml",
+    ".json",
+    ".yaml",
+    ".yml",
+    ".md",
+    ".rst",
+    ".txt",
+    ".in",
+    ".cfg",
+    ".ini",
+    ".sh",
+    ".bash",
 }
 
 # Files without extensions to process
@@ -76,19 +86,14 @@ TEXT_FILES = {
 def should_skip(path: Path) -> bool:
     """Check if path should be skipped."""
     path_str = str(path)
-    for pattern in SKIP_PATTERNS:
-        if pattern in path_str:
-            return True
-    return False
+    return any(pattern in path_str for pattern in SKIP_PATTERNS)
 
 
 def is_text_file(path: Path) -> bool:
     """Check if file should be processed."""
     if path.name in TEXT_FILES:
         return True
-    if path.suffix in TEXT_EXTENSIONS:
-        return True
-    return False
+    return path.suffix in TEXT_EXTENSIONS
 
 
 def find_project_root() -> Path:
@@ -171,14 +176,15 @@ def main():
     parser = argparse.ArgumentParser(
         description="Rename Escape/Escape SDK to escape",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=__doc__
+        epilog=__doc__,
     )
-    parser.add_argument("--dry-run", action="store_true",
-                        help="Preview changes without modifying files")
-    parser.add_argument("--verbose", "-v", action="store_true",
-                        help="Show each file being modified")
-    parser.add_argument("--backup", action="store_true",
-                        help="Create .bak files before modifying")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Preview changes without modifying files"
+    )
+    parser.add_argument(
+        "--verbose", "-v", action="store_true", help="Show each file being modified"
+    )
+    parser.add_argument("--backup", action="store_true", help="Create .bak files before modifying")
 
     args = parser.parse_args()
 
@@ -228,11 +234,11 @@ def main():
 
     print("\nDirectory renames:")
     if old_pkg_dir.exists():
-        print(f"  escape/ -> escape/")
+        print("  escape/ -> escape/")
         if not args.dry_run:
             old_pkg_dir.rename(new_pkg_dir)
     else:
-        print(f"  escape/ directory not found (already renamed?)")
+        print("  escape/ directory not found (already renamed?)")
 
     # Phase 4: Verify no 'shadow' occurrences remain
     shadow_stats = verify_no_shadow_remaining(project_root, args.verbose)
@@ -249,14 +255,14 @@ def main():
     print(f"Replacements:   {stats['replacements']}")
 
     # Print shadow verification results
-    print(f"\n'shadow' verification:")
+    print("\n'shadow' verification:")
     print(f"  Files with 'shadow': {shadow_stats['files_with_shadow']}")
     print(f"  Total occurrences:   {shadow_stats['total_occurrences']}")
-    if shadow_stats['files_with_shadow'] > 0 and args.verbose:
+    if shadow_stats["files_with_shadow"] > 0 and args.verbose:
         print("  Files:")
-        for f in shadow_stats['file_list'][:20]:  # Show first 20
+        for f in shadow_stats["file_list"][:20]:  # Show first 20
             print(f"    - {f}")
-        if len(shadow_stats['file_list']) > 20:
+        if len(shadow_stats["file_list"]) > 20:
             print(f"    ... and {len(shadow_stats['file_list']) - 20} more")
 
     if not args.dry_run:
