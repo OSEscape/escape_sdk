@@ -20,9 +20,15 @@ A Python SDK for Old School RuneScape (OSRS) bot development that communicates w
 ## Installation
 
 ```bash
+pip install -U escape-sdk
+```
+
+### Development Installation
+
+```bash
 # Clone the repository
-git clone https://github.com/escape/escape.git
-cd escape
+git clone https://github.com/OSEscape/escape_sdk.git
+cd escape_sdk
 
 # Install with development dependencies
 pip install -e ".[dev]"
