@@ -6,6 +6,9 @@ import os
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from escape._internal.api import RuneLiteAPI  # noqa: E402
+from escape._internal.cache_manager import ensureGeneratedInPath, ensureResourcesLoaded
+
 
 def _ensureGeneratedSymlink() -> None:
     """
@@ -54,9 +57,15 @@ def _ensureGeneratedSymlink() -> None:
 
 
 # Ensure symlink is active before importing generated modules
+ensureGeneratedInPath()
 _ensureGeneratedSymlink()
 
-from escape._internal.api import RuneLiteAPI  # noqa: E402
+# Check for game resource updates
+if not ensureResourcesLoaded():
+    print("⚠️  Some resources failed to load")
+
+GLOBAL_API_INSTANCE: RuneLiteAPI = RuneLiteAPI()
+
 from escape.generated.constants.varclient import VarClientStr  # noqa: E402
 
 if TYPE_CHECKING:
@@ -98,17 +107,12 @@ class Client:
 
     def _init(self):
         """Actual initialization, runs once."""
-        from escape._internal.cache_manager import ensureResourcesLoaded
 
         print("🎮 Initializing Client...")
 
         # Initialize API singleton and connect
-        self.api = RuneLiteAPI()
+        self.api: RuneLiteAPI = GLOBAL_API_INSTANCE
         self.api.connect()
-
-        # Check for game resource updates
-        if not ensureResourcesLoaded():
-            print("⚠️  Some resources failed to load")
 
         self._connected = True
 
