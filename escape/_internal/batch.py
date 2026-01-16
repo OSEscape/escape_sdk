@@ -104,7 +104,7 @@ class Batch:
         method_name: str,
         args: list[Any],
     ) -> BatchRef:
-        method_info = self._api.getMethodInfo(method_name, args, target_class=target_type)
+        method_info = self._api.get_method_info(method_name, args, target_class=target_type)
 
         if not method_info:
             raise ValueError(f"Method '{method_name}' not found for type '{target_type}'")
@@ -152,7 +152,7 @@ class Batch:
             return {"success": True, "results": {}}
 
         wire_ops = [op.to_dict() for op in self._operations]
-        response = self._api.executeBatchQuery(wire_ops)
+        response = self._api.execute_batch_query(wire_ops)
 
         if not response.get("success"):
             return {

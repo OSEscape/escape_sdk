@@ -8,15 +8,16 @@ Example:
     from escape._internal.resources import varps, objects
 
     # Varps/varbits
-    quest_points = varps.getVarpByName("quest_points")
-    varbit_value = varps.getVarbitByIndex(5087)
+    quest_points = varps.get_varp_by_name("quest_points")
+    varbit_value = varps.get_varbit_by_index(5087)
 
     # Objects
     tree = objects.getById(1276)
     nearby = objects.getNearby(3222, 3218, 0, radius=10)
 """
 
-from . import objects, varps
+from escape._internal.resources import objects as objects
+from escape._internal.resources import varps as varps
 
 __all__ = [
     "varps",

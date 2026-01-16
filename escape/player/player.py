@@ -1,23 +1,21 @@
 """Player state middleware."""
 
-from typing import Any
+from typing import Any, ClassVar, Self
 
 
 class Player:
     """Player state accessor for position, energy, and game tick."""
 
-    _instance = None
+    _instance: ClassVar[Self | None] = None
+    _cached_state: dict[str, Any]
+    _cached_tick: int
 
-    def __new__(cls):
+    def __new__(cls) -> Self:
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            cls._instance._init()
+            cls._instance._cached_state = {}
+            cls._instance._cached_tick = -1
         return cls._instance
-
-    def _init(self):
-        """Actual initialization, runs once."""
-        self._cached_state: dict[str, Any] = {}
-        self._cached_tick: int = -1
 
     def _get_state(self) -> dict[str, Any]:
         """Get cached player state (refreshed per tick)."""
@@ -30,8 +28,11 @@ class Player:
             return self._cached_state
 
         # Refresh from cache
-        self._cached_state = client.cache.position.copy()
-        self._cached_tick = current_tick
+        position = client.cache.position
+        if position is not None:
+            self._cached_state = position.copy()
+        if current_tick is not None:
+            self._cached_tick = current_tick
 
         return self._cached_state
 
@@ -60,14 +61,14 @@ class Player:
         """Get run energy (0-10000)."""
         from escape.client import client
 
-        return client.cache.energy
+        return client.cache.energy or 0
 
     @property
     def tick(self) -> int:
         """Get current game tick."""
         from escape.client import client
 
-        return client.cache.tick
+        return client.cache.tick or 0
 
     def distance_to(self, x: int, y: int) -> int:
         """Calculate distance from player to coordinates."""

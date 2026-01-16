@@ -2,6 +2,8 @@
 OSRS ground item handling using event cache.
 """
 
+from typing import ClassVar, Self
+
 from ..types.ground_item import GroundItem
 from ..types.ground_item_list import GroundItemList
 from ..types.packed_position import PackedPosition
@@ -10,18 +12,16 @@ from ..types.packed_position import PackedPosition
 class GroundItems:
     """Ground items accessor from event cache."""
 
-    _instance = None
+    _instance: ClassVar[Self | None] = None
+    _cached_list: GroundItemList
+    _cached_tick: int
 
-    def __new__(cls):
+    def __new__(cls) -> Self:
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            cls._instance._init()
+            cls._instance._cached_list = GroundItemList([])
+            cls._instance._cached_tick = -1
         return cls._instance
-
-    def _init(self):
-        """Actual initialization, runs once."""
-        self._cached_list: GroundItemList = GroundItemList([])
-        self._cached_tick: int = -1
 
     def get_all_items(self) -> GroundItemList:
         """Get all ground items from cache."""
@@ -34,16 +34,17 @@ class GroundItems:
             return self._cached_list
 
         # Refresh cache
-        ground_items_dict = client.cache.getGroundItems()
+        ground_items_dict = client.cache.get_ground_items()
         result = []
 
         for packed_coord, items_list in ground_items_dict.items():
-            position = PackedPosition.fromPacked(packed_coord)
+            position = PackedPosition.from_packed(packed_coord)
             for item_data in items_list:
                 result.append(GroundItem(data=item_data, position=position, client=client))
 
         self._cached_list = GroundItemList(result)
-        self._cached_tick = current_tick
+        if current_tick is not None:
+            self._cached_tick = current_tick
 
         return self._cached_list
 

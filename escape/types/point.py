@@ -19,20 +19,20 @@ class Point:
 
     def click(self, button: str = "left") -> None:
         """Click at this point."""
-        from escape.globals import getClient
+        from escape.globals import get_client
 
-        mouse = getClient().input.mouse
+        mouse = get_client().input.mouse
         if button == "left":
-            mouse.leftClick(self.x, self.y)
+            mouse.left_click(self.x, self.y)
         else:
-            mouse.rightClick(self.x, self.y)
+            mouse.right_click(self.x, self.y)
 
     def hover(self) -> None:
         """Move mouse to hover over this point."""
-        from escape.globals import getClient
+        from escape.globals import get_client
 
-        mouse = getClient().input.mouse
-        mouse.moveTo(self.x, self.y)
+        mouse = get_client().input.mouse
+        mouse.move_to(self.x, self.y)
 
     def right_click(self) -> None:
         """Right-click at this point."""
@@ -47,8 +47,8 @@ class Point:
         """Draw this point as a crosshair overlay on RuneLite."""
         from escape.input.drawing import drawing
 
-        drawing.addLine(self.x - size, self.y, self.x + size, self.y, argb_color, thickness, tag)
-        drawing.addLine(self.x, self.y - size, self.x, self.y + size, argb_color, thickness, tag)
+        drawing.add_line(self.x - size, self.y, self.x + size, self.y, argb_color, thickness, tag)
+        drawing.add_line(self.x, self.y - size, self.x, self.y + size, argb_color, thickness, tag)
 
 
 @dataclass

@@ -2,14 +2,19 @@
 
 from typing import Any
 
-from escape.globals import getClient
+from escape.globals import get_client
 from escape.types.item import Item, ItemIdentifier
 
 
 class ItemContainer:
     """Base class for OSRS item containers (inventory, bank, equipment, etc.)."""
 
-    def __init__(self, container_id: int = -1, slot_count: int = -1, items: list[Item | None] = None):
+    def __init__(
+        self,
+        container_id: int = -1,
+        slot_count: int = -1,
+        items: list[Item | None] | None = None,
+    ):
         """Initialize item container."""
         self.container_id = container_id
         self.slot_count = slot_count
@@ -23,10 +28,11 @@ class ItemContainer:
 
         self.items = parsed_items
 
-    def populate(self):
-        client = getClient()
 
-        result = client.api.invokeCustomMethod(
+    def populate(self):
+        client = get_client()
+
+        result = client.api.invoke_custom_method(
             target="EventBusListener",
             method="getItemContainerPacked",
             signature="(I)[B",
@@ -149,3 +155,7 @@ class ItemContainer:
             and self.slot_count == other.slot_count
             and self.items == other.items
         )
+
+    def clear(self) -> None:
+        """Clear all items from the container."""
+        self.items = []

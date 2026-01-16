@@ -48,7 +48,10 @@ def capture_runelite(use_cache: bool = True) -> Image.Image | None:
         return None
 
     wid, width, height = canvas_id
-    _canvas_window = _display.create_resource_object("window", wid)
+    display_obj = _display
+    if display_obj is None:
+        return None
+    _canvas_window = display_obj.create_resource_object("window", wid)
     _canvas_size = (width, height)
 
     return _capture_window(_canvas_window, width, height)
@@ -59,6 +62,8 @@ def clear_cache() -> None:
     global _canvas_window, _canvas_size
     _canvas_window = None
     _canvas_size = None
+
+
 
 
 def _capture_window(window, width: int, height: int) -> Image.Image | None:
@@ -96,9 +101,12 @@ def _find_canvas_window() -> tuple[int, int, int] | None:
 
         # Find the canvas (smallest non-trivial window)
         candidates = []
+        display_obj = _display
+        if display_obj is None:
+            return None
         for wid in window_ids:
             try:
-                win = _display.create_resource_object("window", wid)
+                win = display_obj.create_resource_object("window", wid)
                 geo = win.get_geometry()
                 if geo.width > 1 and geo.height > 1:
                     candidates.append((wid, geo.width, geo.height, geo.width * geo.height))

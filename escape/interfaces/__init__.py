@@ -50,11 +50,11 @@ class ScrollInterface(GeneralInterface):
 
     def __init__(self):
         super().__init__(
-            client.InterfaceID.MENU,
-            [client.InterfaceID.Menu.LJ_LAYER1],
+            client.interface_id.MENU,
+            [client.interface_id.Menu.LJ_LAYER1],
             get_children=False,
             menu_text="Continue",
-            scrollbox=client.InterfaceID.Menu.LJ_LAYER1,
+            scrollbox=client.interface_id.Menu.LJ_LAYER1,
         )
 
 
@@ -63,15 +63,15 @@ class GliderInterface(GeneralInterface):
 
     def __init__(self):
         super().__init__(
-            client.InterfaceID.GLIDERMAP,
+            client.interface_id.GLIDERMAP,
             [
-                client.InterfaceID.Glidermap.GRANDTREE_BUTTON,
-                client.InterfaceID.Glidermap.WHITEWOLFMOUNTAIN_BUTTON,
-                client.InterfaceID.Glidermap.VARROCK_BUTTON,
-                client.InterfaceID.Glidermap.ALKHARID_BUTTON,
-                client.InterfaceID.Glidermap.KARAMJA_BUTTON,
-                client.InterfaceID.Glidermap.OGREAREA_BUTTON,
-                client.InterfaceID.Glidermap.APEATOLL_BUTTON,
+                client.interface_id.Glidermap.GRANDTREE_BUTTON,
+                client.interface_id.Glidermap.WHITEWOLFMOUNTAIN_BUTTON,
+                client.interface_id.Glidermap.VARROCK_BUTTON,
+                client.interface_id.Glidermap.ALKHARID_BUTTON,
+                client.interface_id.Glidermap.KARAMJA_BUTTON,
+                client.interface_id.Glidermap.OGREAREA_BUTTON,
+                client.interface_id.Glidermap.APEATOLL_BUTTON,
             ],
             get_children=False,
         )
@@ -86,8 +86,8 @@ class GliderInterface(GeneralInterface):
             "Ookookolly Undri",
         ]
 
-    def get_widget_info(self) -> dict:
-        res = Widget.getBatch(self.buttons)
+    def get_widget_info(self) -> list[dict]:
+        res = Widget.get_batch(self.buttons)
 
         for i in range(len(res)):
             res[i]["text"] = self.names[i]
@@ -114,12 +114,12 @@ class Interfaces:
     def _init(self):
         self.spirit_tree = ScrollInterface()
         self.mushtree = GeneralInterface(
-            client.InterfaceID.FOSSIL_MUSHTREES,
+            client.interface_id.FOSSIL_MUSHTREES,
             [
-                client.InterfaceID.FossilMushtrees.TREE1,
-                client.InterfaceID.FossilMushtrees.TREE2,
-                client.InterfaceID.FossilMushtrees.TREE3,
-                client.InterfaceID.FossilMushtrees.TREE4,
+                client.interface_id.FossilMushtrees.TREE1,
+                client.interface_id.FossilMushtrees.TREE2,
+                client.interface_id.FossilMushtrees.TREE3,
+                client.interface_id.FossilMushtrees.TREE4,
             ],
             get_children=False,
             wrong_text="Not yet",
@@ -127,28 +127,28 @@ class Interfaces:
         )
         self.zeah_minecart = ScrollInterface()
         self.jewellery_box = GeneralInterface(
-            client.InterfaceID.POH_JEWELLERY_BOX,
+            client.interface_id.POH_JEWELLERY_BOX,
             [
-                client.InterfaceID.PohJewelleryBox.DUELING,
-                client.InterfaceID.PohJewelleryBox.GAMING,
-                client.InterfaceID.PohJewelleryBox.COMBAT,
-                client.InterfaceID.PohJewelleryBox.SKILLS,
-                client.InterfaceID.PohJewelleryBox.WEALTH,
-                client.InterfaceID.PohJewelleryBox.GLORY,
+                client.interface_id.PohJewelleryBox.DUELING,
+                client.interface_id.PohJewelleryBox.GAMING,
+                client.interface_id.PohJewelleryBox.COMBAT,
+                client.interface_id.PohJewelleryBox.SKILLS,
+                client.interface_id.PohJewelleryBox.WEALTH,
+                client.interface_id.PohJewelleryBox.GLORY,
             ],
             get_children=True,
             wrong_text="</str>",
         )
         self.gnome_glider = GliderInterface()
         self.charter_ship = GeneralInterface(
-            client.InterfaceID.CHARTERING_MENU_SIDE,
-            [client.InterfaceID.CharteringMenuSide.LIST_CONTENT],
+            client.interface_id.CHARTERING_MENU_SIDE,
+            [client.interface_id.CharteringMenuSide.LIST_CONTENT],
             get_children=True,
-            scrollbox=client.InterfaceID.CharteringMenuSide.LIST_CONTENT,
+            scrollbox=client.interface_id.CharteringMenuSide.LIST_CONTENT,
         )
         self.quetzal = GeneralInterface(
-            client.InterfaceID.QUETZAL_MENU,
-            [client.InterfaceID.QuetzalMenu.ICONS],
+            client.interface_id.QUETZAL_MENU,
+            [client.interface_id.QuetzalMenu.ICONS],
             get_children=True,
             use_actions=True,
         )
@@ -165,7 +165,8 @@ class Interfaces:
 
     def get_open_interfaces(self) -> list[int]:
         """Get a list of currently open interface IDs."""
-        return list(client.cache.getOpenWidgets())
+        return list(client.cache.get_open_widgets())
+
 
     def get_open_interface_names(self) -> list[str]:
         """Get a list of currently open interface names."""
@@ -177,6 +178,7 @@ class Interfaces:
             else:
                 names.append(f"UNKNOWN_{group_id}")
         return names
+
 
 
 # Module-level instance

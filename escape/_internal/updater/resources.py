@@ -120,6 +120,7 @@ class ResourceUpdater:
             print("=" * 80)
             return False
 
+
     def status(self):
         """Print current game data status."""
         print("=" * 80)

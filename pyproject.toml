@@ -32,6 +32,8 @@ dependencies = [
     "numpy>=1.26.0",
     "loguru>=0.7.0",
     "ruff>=0.14.13",
+    "basedpyright>=1.37.1",
+    "pytest>=9.0.2",
 ]
 
 [project.optional-dependencies]
@@ -41,7 +43,7 @@ dev = [
     "pytest-asyncio>=0.21.0",
     "ruff>=0.8.4",
     "pre-commit>=3.5.0",
-    "mypy>=1.7.0",
+    "basedpyright>=1.27.0",
 ]
 
 [project.urls]
@@ -160,7 +162,17 @@ exclude_lines = [
     "@abstractmethod",
 ]
 
-# MyPy configuration
+# Basedpyright configuration (used by Zed editor)
+[tool.basedpyright]
+pythonVersion = "3.12"
+typeCheckingMode = "basic"  # Start lenient: off < basic < standard < strict
+reportOptionalMemberAccess = "warning"  # Demote from error to warning
+reportOptionalSubscript = "warning"
+reportOptionalCall = "warning"
+reportOptionalIterable = "warning"
+reportOptionalContextManager = "warning"
+
+# MyPy configuration (kept for CI compatibility)
 [tool.mypy]
 python_version = "3.12"
 warn_return_any = true

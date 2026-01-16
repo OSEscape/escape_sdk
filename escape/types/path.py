@@ -65,15 +65,18 @@ class Path:
 
         return cls(packed, obstacles)
 
+
     @property
     def world_x(self) -> np.ndarray:
         """World X coordinates (vectorized). Shape: [length]. X is bits 0-14."""
         return (self._packed & 0x7FFF).astype(np.int32)
 
+
     @property
     def world_y(self) -> np.ndarray:
         """World Y coordinates (vectorized). Shape: [length]. Y is bits 15-29."""
         return ((self._packed >> 15) & 0x7FFF).astype(np.int32)
+
 
     @property
     def plane(self) -> np.ndarray:
@@ -98,10 +101,10 @@ class Path:
             empty = np.array([], dtype=np.int32)
             return empty, empty, np.array([], dtype=np.bool_)
 
-        scene_x = self.world_x - grid.baseX
-        scene_y = self.world_y - grid.baseY
+        scene_x = self.world_x - grid.base_x
+        scene_y = self.world_y - grid.base_y
 
-        in_scene = (scene_x >= 0) & (scene_x < grid.sizeX) & (scene_y >= 0) & (scene_y < grid.sizeY)
+        in_scene = (scene_x >= 0) & (scene_x < grid.size_x) & (scene_y >= 0) & (scene_y < grid.size_y)
 
         return scene_x, scene_y, in_scene
 
@@ -124,31 +127,31 @@ class Path:
             return screen_x, screen_y, visible
 
         # Get tile indices for in-scene tiles (clip to valid range)
-        clipped_x = scene_x.clip(0, grid.sizeX - 1)
-        clipped_y = scene_y.clip(0, grid.sizeY - 1)
-        tile_idx = clipped_x * grid.sizeY + clipped_y
+        clipped_x = scene_x.clip(0, grid.size_x - 1)
+        clipped_y = scene_y.clip(0, grid.size_y - 1)
+        tile_idx = clipped_x * grid.size_y + clipped_y
 
         # Get centers from grid cache
-        center_x, center_y = grid.getTileCenters()
+        center_x, center_y = grid.get_tile_centers()
         screen_x = center_x[tile_idx]
         screen_y = center_y[tile_idx]
 
         # Visibility: in scene + valid tile + on screen
-        tile_valid = grid.tileValid[tile_idx]
+        tile_valid = grid.tile_valid[tile_idx]
 
         if margin == 0:
             on_screen = (
-                (screen_x >= grid.viewMinX)
-                & (screen_x < grid.viewMaxX)
-                & (screen_y >= grid.viewMinY)
-                & (screen_y < grid.viewMaxY)
+                (screen_x >= grid.view_min_x)
+                & (screen_x < grid.view_max_x)
+                & (screen_y >= grid.view_min_y)
+                & (screen_y < grid.view_max_y)
             )
         else:
             on_screen = (
-                (screen_x >= grid.viewMinX - margin)
-                & (screen_x < grid.viewMaxX + margin)
-                & (screen_y >= grid.viewMinY - margin)
-                & (screen_y < grid.viewMaxY + margin)
+                (screen_x >= grid.view_min_x - margin)
+                & (screen_x < grid.view_max_x + margin)
+                & (screen_y >= grid.view_min_y - margin)
+                & (screen_y < grid.view_max_y + margin)
             )
 
         visible = in_scene & tile_valid & on_screen
@@ -159,6 +162,7 @@ class Path:
         """Get indices of path tiles visible on screen."""
         _, _, visible = self.get_screen_coords(margin=margin)
         return np.where(visible)[0]
+
 
     def get_visible_quads(self) -> list["Quad"]:
         """Get Quads for all visible path tiles."""
@@ -172,9 +176,9 @@ class Path:
         quads = []
         for i in indices:
             sx, sy = scene_x[i], scene_y[i]
-            tile_idx = sx * grid.sizeY + sy
-            if grid.tileOnScreen[tile_idx]:
-                quads.append(grid.getTileQuad(tile_idx))
+            tile_idx = int(sx * grid.size_y + sy)
+            if grid.tile_on_screen[tile_idx]:
+                quads.append(grid.get_tile_quad(tile_idx))
 
         return quads
 
@@ -186,17 +190,17 @@ class Path:
         if grid is None or i < 0 or i >= len(self._packed):
             return None
 
-        scene_x = int(self.world_x[i]) - grid.baseX
-        scene_y = int(self.world_y[i]) - grid.baseY
+        scene_x = int(self.world_x[i]) - grid.base_x
+        scene_y = int(self.world_y[i]) - grid.base_y
 
-        if not (0 <= scene_x < grid.sizeX and 0 <= scene_y < grid.sizeY):
+        if not (0 <= scene_x < grid.size_x and 0 <= scene_y < grid.size_y):
             return None
 
-        tile_idx = scene_x * grid.sizeY + scene_y
-        if not grid.tileValid[tile_idx]:
+        tile_idx = scene_x * grid.size_y + scene_y
+        if not grid.tile_valid[tile_idx]:
             return None
 
-        center_x, center_y = grid.getTileCenters()
+        center_x, center_y = grid.get_tile_centers()
         return Point(int(center_x[tile_idx]), int(center_y[tile_idx]))
 
     def get_quad(self, i: int) -> "Quad | None":
@@ -205,14 +209,15 @@ class Path:
         if grid is None or i < 0 or i >= len(self._packed):
             return None
 
-        scene_x = int(self.world_x[i]) - grid.baseX
-        scene_y = int(self.world_y[i]) - grid.baseY
+        scene_x = int(self.world_x[i]) - grid.base_x
+        scene_y = int(self.world_y[i]) - grid.base_y
 
-        if not (0 <= scene_x < grid.sizeX and 0 <= scene_y < grid.sizeY):
+        if not (0 <= scene_x < grid.size_x and 0 <= scene_y < grid.size_y):
             return None
 
-        tile_idx = scene_x * grid.sizeY + scene_y
-        return grid.getTileQuad(tile_idx)
+        tile_idx = scene_x * grid.size_y + scene_y
+        return grid.get_tile_quad(tile_idx)
+
 
     @property
     def obstacles(self) -> list[PathObstacle]:
@@ -226,6 +231,7 @@ class Path:
     def is_empty(self) -> bool:
         """Check if path is empty."""
         return len(self._packed) == 0
+
 
     def get_position(self, i: int) -> PackedPosition | None:
         """Get PackedPosition at index, or None if out of bounds."""
@@ -262,6 +268,7 @@ class Path:
     def has_obstacles(self) -> bool:
         """Check if path has any obstacles."""
         return len(self._obstacles) > 0
+
 
     def get_total_duration(self) -> int:
         """Get total estimated duration in ticks (walking + obstacles)."""

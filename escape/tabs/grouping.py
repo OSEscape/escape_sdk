@@ -6,7 +6,7 @@ from escape.client import client
 from escape.types.gametab import GameTab, GameTabs
 from escape.types.interfaces.general_interface import GeneralInterface
 from escape.types.widget import WidgetFields
-from escape.utilities.timing import waitUntil
+from escape.utilities.timing import wait_until
 
 
 class Grouping(GameTabs):
@@ -26,39 +26,39 @@ class Grouping(GameTabs):
         """Actual initialization, runs once."""
         GameTabs.__init__(self)
         self.sub_tabs = GeneralInterface(
-            client.InterfaceID.SIDE_CHANNELS,
+            client.interface_id.SIDE_CHANNELS,
             [
-                client.InterfaceID.SideChannels.TAB_0,
-                client.InterfaceID.SideChannels.TAB_1,
-                client.InterfaceID.SideChannels.TAB_2,
-                client.InterfaceID.SideChannels.TAB_3,
+                client.interface_id.SideChannels.TAB_0,
+                client.interface_id.SideChannels.TAB_1,
+                client.interface_id.SideChannels.TAB_2,
+                client.interface_id.SideChannels.TAB_3,
             ],
             get_children=False,
             use_actions=True,
         )
 
         for w in self.sub_tabs.buttons:
-            w.enable(WidgetFields.getOnOpListener)
+            w.enable(WidgetFields.get_on_op_listener)
 
         self.sub_tab_names = ["Chat-channel", "Your Clan", "View another clan", "Grouping"]
 
         self.dropdown_button = GeneralInterface(
-            client.InterfaceID.GROUPING,
-            [client.InterfaceID.Grouping.CURRENTGAME],
+            client.interface_id.GROUPING,
+            [client.interface_id.Grouping.CURRENTGAME],
             get_children=False,
         )
 
         self.dropdown_selector = GeneralInterface(
-            client.InterfaceID.GROUPING,
-            [client.InterfaceID.Grouping.DROPDOWN_CONTENTS],
+            client.interface_id.GROUPING,
+            [client.interface_id.Grouping.DROPDOWN_CONTENTS],
             get_children=True,
             menu_text="Select",
-            scrollbox=client.InterfaceID.Grouping.DROPDOWN_CONTENTS,
+            scrollbox=client.interface_id.Grouping.DROPDOWN_CONTENTS,
         )
 
         self.teleport_button = GeneralInterface(
-            client.InterfaceID.GROUPING,
-            [client.InterfaceID.Grouping.TELEPORT_TEXT1],
+            client.interface_id.GROUPING,
+            [client.interface_id.Grouping.TELEPORT_TEXT1],
             get_children=False,
             menu_text="Teleport",
         )
@@ -72,10 +72,10 @@ class Grouping(GameTabs):
         if not self.open():
             return None
 
-        info = self.sub_tabs.getWidgetInfo()
+        info = self.sub_tabs.get_widget_info()
 
         for i, w in enumerate(info):
-            if len(w.get("onOpListener", [])) == 3:
+            if len(w.get("on_op_listener", [])) == 3:
                 return self.sub_tab_names[i]
         return None
 
@@ -87,7 +87,7 @@ class Grouping(GameTabs):
         Returns:
             bool: True if the sub-tab was opened successfully, False otherwise.
         """
-        if not self.isOpen():
+        if not self.is_open():
             self.open()
 
         for name in self.sub_tab_names:
@@ -95,7 +95,7 @@ class Grouping(GameTabs):
                 if self.get_open_sub_tab() == name:
                     return True
                 elif self.sub_tabs.interact(sub_tab):
-                    return waitUntil(lambda n=name: self.get_open_sub_tab() == n, timeout=3.0)
+                    return wait_until(lambda n=name: self.get_open_sub_tab() == n, timeout=3.0)
         return False
 
     def get_selected_game(self) -> str | None:
@@ -107,7 +107,7 @@ class Grouping(GameTabs):
         if not self.open() and not self.open_sub_tab("Grouping"):
             return None
 
-        info = self.dropdown_button.getWidgetInfo()
+        info = self.dropdown_button.get_widget_info()
         if not info:
             return None
         text = info[0].get("text", "")
@@ -118,7 +118,7 @@ class Grouping(GameTabs):
         return selected_game is not None and game_name.lower() in selected_game.lower()
 
     def dropdown_fully_loaded(self) -> bool:
-        info = self.dropdown_selector.getWidgetInfo()
+        info = self.dropdown_selector.get_widget_info()
         return len(info) > 0 and info[-1].get("bounds")[0] >= 0
 
     def select_game(self, game_name: str) -> bool:
@@ -136,13 +136,13 @@ class Grouping(GameTabs):
         if current_game and game_name.lower() in current_game.lower():
             return True  # Already selected
 
-        if len(self.dropdown_selector.getWidgetInfo()) == 0 and (
+        if len(self.dropdown_selector.get_widget_info()) == 0 and (
             not self.dropdown_button.interact("")
-            or not waitUntil(self.dropdown_fully_loaded, timeout=3.0)
+            or not wait_until(self.dropdown_fully_loaded, timeout=3.0)
         ):
             return False
         if self.dropdown_selector.interact(game_name):
-            return waitUntil(lambda: self.is_game_selected(game_name), timeout=3.0)
+            return wait_until(lambda: self.is_game_selected(game_name), timeout=3.0)
 
         return False
 

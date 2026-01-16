@@ -23,7 +23,7 @@ class Drawing:
         """Invoke a method on the Java Drawing class."""
         from escape.client import client
 
-        return client.api.invokeCustomMethod(
+        return client.api.invoke_custom_method(
             target="drawing",
             method=method,
             signature=signature,
@@ -79,6 +79,7 @@ class Drawing:
                 [x, y, radius, argb_color, filled, tag],
             )
 
+
     def add_line(
         self,
         x1: int,
@@ -103,6 +104,7 @@ class Drawing:
                 [x1, y1, x2, y2, argb_color, thickness, tag],
             )
 
+
     def add_polygon(
         self,
         x_points: list[int],
@@ -124,6 +126,7 @@ class Drawing:
                 "([I[IIZLjava/lang/String;)V",
                 [x_points, y_points, argb_color, filled, tag],
             )
+
 
     def add_text(
         self,

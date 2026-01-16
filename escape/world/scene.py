@@ -97,9 +97,9 @@ class Scene:
 
     def _get_player_scene_pos(self) -> tuple[int, int] | None:
         """Get player scene position from cache."""
-        from escape.globals import getEventCache
+        from escape.globals import get_event_cache
 
-        gt = getEventCache().getGametickState()
+        gt = get_event_cache().get_gametick_state()
         if not gt:
             return None
         x, y = gt.get("sceneX"), gt.get("sceneY")

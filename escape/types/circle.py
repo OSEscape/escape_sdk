@@ -17,6 +17,7 @@ class Circle:
     center_y: int
     radius: float
 
+
     def center(self) -> "Point":
         """Get the center point of the circle."""
         from escape.types.point import Point
@@ -53,10 +54,10 @@ class Circle:
 
     def hover(self, randomize: bool = True) -> bool:
         """Move mouse to hover within this circle."""
-        from escape.globals import getClient
+        from escape.globals import get_client
         from escape.types.point import Point
 
-        current = Point(*getClient().input.mouse.position)
+        current = Point(*get_client().input.mouse.position)
         if self.contains(current):
             return True
         point = self.random_point() if randomize else self.center()
@@ -76,4 +77,4 @@ class Circle:
         """Draw this circle as an overlay on RuneLite."""
         from escape.input.drawing import drawing
 
-        drawing.addCircle(self.center_x, self.center_y, int(self.radius), argb_color, filled, tag)
+        drawing.add_circle(self.center_x, self.center_y, int(self.radius), argb_color, filled, tag)

@@ -56,7 +56,7 @@ class Buttons:
                 return box.click_option(target_text)
         else:
             for i, box in enumerate(self.boxes):
-                if box and (button_name.lower() in self.names[i].lower()) or menu_option:
+                if box and ((button_name.lower() in self.names[i].lower()) or menu_option):
                     target_text = self.menu_text if self.menu_text else button_name
                     if menu_option:
                         target_text = menu_option

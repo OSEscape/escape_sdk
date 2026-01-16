@@ -78,7 +78,7 @@ Examples:
             if update_api:
                 print()  # Spacing between resource and API status
         elif not args.clean:
-            resource_success = resource_updater.updateAll(force=args.force)
+            resource_success = resource_updater.update_all(force=args.force)
 
     # Handle RuneLite API updates (default: ON)
     if update_api:
@@ -89,7 +89,7 @@ Examples:
         if args.status:
             api_updater.status()
         elif args.clean:
-            api_updater.cleanTempFiles()
+            api_updater.clean_temp_files()
         else:
             api_success = api_updater.update(force=args.force, max_age_days=args.max_age_days)
 

@@ -8,7 +8,7 @@ from copy import deepcopy
 from escape.client import client
 from escape.types import Box
 from escape.utilities import timing
-from escape.utilities.text import stripColorTags
+from escape.utilities.text import strip_color_tags
 
 
 class Menu:
@@ -28,13 +28,13 @@ class Menu:
 
     def is_open(self) -> bool:
         """Check if the right-click context menu is currently open."""
-        return client.cache.getMenuOpenState().get("menu_open", False)
+        return client.cache.get_menu_open_state().get("menu_open", False)
 
     def _get_options(self, strip_colors: bool = True) -> tuple[list[str], list[str]]:
-        data = deepcopy(client.cache.getMenuOptions())
-        types = data["types"]
-        options = data["options"]
-        targets = data["targets"]
+        data = deepcopy(client.cache.get_menu_options())
+        types = data.get("types", [])
+        options = data.get("options", [])
+        targets = data.get("targets", [])
 
         if not types or not options or not targets:
             return [], []
@@ -45,7 +45,7 @@ class Menu:
             f"{option} {target}".strip() for option, target in zip(options, targets, strict=False)
         ]
         if strip_colors:
-            formatted_options = [stripColorTags(opt) for opt in formatted_options]
+            formatted_options = [strip_color_tags(opt) for opt in formatted_options]
 
         # reverse because they're stored backwards (last item is first option)
         formatted_options.reverse()
@@ -54,22 +54,22 @@ class Menu:
         return formatted_options, types
 
     def _get_menu_info(self) -> dict:
-        return client.cache.getMenuOpenState()
+        return client.cache.get_menu_open_state()
 
     def wait_menu_click_event(self, max_age: float = 0.2, timeout: float = 0.5) -> bool:
         """Wait for a menu option click event to be registered."""
-        current_state = client.cache.getMenuClickedState()
+        current_state = client.cache.get_menu_clicked_state()
         timestamp = current_state.get("_timestamp", 0)
 
-        if (time.time() - timestamp) < max_age and not client.cache.isMenuOptionClickedConsumed():
+        if (time.time() - timestamp) < max_age and not client.cache.is_menu_option_clicked_consumed():
             return True
 
         def check_event(ts) -> bool:
-            state = client.cache.getMenuClickedState()
+            state = client.cache.get_menu_clicked_state()
             event_time = state.get("_timestamp", 0)
             return (event_time - ts) > 0
 
-        return timing.waitUntil(lambda: check_event(timestamp), timeout=timeout, poll_interval=0.001)
+        return timing.wait_until(lambda: check_event(timestamp), timeout=timeout, poll_interval=0.001)
 
     def wait_has_type(self, option_type: str, timeout: float = 0.5) -> bool:
         """Wait until menu contains an option of the specified type."""
@@ -77,7 +77,7 @@ class Menu:
         def check_type() -> bool:
             return self.has_type(option_type)
 
-        return timing.waitUntil(check_type, timeout=timeout, poll_interval=0.001)
+        return timing.wait_until(check_type, timeout=timeout, poll_interval=0.001)
 
     def wait_has_option(self, option: str, timeout: float = 0.5) -> bool:
         """Wait until menu contains the specified option text."""
@@ -85,7 +85,7 @@ class Menu:
         def check_option() -> bool:
             return self.has_option(option)
 
-        return timing.waitUntil(check_option, timeout=timeout, poll_interval=0.001)
+        return timing.wait_until(check_option, timeout=timeout, poll_interval=0.001)
 
     def open(self, timeout: float = 0.5) -> bool:
         """Open the context menu by right-clicking at current mouse position."""
@@ -96,7 +96,7 @@ class Menu:
         client.input.mouse.right_click()
 
         # Wait for menu to open
-        return timing.waitUntil(self.is_open, timeout=timeout, poll_interval=0.001)
+        return timing.wait_until(self.is_open, timeout=timeout, poll_interval=0.001)
 
     def close(self, use_cancel: bool = True, timeout: float = 1.0) -> bool:
         """Close the context menu by clicking Cancel or moving mouse away."""
@@ -132,6 +132,9 @@ class Menu:
                 box = self.get_option_box(cancel_index)
                 if box:
                     box.click()
+                    return timing.wait_until(lambda: not self.is_open(), timeout=timeout, poll_interval=0.001)
+                # Box not found, fall back to mouse move
+                use_cancel = False
             else:
                 # Cancel not found, fall back to mouse move
                 use_cancel = False
@@ -165,7 +168,10 @@ class Menu:
             # Move mouse to target position
             client.input.mouse.move_to(target_x, target_y, safe=False)
 
-            return timing.waitUntil(lambda: not self.is_open(), timeout=timeout, poll_interval=0.001)
+            return timing.wait_until(lambda: not self.is_open(), timeout=timeout, poll_interval=0.001)
+
+        # Fallback - should not reach here in normal execution
+        return timing.wait_until(lambda: not self.is_open(), timeout=timeout, poll_interval=0.001)
 
     def get_options(self, strip_colors: bool = True) -> list[str]:
         """Get all menu options as formatted strings in display order."""
@@ -262,11 +268,11 @@ class Menu:
         return False
 
     def last_option_clicked(self) -> str:
-        latest_click = client.cache.getMenuClickedState()
+        latest_click = client.cache.get_menu_clicked_state()
         option = latest_click.get("menu_option", "")
         target = latest_click.get("menu_target", "")
         full_option = f"{option} {target}".strip()
-        return stripColorTags(full_option)
+        return strip_color_tags(full_option)
 
     def wait_option_clicked(
         self, option_text: str, max_age: float = 0.2, timeout: float = 0.5
@@ -274,13 +280,13 @@ class Menu:
         if not self.wait_menu_click_event(max_age=max_age, timeout=timeout):
             return False
 
-        client.cache.consumeMenuClickedState()
+        client.cache.consume_menu_clicked_state()
 
         return option_text.lower() in self.last_option_clicked().lower()
 
     def wait_menu_closed(self, timeout: float = 0.5) -> bool:
         """Wait until the menu is closed."""
-        return timing.waitUntil(lambda: not self.is_open(), timeout=timeout, poll_interval=0.001)
+        return timing.wait_until(lambda: not self.is_open(), timeout=timeout, poll_interval=0.001)
 
     def click_option(self, option_text: str) -> bool:
         """Click a menu option. Left-clicks if default, otherwise opens menu."""
@@ -325,7 +331,6 @@ class Menu:
             if option_type.lower() in t.lower():
                 return self.click_option(options[i])
         return False
-
 
 # Module-level instance
 menu = Menu()

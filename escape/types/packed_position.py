@@ -25,6 +25,7 @@ class PackedPosition:
         pos._packed = packed
         return pos
 
+
     @property
     def x(self) -> int:
         """Get X coordinate (bits 0-14)."""

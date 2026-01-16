@@ -27,25 +27,25 @@ class Magic(GameTabs):
         GameTabs.__init__(self)
 
         magic_on_classes = [
-            client.SpriteID.Magicon,
-            client.SpriteID._2XStandardSpellsOn,
-            client.SpriteID.Magicon2,
-            client.SpriteID._2XAncientSpellsOn,
-            client.SpriteID._2XLunarSpellsOn,
-            client.SpriteID.LunarMagicOn,
-            client.SpriteID.MagicNecroOn,
-            client.SpriteID._2XNecroSpellsOn,
+            client.sprite_id.Magicon,
+            client.sprite_id._2XStandardSpellsOn,
+            client.sprite_id.Magicon2,
+            client.sprite_id._2XAncientSpellsOn,
+            client.sprite_id._2XLunarSpellsOn,
+            client.sprite_id.LunarMagicOn,
+            client.sprite_id.MagicNecroOn,
+            client.sprite_id._2XNecroSpellsOn,
         ]
 
         magic_off_classes = [
-            client.SpriteID.Magicoff,
-            client.SpriteID._2XStandardSpellsOff,
-            client.SpriteID.Magicoff2,
-            client.SpriteID._2XAncientSpellsOff,
-            client.SpriteID._2XLunarSpellsOff,
-            client.SpriteID.LunarMagicOff,
-            client.SpriteID.MagicNecroOff,
-            client.SpriteID._2XNecroSpellsOff,
+            client.sprite_id.Magicoff,
+            client.sprite_id._2XStandardSpellsOff,
+            client.sprite_id.Magicoff2,
+            client.sprite_id._2XAncientSpellsOff,
+            client.sprite_id._2XLunarSpellsOff,
+            client.sprite_id.LunarMagicOff,
+            client.sprite_id.MagicNecroOff,
+            client.sprite_id._2XNecroSpellsOff,
         ]
 
         self.on_sprites = {
@@ -55,29 +55,29 @@ class Magic(GameTabs):
             v for cls in magic_off_classes for v in vars(cls).values() if isinstance(v, int)
         }
 
-        self.spells = client.InterfaceID.MagicSpellbook
+        self.spells = client.interface_id.MagicSpellbook
 
         self._allSpellWidgets = []
 
         for i in range(
-            client.InterfaceID.MagicSpellbook.SPELLLAYER + 1,
-            client.InterfaceID.MagicSpellbook.INFOLAYER,
+            client.interface_id.MagicSpellbook.SPELLLAYER + 1,
+            client.interface_id.MagicSpellbook.INFOLAYER,
         ):
             w = Widget(i)
-            w.enable(WidgetFields.getSpriteId)
+            w.enable(WidgetFields.get_sprite_id)
             self._allSpellWidgets.append(w)
 
     def _get_info(self, spell: int):
         """Get spell info widget by spell ID."""
         w = Widget(spell)
-        w.enable(WidgetFields.getBounds)
-        w.enable(WidgetFields.isHidden)
-        w.enable(WidgetFields.getSpriteId)
+        w.enable(WidgetFields.get_bounds)
+        w.enable(WidgetFields.is_hidden)
+        w.enable(WidgetFields.get_sprite_id)
         return w.get()
 
     def _get_all_visible_sprites(self):
         """Get all visible spell sprites."""
-        res = Widget.getBatch(self._allSpellWidgets)
+        res = Widget.get_batch(self._allSpellWidgets)
         return [w["spriteId"] for w in res]
 
     def get_castable_spell_ids(self):
@@ -103,12 +103,12 @@ class Magic(GameTabs):
         t = time()
         w = self._get_info(spell)
         logger.info(f"part 1 took {time() - t:.4f}s")
-        if self._can_cast_spell(w["spriteId"]) and not w["isHidden"]:
+        if self._can_cast_spell(w["spriteId"]) and not w["is_hidden"]:
             bounds = w["bounds"]
             box = Box(bounds[0], bounds[1], bounds[0] + bounds[2], bounds[1] + bounds[3])
             print(box)
             logger.info(f"part 2 took {time() - t:.4f}s")
-            res = box.clickOption(option)
+            res = box.click_option(option)
             logger.info(f"part 3 took {time() - t:.4f}s")
             return res
 

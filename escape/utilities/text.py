@@ -8,3 +8,4 @@ def strip_color_tags(text: str) -> str:
     # Remove all tags in angle brackets (opening and closing)
     text = re.sub(r"<[^>]+>", "", text)
     return text
+

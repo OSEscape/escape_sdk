@@ -10,7 +10,7 @@ import mmap
 import os
 import struct
 import time
-from typing import Any
+from typing import Any, cast
 
 from escape._internal.logger import logger
 
@@ -31,7 +31,7 @@ class RuneLiteAPI:
 
     _instance = None
 
-    def __new__(cls, api_data_file: str = None, auto_update: bool = True):
+    def __new__(cls, api_data_file: str | None = None, auto_update: bool = True):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             cls._instance._initialized = False
@@ -42,7 +42,7 @@ class RuneLiteAPI:
         # Disabled auto-cleanup to prevent issues
         pass
 
-    def __init__(self, api_data_file: str = None, auto_update: bool = True):
+    def __init__(self, api_data_file: str | None = None, auto_update: bool = True):
         """Load API data and connect to bridge."""
         # Skip if already initialized
         if self._initialized:
@@ -61,7 +61,7 @@ class RuneLiteAPI:
             from .cache_manager import get_cache_manager
 
             cache_manager = get_cache_manager()
-            api_data_file = cache_manager.get_data_path("api") / "runelite_api_data.json"
+            api_data_file = str(cache_manager.get_data_path("api") / "runelite_api_data.json")
 
         # Check for updates if enabled
         if auto_update:
@@ -325,9 +325,13 @@ class RuneLiteAPI:
         return info["signature"] if info else None
 
     def get_method_info(
-        self, method_name: str, args: list | None = None, target_class: str = "Client"
+        self, method_name: str, args: list | None = None, target_class: str | None = "Client"
     ) -> dict | None:
         """Get signature, declaring_class, and return_type for a method."""
+        # Default to "Client" if None
+        if target_class is None:
+            target_class = "Client"
+
         # Check if target_class is a plugin class (contains "shortestpath")
         is_plugin_class = target_class and "shortestpath" in target_class
 
@@ -547,10 +551,12 @@ class RuneLiteAPI:
         return (bridge_type, str(arg_value))
 
     def get_static_method_signature(
-        self, class_name: str, method_name: str, args: tuple
+        self, class_name: str, method_name: str, args: tuple[Any, ...]
     ) -> str | None:
         """Get static method signature."""
-        return self.get_method_signature(method_name, args, target_class=class_name.split(".")[-1])
+        return self.get_method_signature(
+            method_name, list(args), target_class=class_name.split(".")[-1]
+        )
 
     def get_enum_value(self, enum_name: str, ordinal: int) -> str | None:
         """Get enum constant name from ordinal using perfect data"""
@@ -586,37 +592,47 @@ class RuneLiteAPI:
 
     def _send_request(self, encoded_data: bytes) -> None:
         """Send encoded request to bridge via shared memory."""
+        if self.api_channel is None or self.result_buffer is None:
+            raise RuntimeError("Not connected to bridge - call connect() first")
+        api_channel = self.api_channel
+        result_buffer = self.result_buffer
+
         # Wait for bridge to clear pending from previous request (max 10ms)
         wait_start = time.perf_counter()
         while (time.perf_counter() - wait_start) * 1000 < 10:
-            self.api_channel.seek(0)
-            old_pending = struct.unpack("<I", self.api_channel.read(4))[0]
+            api_channel.seek(0)
+            old_pending = struct.unpack("<I", api_channel.read(4))[0]
             if old_pending == 0:
                 break
             time.sleep(0.0001)  # 100μs
 
         # Clear result buffer header
-        self.result_buffer.seek(0)
-        self.result_buffer.write(struct.pack("<IIII", 0, 0, 0, 0))
+        result_buffer.seek(0)
+        result_buffer.write(struct.pack("<IIII", 0, 0, 0, 0))
 
         # Write request data
-        self.api_channel.seek(8)
-        self.api_channel.write(struct.pack("<I", len(encoded_data)))
-        self.api_channel.seek(16)
-        self.api_channel.write(encoded_data)
+        api_channel.seek(8)
+        api_channel.write(struct.pack("<I", len(encoded_data)))
+        api_channel.seek(16)
+        api_channel.write(encoded_data)
 
         # Set request ready
-        self.api_channel.seek(0)
-        self.api_channel.write(struct.pack("<II", 1, 0))  # pending=1, ready=0
+        api_channel.seek(0)
+        api_channel.write(struct.pack("<II", 1, 0))  # pending=1, ready=0
 
     def _wait_for_response(self, timeout_ms: int = 10000) -> bytes | None:
         """Wait for response from bridge with exponential backoff polling."""
+        if self.api_channel is None or self.result_buffer is None:
+            raise RuntimeError("Not connected to bridge - call connect() first")
+        api_channel = self.api_channel
+        result_buffer = self.result_buffer
+
         start_time = time.perf_counter()
         poll_count = 0
 
         while (time.perf_counter() - start_time) * 1000 < timeout_ms:
-            self.result_buffer.seek(4)
-            ready = struct.unpack("<I", self.result_buffer.read(4))[0]
+            result_buffer.seek(4)
+            ready = struct.unpack("<I", result_buffer.read(4))[0]
 
             if ready == 1:
                 elapsed = (time.perf_counter() - start_time) * 1000
@@ -624,8 +640,8 @@ class RuneLiteAPI:
                     logger.debug(f"Response ready after {elapsed:.2f}ms (polls={poll_count})")
 
                 # Read response
-                self.result_buffer.seek(0)
-                size = struct.unpack("<I", self.result_buffer.read(4))[0]
+                result_buffer.seek(0)
+                size = struct.unpack("<I", result_buffer.read(4))[0]
 
                 if size == 0:
                     logger.error(
@@ -633,14 +649,14 @@ class RuneLiteAPI:
                     )
                     logger.info("This means C set ready flag but didn't write response data")
                     # Clear ready flag anyway
-                    self.result_buffer.seek(4)
-                    self.result_buffer.write(struct.pack("<I", 0))
+                    result_buffer.seek(4)
+                    result_buffer.write(struct.pack("<I", 0))
                     return None
 
                 if size > 0:
-                    self.result_buffer.seek(16)
+                    result_buffer.seek(16)
                     # Read the full buffer size to check for magic header
-                    data = self.result_buffer.read(size)
+                    data = result_buffer.read(size)
 
                     # Check if there's a magic header and adjust data if needed
                     if len(data) >= 8:
@@ -651,8 +667,8 @@ class RuneLiteAPI:
                             data = data[: 8 + msg_size]
 
                     # Clear ready flag
-                    self.result_buffer.seek(4)
-                    self.result_buffer.write(struct.pack("<I", 0))
+                    result_buffer.seek(4)
+                    result_buffer.write(struct.pack("<I", 0))
 
                     return data
 
@@ -671,8 +687,8 @@ class RuneLiteAPI:
 
         # Timeout
         elapsed = (time.perf_counter() - start_time) * 1000
-        self.api_channel.seek(0)
-        query_pending = struct.unpack("i", self.api_channel.read(4))[0]
+        api_channel.seek(0)
+        query_pending = struct.unpack("i", api_channel.read(4))[0]
         logger.warning(f"TIMEOUT after {elapsed:.2f}ms (polls={poll_count}, pending={query_pending})")
         return None
 
@@ -700,7 +716,9 @@ class RuneLiteAPI:
 
         # Encode and send request
         encoded = msgpack.packb(operations)
-        self._send_request(encoded)
+        if encoded is None:
+            raise RuntimeError("Failed to encode operations with msgpack")
+        self._send_request(cast("bytes", encoded))
 
         # Wait for and decode response
         data = self._wait_for_response(timeout_ms=2500)

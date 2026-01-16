@@ -2,6 +2,7 @@
 
 import random
 import time
+from typing import Any
 
 try:
     import pyautogui as pag
@@ -32,6 +33,7 @@ class Mouse:
         pag.FAILSAFE = False
         pag.MINIMUM_SLEEP = 0
         pag.MINIMUM_DURATION = 0
+        self._pag: Any = pag
 
         self.runelite = runelite
         self.speed = speed
@@ -39,8 +41,10 @@ class Mouse:
     @property
     def position(self) -> tuple[int, int]:
         """Get current mouse position relative to game window."""
-        screen_x, screen_y = pag.position()
+        screen_x, screen_y = self._pag.position()
         offset = self.runelite.get_window_offset()
+        if offset is None:
+            raise RuntimeError("Could not get window offset")
         return (screen_x - offset[0], screen_y - offset[1])
 
     def _validate_coordinates(self, x: int, y: int, safe: bool) -> None:
@@ -69,11 +73,10 @@ class Mouse:
         # temp override for performance testing
 
         time.perf_counter()
-        pag.moveTo(
-            x + self.runelite.get_window_offset()[0],
-            y + self.runelite.get_window_offset()[1],
-            _pause=False,
-        )
+        offset = self.runelite.get_window_offset()
+        if offset is None:
+            raise RuntimeError("Could not get window offset")
+        self._pag.moveTo(x + offset[0], y + offset[1], _pause=False)
         time.sleep(0.001)  # slight delay to ensure move completes
         return
         # Validate coordinates
@@ -88,7 +91,7 @@ class Mouse:
         abs_y = y + offset[1]
 
         # Get current position
-        current_x, current_y = pag.position()
+        current_x, current_y = self._pag.position()
 
         # Calculate distance
         dx = abs_x - current_x
@@ -121,7 +124,7 @@ class Mouse:
             jitter_y = random.randint(-2, 2) if step < num_steps - 1 else 0
 
             # Move to intermediate position
-            pag.moveTo(
+            self._pag.moveTo(
                 intermediate_x + jitter_x, intermediate_y + jitter_y, duration=0, _pause=False
             )
 
@@ -129,7 +132,7 @@ class Mouse:
             time.sleep(0.020 * step_randomness)
 
         # Final move to exact target (no jitter)
-        pag.moveTo(abs_x, abs_y, duration=0, _pause=False)
+        self._pag.moveTo(abs_x, abs_y, duration=0, _pause=False)
 
     def _click_button(self, button: str) -> None:
         """Core click function - ONLY access point to pyautogui.click()."""
@@ -137,7 +140,7 @@ class Mouse:
         self.runelite.refresh_window_position()
 
         # Perform click
-        pag.click(button=button, _pause=False, tween=None)
+        self._pag.click(button=button, _pause=False)
 
     def _hold(self, button: str) -> None:
         """Core hold function - ONLY access point to pyautogui.mouseDown()."""
@@ -145,7 +148,7 @@ class Mouse:
         self.runelite.refresh_window_position()
 
         # Hold button down
-        pag.mouseDown(button=button, _pause=False)
+        self._pag.mouseDown(button=button, _pause=False)
 
     def _release(self, button: str) -> None:
         """Core release function - ONLY access point to pyautogui.mouseUp()."""
@@ -153,7 +156,7 @@ class Mouse:
         self.runelite.refresh_window_position()
 
         # Release button
-        pag.mouseUp(button=button, _pause=False)
+        self._pag.mouseUp(button=button, _pause=False)
 
     def _scroll(self, clicks: int) -> None:
         """Core scroll function - ONLY access point to pyautogui.scroll()."""
@@ -161,7 +164,7 @@ class Mouse:
         self.runelite.refresh_window_position()
 
         # Perform scroll
-        pag.scroll(clicks, _pause=False)
+        self._pag.scroll(clicks, _pause=False)
 
     def click(self, button: str = "left") -> None:
         self._click_button(button)
@@ -219,7 +222,6 @@ class Mouse:
             # Add human-like delay between scrolls (~25-50ms)
             if i < count - 1:
                 time.sleep(random.uniform(0.025, 0.05))
-
 
 # Module-level instance
 mouse = Mouse()

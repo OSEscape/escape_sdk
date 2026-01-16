@@ -232,26 +232,28 @@ def ensure_resources_loaded() -> bool:
             raw_varps = json.load(f)
             # Convert list to dict indexed by ID
             if isinstance(raw_varps, list):
-                varps._varps_data = {item["id"]: item for item in raw_varps if "id" in item}
+                varps_data = {item["id"]: item for item in raw_varps if "id" in item}
             else:
-                varps._varps_data = raw_varps
-            logger.success(f"Loaded {len(varps._varps_data)} varps")
+                varps_data = raw_varps
+            varps.set_varps_data(varps_data)
+            logger.success(f"Loaded {varps.get_varps_data_count()} varps")
 
         with open(varbits_file) as f:
             raw_varbits = json.load(f)
             # Convert list to dict indexed by ID
             if isinstance(raw_varbits, list):
-                varps._varbits_data = {item["id"]: item for item in raw_varbits if "id" in item}
+                varbits_data = {item["id"]: item for item in raw_varbits if "id" in item}
             else:
-                varps._varbits_data = raw_varbits
-            logger.success(f"Loaded {len(varps._varbits_data)} varbits")
+                varbits_data = raw_varbits
+            varps.set_varbits_data(varbits_data)
+            logger.success(f"Loaded {varps.get_varbits_data_count()} varbits")
 
         # Load objects database
         import sqlite3
 
         db_file = cache_dir / "objects.db"
-        objects._db_connection = sqlite3.connect(str(db_file))
-        objects._db_connection.row_factory = sqlite3.Row
+        db_conn = sqlite3.connect(str(db_file))
+        objects.set_db_connection(db_conn)
         logger.success("Loaded objects database")
 
         _resources_loaded = True

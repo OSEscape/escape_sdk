@@ -96,6 +96,7 @@ class EventConsumer:
             )
             return False
 
+
     def stop(self) -> None:
         """Stop event consumer thread."""
         if not self.running:
@@ -125,7 +126,10 @@ class EventConsumer:
         while self.running:
             try:
                 # Block here until doorbell rings (zero CPU usage!)
-                events = self.inotify.read(timeout=1000)  # 1s timeout for clean shutdown
+                inotify = self.inotify
+                if inotify is None:
+                    break
+                events = inotify.read(timeout=1000)  # 1s timeout for clean shutdown
 
                 if events:
                     # Doorbell was rung! Process all channels

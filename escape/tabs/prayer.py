@@ -7,7 +7,7 @@ from enum import Enum
 from escape.client import client
 from escape.types.gametab import GameTab, GameTabs
 from escape.types.interfaces.buttons import Buttons
-from escape.utilities.timing import waitTicks, waitUntil
+from escape.utilities.timing import wait_ticks, wait_until
 
 
 class PrayerType(Enum):
@@ -61,37 +61,37 @@ class Prayer(GameTabs):
         """Actual initialization, runs once."""
         GameTabs.__init__(self)
         self.prayer_buttons = Buttons(
-            client.InterfaceID.PRAYERBOOK,
+            client.interface_id.PRAYERBOOK,
             [
-                client.InterfaceID.Prayerbook.PRAYER1,
-                client.InterfaceID.Prayerbook.PRAYER2,
-                client.InterfaceID.Prayerbook.PRAYER3,
-                client.InterfaceID.Prayerbook.PRAYER4,
-                client.InterfaceID.Prayerbook.PRAYER5,
-                client.InterfaceID.Prayerbook.PRAYER6,
-                client.InterfaceID.Prayerbook.PRAYER7,
-                client.InterfaceID.Prayerbook.PRAYER8,
-                client.InterfaceID.Prayerbook.PRAYER9,
-                client.InterfaceID.Prayerbook.PRAYER10,
-                client.InterfaceID.Prayerbook.PRAYER11,
-                client.InterfaceID.Prayerbook.PRAYER12,
-                client.InterfaceID.Prayerbook.PRAYER13,
-                client.InterfaceID.Prayerbook.PRAYER14,
-                client.InterfaceID.Prayerbook.PRAYER15,
-                client.InterfaceID.Prayerbook.PRAYER16,
-                client.InterfaceID.Prayerbook.PRAYER17,
-                client.InterfaceID.Prayerbook.PRAYER18,
-                client.InterfaceID.Prayerbook.PRAYER19,
-                client.InterfaceID.Prayerbook.PRAYER20,
-                client.InterfaceID.Prayerbook.PRAYER21,
-                client.InterfaceID.Prayerbook.PRAYER22,
-                client.InterfaceID.Prayerbook.PRAYER23,
-                client.InterfaceID.Prayerbook.PRAYER24,
-                client.InterfaceID.Prayerbook.PRAYER25,
-                client.InterfaceID.Prayerbook.PRAYER26,
-                client.InterfaceID.Prayerbook.PRAYER27,
-                client.InterfaceID.Prayerbook.PRAYER28,
-                client.InterfaceID.Prayerbook.PRAYER29,
+                client.interface_id.Prayerbook.PRAYER1,
+                client.interface_id.Prayerbook.PRAYER2,
+                client.interface_id.Prayerbook.PRAYER3,
+                client.interface_id.Prayerbook.PRAYER4,
+                client.interface_id.Prayerbook.PRAYER5,
+                client.interface_id.Prayerbook.PRAYER6,
+                client.interface_id.Prayerbook.PRAYER7,
+                client.interface_id.Prayerbook.PRAYER8,
+                client.interface_id.Prayerbook.PRAYER9,
+                client.interface_id.Prayerbook.PRAYER10,
+                client.interface_id.Prayerbook.PRAYER11,
+                client.interface_id.Prayerbook.PRAYER12,
+                client.interface_id.Prayerbook.PRAYER13,
+                client.interface_id.Prayerbook.PRAYER14,
+                client.interface_id.Prayerbook.PRAYER15,
+                client.interface_id.Prayerbook.PRAYER16,
+                client.interface_id.Prayerbook.PRAYER17,
+                client.interface_id.Prayerbook.PRAYER18,
+                client.interface_id.Prayerbook.PRAYER19,
+                client.interface_id.Prayerbook.PRAYER20,
+                client.interface_id.Prayerbook.PRAYER21,
+                client.interface_id.Prayerbook.PRAYER22,
+                client.interface_id.Prayerbook.PRAYER23,
+                client.interface_id.Prayerbook.PRAYER24,
+                client.interface_id.Prayerbook.PRAYER25,
+                client.interface_id.Prayerbook.PRAYER26,
+                client.interface_id.Prayerbook.PRAYER27,
+                client.interface_id.Prayerbook.PRAYER28,
+                client.interface_id.Prayerbook.PRAYER29,
             ],
             [
                 "Thick Skin",
@@ -127,27 +127,27 @@ class Prayer(GameTabs):
         )
 
         self.quickprayer_orb = Buttons(
-            client.InterfaceID.ORBS, [client.InterfaceID.Orbs.PRAYERBUTTON], ["Quick-prayers"]
+            client.interface_id.ORBS, [client.interface_id.Orbs.PRAYERBUTTON], ["Quick-prayers"]
         )
 
         self.close_quickprayer_button = Buttons(
-            client.InterfaceID.QUICKPRAYER, [client.InterfaceID.Quickprayer.CLOSE], ["Done"]
+            client.interface_id.QUICKPRAYER, [client.interface_id.Quickprayer.CLOSE], ["Done"]
         )
 
     def get_active_prayer_varbit(self) -> int | None:
         """Get the varp value representing active prayers."""
-        return client.resources.varps.getVarbitByName("PRAYER_ALLACTIVE")
+        return client.resources.varps.get_varbit_by_name("PRAYER_ALLACTIVE")
 
     def get_quick_prayer_varbit(self) -> int | None:
         """Get the varp value representing active quick-prayers."""
-        return client.resources.varps.getVarbitByName("QUICKPRAYER_SELECTED")
+        return client.resources.varps.get_varbit_by_name("QUICKPRAYER_SELECTED")
 
     def is_prayer_active(self, prayer: PrayerType) -> bool | None:
         """Check if a specific prayer is active."""
         varbit_value = self.get_active_prayer_varbit()
         if varbit_value is None:
             return None
-        prayer_bit = 1 << Prayer.value
+        prayer_bit = 1 << prayer.value
         return (varbit_value & prayer_bit) != 0
 
     @property
@@ -200,7 +200,7 @@ class Prayer(GameTabs):
 
     def is_quick_prayer_active(self) -> bool | None:
         """Check if quick-prayers are active."""
-        varbit_value = client.resources.varps.getVarbitByName("QUICKPRAYER_ACTIVE")
+        varbit_value = client.resources.varps.get_varbit_by_name("QUICKPRAYER_ACTIVE")
         if varbit_value is None:
             return None
         return varbit_value == 1
@@ -225,15 +225,15 @@ class Prayer(GameTabs):
 
     def is_quick_prayer_setup_open(self) -> bool:
         """Check if the quick-prayer setup interface is open."""
-        return client.InterfaceID.QUICKPRAYER in client.interfaces.getOpenInterfaces()
+        return client.interface_id.QUICKPRAYER in client.interfaces.get_open_interfaces()
 
     def open_quick_prayer_setup(self) -> bool:
         """Open the quick-prayer setup interface."""
-        if client.InterfaceID.QUICKPRAYER in client.interfaces.getOpenInterfaces():
+        if client.interface_id.QUICKPRAYER in client.interfaces.get_open_interfaces():
             return True
 
         if self.quickprayer_orb.interact(menu_option="Setup"):
-            if not waitUntil(self.is_quick_prayer_setup_open, timeout=3.0):
+            if not wait_until(self.is_quick_prayer_setup_open, timeout=3.0):
                 raise TimeoutError("Timed out waiting for quick-prayer setup interface to open.")
             return True
         return False
@@ -244,7 +244,7 @@ class Prayer(GameTabs):
             return True
 
         if self.close_quickprayer_button.interact("Done"):
-            if not waitUntil(lambda: not self.is_quick_prayer_setup_open(), timeout=3.0):
+            if not wait_until(lambda: not self.is_quick_prayer_setup_open(), timeout=3.0):
                 raise TimeoutError("Timed out waiting for quick-prayer setup interface to close.")
             return True
         return False
@@ -254,11 +254,11 @@ class Prayer(GameTabs):
         if not self.prayer_buttons.is_ready:
             if self.is_quick_prayer_setup_open():
                 self.close_quick_prayer_setup()
-            self.prayer_buttons.setBoxes()
+            self.prayer_buttons.set_boxes()
         if not self.open_quick_prayer_setup():
             return False
 
-        current_quick_prayers = set(self.selected_quick_prayers)
+        current_quick_prayers = set(self.selected_quick_prayers or [])
         prayer_set = set(prayers)
 
         should_activate = prayer_set.difference(current_quick_prayers)
@@ -269,15 +269,15 @@ class Prayer(GameTabs):
             if not self.prayer_buttons.interact(self.prayer_buttons.names[prayer.value]):
                 return False
         if should_deactivate:
-            waitTicks(1)  # Wait for interface to update
+            wait_ticks(1)  # Wait for interface to update
         # Activate prayers in the desired set
         for prayer in should_activate:
             if not self.prayer_buttons.interact(self.prayer_buttons.names[prayer.value]):
                 return False
         if should_activate:
-            waitTicks(1)  # Wait for interface to update
+            wait_ticks(1)  # Wait for interface to update
 
-        return self.close_quick_prayer_setup() and set(self.selected_quick_prayers) == prayer_set
+        return self.close_quick_prayer_setup() and set(self.selected_quick_prayers or []) == prayer_set
 
 
 # Module-level instance

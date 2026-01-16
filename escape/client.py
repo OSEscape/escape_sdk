@@ -4,11 +4,14 @@ Main Client class that provides access to all game modules.
 
 import os
 from pathlib import Path
+from types import ModuleType
 from typing import TYPE_CHECKING
 
 from escape._internal.api import RuneLiteAPI  # noqa: E402
-from escape._internal.cache_manager import ensureGeneratedInPath, ensureResourcesLoaded
+from escape._internal.cache_manager import ensure_generated_in_path, ensure_resources_loaded
 from escape._internal.logger import logger
+from escape._internal.resources import objects as objects_module
+from escape._internal.resources import varps as varps_module
 
 
 def _ensure_generated_symlink() -> None:
@@ -55,11 +58,11 @@ def _ensure_generated_symlink() -> None:
 
 
 # Ensure symlink is active before importing generated modules
-ensureGeneratedInPath()
+ensure_generated_in_path()
 _ensure_generated_symlink()
 
 # Check for game resource updates
-if not ensureResourcesLoaded():
+if not ensure_resources_loaded():
     logger.warning("Some resources failed to load")
 
 GLOBAL_API_INSTANCE: RuneLiteAPI = RuneLiteAPI()
@@ -119,14 +122,14 @@ class Client:
         self._event_consumer.start(wait_for_warmup=True)
 
         # Register for automatic cleanup on exit
-        from escape._internal.cleanup import registerApiForCleanup
+        from escape._internal.cleanup import register_api_for_cleanup
 
-        registerApiForCleanup(self.api)
+        register_api_for_cleanup(self.api)
 
         # Ensure cleanup happens on Ctrl+C
-        from escape._internal.cleanup import ensureCleanupOnSignal
+        from escape._internal.cleanup import ensure_cleanup_on_signal
 
-        ensureCleanupOnSignal()
+        ensure_cleanup_on_signal()
 
         logger.success("Client ready")
 
@@ -134,7 +137,7 @@ class Client:
         """Wait for event cache warmup to complete."""
         if self._event_consumer is None:
             return True
-        return self._event_consumer.waitForWarmup(timeout=timeout)
+        return self._event_consumer.wait_for_warmup(timeout=timeout)
 
     def connect(self):
         """Connect to RuneLite bridge."""
@@ -166,6 +169,7 @@ class Client:
         """
         return self._connected
 
+
     def query(self):
         """Create a query for API operations."""
         return self.api.query()
@@ -183,7 +187,7 @@ class Client:
 
             return ItemID
         except ImportError:
-            from constants import ItemID
+            from constants import ItemID  # type: ignore[import-not-found]
 
             return ItemID
 
@@ -195,7 +199,7 @@ class Client:
 
             return ObjectID
         except ImportError:
-            from constants import ObjectID
+            from constants import ObjectID  # type: ignore[import-not-found]
 
             return ObjectID
 
@@ -207,7 +211,7 @@ class Client:
 
             return NpcID
         except ImportError:
-            from constants import NpcID
+            from constants import NpcID  # type: ignore[import-not-found]
 
             return NpcID
 
@@ -219,7 +223,7 @@ class Client:
 
             return AnimationID
         except ImportError:
-            from constants import AnimationID
+            from constants import AnimationID  # type: ignore[import-not-found]
 
             return AnimationID
 
@@ -231,7 +235,7 @@ class Client:
 
             return InterfaceID
         except ImportError:
-            from constants import InterfaceID
+            from constants import InterfaceID  # type: ignore[import-not-found]
 
             return InterfaceID
 
@@ -243,7 +247,7 @@ class Client:
 
             return VarClientID
         except ImportError:
-            from constants import VarClientID
+            from constants import VarClientID  # type: ignore[import-not-found]
 
             return VarClientID
 
@@ -255,9 +259,10 @@ class Client:
 
             return SpriteID
         except ImportError:
-            from constants import SpriteID
+            from constants import SpriteID  # type: ignore[import-not-found]
 
             return SpriteID
+
 
     @property
     def tabs(self) -> "Tabs":
@@ -319,18 +324,14 @@ class Client:
         """Namespace for accessing game resources."""
 
         @property
-        def varps(self):
+        def varps(self) -> ModuleType:
             """Access varps/varbits functions."""
-            from escape._internal.resources import varps
-
-            return varps
+            return varps_module
 
         @property
-        def objects(self):
+        def objects(self) -> ModuleType:
             """Access objects functions."""
-            from escape._internal.resources import objects
-
-            return objects
+            return objects_module
 
     @property
     def cache(self) -> "EventCache":

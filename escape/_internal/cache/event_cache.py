@@ -9,7 +9,7 @@ import time
 from typing import Any
 
 from escape.types import ItemContainer
-from escape.utilities.timing import waitUntil
+from escape.utilities.timing import wait_until
 
 from .state_builder import StateBuilder
 
@@ -73,7 +73,7 @@ class EventCache:
         with self._lock:
             self._state.latest_states.clear()
             self._state.recent_events.clear()
-            self._state.varbits.clear()
+            self._state.varps.clear()
             self._state.skills.clear()
             self._state.inventory = [-1] * 28
             self._state.equipment.clear()
@@ -162,10 +162,18 @@ class EventCache:
                 and not self._state.ground_items_initialized
             ):
                 self._state.init_ground_items()
-                if waitUntil(self._state.latest_states.get("ground_items") is not None, timeout=5):
+                if wait_until(lambda: self._state.latest_states.get("ground_items") is not None, timeout=5):
                     self._state.ground_items_initialized = True
 
-            return self._state.latest_states.get("ground_items", {}).copy()
+            raw = self._state.latest_states.get("ground_items", {})
+            normalized: dict[int, Any] = {}
+            if isinstance(raw, dict):
+                for key, value in raw.items():
+                    if isinstance(key, int):
+                        normalized[key] = value
+                    elif isinstance(key, str) and key.lstrip("-").isdigit():
+                        normalized[int(key)] = value
+            return normalized
 
     def get_item_container(self, container_id: int) -> ItemContainer | None:
         """Get item container by ID (93=inventory, 94=equipment, 95=bank)."""
@@ -175,8 +183,12 @@ class EventCache:
                 return None
 
             if container_id in [93, 94] and not self._state.containers_initialized:
-                self._state.itemcontainers.get(93, None).populate()
-                self._state.itemcontainers.get(94, None).populate()
+                inventory = self._state.itemcontainers.get(93)
+                equipment = self._state.itemcontainers.get(94)
+                if inventory:
+                    inventory.populate()
+                if equipment:
+                    equipment.populate()
                 self._state.containers_initialized = True
 
             if container_id not in containers:
@@ -184,11 +196,11 @@ class EventCache:
 
             return self._state.itemcontainers.get(container_id, None)
 
-    def get_menu_options(self) -> list[dict[str, Any]]:
+    def get_menu_options(self) -> dict[str, Any]:
         """Get latest menu options."""
         with self._lock:
-            menu_state = self._state.latest_states.get("post_menu_sort", {}).copy()
-            return menu_state
+            menu_state = self._state.latest_states.get("post_menu_sort", {})
+            return menu_state.copy() if isinstance(menu_state, dict) else {}
 
     def get_menu_open_state(self) -> dict[str, Any]:
         """Get latest menu open state."""
@@ -217,14 +229,24 @@ class EventCache:
             menu_clicked = self._state.latest_states.get("menu_option_clicked", {})
             return menu_clicked.get("consumed", False)
 
-    def get_open_widgets(self) -> list[dict[int, Any]]:
+    def get_open_widgets(self) -> list[int]:
         """Get list of currently open widgets."""
         with self._lock:
-            return (
+            raw = (
                 self._state.latest_states.get("active_interfaces", {})
                 .get("active_interfaces", [])
-                .copy()
             )
+            if not isinstance(raw, list):
+                return []
+            result: list[int] = []
+            for item in raw:
+                if isinstance(item, int):
+                    result.append(item)
+                elif isinstance(item, dict):
+                    value = item.get("id")
+                    if isinstance(value, int):
+                        result.append(value)
+            return result
 
     def get_camera_state(
         self,
@@ -282,6 +304,13 @@ class EventCache:
         with self._lock:
             world_view = self._state.latest_states.get("world_view_loaded", {})
             return world_view.get("plane", 0)
+
+    def get_skill(self, skill_name: str) -> dict[str, int] | None:
+        """Get a specific skill's data by name."""
+        with self._lock:
+            if len(self._state.skills) != 24:
+                self._state.init_skills()
+            return self._state.skills.get(skill_name)
 
 
 if __name__ == "__main__":

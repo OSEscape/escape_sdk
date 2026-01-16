@@ -10,17 +10,17 @@ class TestClient:
         """Test that client initializes properly."""
         client = Client()
         assert client is not None
-        assert not client.isConnected()
+        assert not client.is_connected()
 
     def test_client_connection(self, client):
         """Test client connection."""
-        assert not client.isConnected()
+        assert not client.is_connected()
         result = client.connect()
         assert result is True
-        assert client.isConnected()
+        assert client.is_connected()
 
     def test_client_disconnection(self, connected_client):
         """Test client disconnection."""
-        assert connected_client.isConnected()
+        assert connected_client.is_connected()
         connected_client.disconnect()
-        assert not connected_client.isConnected()
+        assert not connected_client.is_connected()

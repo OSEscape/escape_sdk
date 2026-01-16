@@ -278,6 +278,8 @@ class RuneLite:
         """Activate and bring RuneLite window to foreground."""
         if self._window_id is None and not self.detect_window():
             return False
+        if self._window_id is None:
+            return False
 
         try:
             window_id_hex = hex(self._window_id)

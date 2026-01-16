@@ -5,7 +5,7 @@ Base GameTab class - parent class for all game tab modules.
 from enum import Enum
 
 from escape.types.box import Box
-from escape.utilities.timing import waitUntil
+from escape.utilities.timing import wait_until
 
 
 class GameTab(Enum):
@@ -64,7 +64,7 @@ class GameTabs:
         """Check if this specific game tab is currently open."""
         from escape.client import client
 
-        current_tab = client.tabs.getOpenTab()
+        current_tab = client.tabs.get_open_tab()
         return current_tab == self.TAB_TYPE
 
     def hover(self) -> bool:
@@ -90,4 +90,4 @@ class GameTabs:
         tab_area = self.tab_box_array[self.TAB_TYPE.value]
         tab_area.click()
 
-        return waitUntil(self.is_open, timeout=0.1, poll_interval=0.001)
+        return wait_until(self.is_open, timeout=0.1, poll_interval=0.001)

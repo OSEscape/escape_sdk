@@ -6,6 +6,20 @@ from typing import Any
 from escape._internal.logger import logger
 from escape.types.packed_position import pack_position_signed, unpack_position
 
+__all__ = [
+    "get_by_id",
+    "get_by_name",
+    "get_locations",
+    "get_nearby",
+    "search_by_action",
+    "count_objects",
+    "count_locations",
+    "execute_query",
+    "close",
+    # Setter for cache_manager
+    "set_db_connection",
+]
+
 # Module-level database connection (loaded by cache_manager at init)
 _db_connection: sqlite3.Connection | None = None
 
@@ -237,3 +251,10 @@ def close():
     if _db_connection:
         _db_connection.close()
         _db_connection = None
+
+
+def set_db_connection(conn: sqlite3.Connection) -> None:
+    """Set the database connection (called by cache_manager during initialization)."""
+    global _db_connection
+    _db_connection = conn
+    _db_connection.row_factory = sqlite3.Row

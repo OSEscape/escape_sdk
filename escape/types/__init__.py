@@ -1,6 +1,6 @@
 """Type definitions, enums, and models."""
 
-from .box import Box, createGrid
+from .box import Box, create_grid
 from .circle import Circle
 from .gametab import GameTab, GameTabs
 from .item import Item, ItemIdentifier
@@ -25,5 +25,5 @@ __all__ = [
     "Widget",
     "WidgetField",
     "WidgetFields",
-    "createGrid",
+    "create_grid",
 ]

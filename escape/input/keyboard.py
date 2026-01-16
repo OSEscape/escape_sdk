@@ -2,6 +2,7 @@
 
 import random
 import time
+from typing import Any
 
 try:
     import pyautogui as pag
@@ -30,6 +31,7 @@ class Keyboard:
         # Configure pyautogui
         pag.PAUSE = 0
         pag.FAILSAFE = False
+        self._pag: Any = pag
 
         self.runelite = runelite
         self.speed = speed
@@ -41,22 +43,22 @@ class Keyboard:
     def _press(self, key: str) -> None:
         """Core press function - ONLY access point to pyautogui.press()."""
         self._ensure_focus()
-        pag.press(key, _pause=False)
+        self._pag.press(key, _pause=False)
 
     def _key_down(self, key: str) -> None:
         """Core key down function - ONLY access point to pyautogui.keyDown()."""
         self._ensure_focus()
-        pag.keyDown(key, _pause=False)
+        self._pag.keyDown(key, _pause=False)
 
     def _key_up(self, key: str) -> None:
         """Core key up function - ONLY access point to pyautogui.keyUp()."""
         self._ensure_focus()
-        pag.keyUp(key, _pause=False)
+        self._pag.keyUp(key, _pause=False)
 
     def _type_char(self, char: str) -> None:
         """Core type function - ONLY access point to pyautogui.write() for single char."""
         self._ensure_focus()
-        pag.write(char, interval=0, _pause=False)
+        self._pag.write(char, interval=0, _pause=False)
 
     def type(self, text: str, humanize: bool = True) -> None:
         """Type text with optional human-like delays."""

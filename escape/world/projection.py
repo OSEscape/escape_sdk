@@ -194,7 +194,7 @@ class TileGrid:
         from escape.types import Quad
 
         nw_x, nw_y, ne_x, ne_y, se_x, se_y, sw_x, sw_y = self.get_tile_corners(tile_idx)
-        return Quad.fromCoords([(nw_x, nw_y), (ne_x, ne_y), (se_x, se_y), (sw_x, sw_y)])
+        return Quad.from_coords([(nw_x, nw_y), (ne_x, ne_y), (se_x, se_y), (sw_x, sw_y)])
 
     def get_visible_indices(self, mask: np.ndarray | None = None, margin: int = 0) -> np.ndarray:
         """Get flat indices of visible tiles, optionally filtered by mask."""
@@ -214,6 +214,7 @@ class TileGrid:
             visible = visible & mask
 
         return np.where(visible)[0]
+
 
 
 class Projection:
@@ -295,10 +296,10 @@ class Projection:
 
     def _refresh_camera(self) -> bool:
         """Load camera state from EventCache. Returns True if successful."""
-        from escape.globals import getEventCache
+        from escape.globals import get_event_cache
 
-        cache = getEventCache()
-        cam_data = cache.getCameraState()
+        cache = get_event_cache()
+        cam_data = cache.get_camera_state()
         if not cam_data:
             return False
 
@@ -310,7 +311,7 @@ class Projection:
         self._yaw_cos = np.cos(yaw)
 
         # Entity transform
-        ent_data = cache.getEntityTransform()
+        ent_data = cache.get_entity_transform()
         if ent_data:
             self._entity_x, self._entity_y = ent_data[0], ent_data[1]
             self._orient_sin = self._sin_table[ent_data[2]]
@@ -325,9 +326,9 @@ class Projection:
     def _compute_tile_grid(self):
         """Compute corner projections for all tiles."""
         # Get current plane
-        from escape.globals import getEventCache
+        from escape.globals import get_event_cache
 
-        gametick = getEventCache().getGametickState()
+        gametick = get_event_cache().get_gametick_state()
         plane = gametick.get("plane", 0) if gametick else 0
 
         # Generate corner grid: (size_x+1) x (size_y+1)
@@ -362,6 +363,9 @@ class Projection:
         self, local_x: np.ndarray, local_y: np.ndarray, plane: int
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Core projection: local coords -> screen coords."""
+        if self.bridge_flags is None or self.tile_heights is None:
+            raise RuntimeError("Projection scene data not initialized")
+
         # Tile heights with bridge correction
         scene_x = (local_x.astype(np.int32) >> 7).clip(0, self.size_x - 1)
         scene_y = (local_y.astype(np.int32) >> 7).clip(0, self.size_y - 1)
@@ -423,6 +427,7 @@ class Projection:
             self._center_y = config.center_y
         else:
             self._center_x = self._center_y = 0
+
 
     def world_tile_to_canvas(self, world_x: int, world_y: int, plane: int) -> Point | None:
         """Project a world tile center to screen. Returns None if off-scene or behind camera."""

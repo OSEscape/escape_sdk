@@ -7,7 +7,7 @@ import random
 
 from escape._internal.logger import logger
 from escape.client import client
-from escape.types.box import Box, createGrid
+from escape.types.box import Box, create_grid
 from escape.types.item import Item, ItemIdentifier
 from escape.types.itemcontainer import ItemContainer
 from escape.types.widget import Widget, WidgetFields
@@ -68,20 +68,20 @@ class Bank(ItemContainer):
         }
         self.search_button = Box(386, 295, 422, 331)
         self.settings_button = Box(467, 48, 492, 73)
-        self.tab_buttons = createGrid(
-            startX=62, startY=45, width=36, height=32, columns=9, rows=1, spacingX=5, spacingY=0
+        self.tab_buttons = create_grid(
+            start_x=62, start_y=45, width=36, height=32, columns=9, rows=1, spacing_x=5, spacing_y=0
         )
         self.is_setup = False
 
         self.bank_area = Box(62, 83, 482, 293)
         self.bank_cache = {"lasttime": 0, "items": [], "quantities": []}
 
-        self.capacity_widget = Widget(client.InterfaceID.Bankmain.CAPACITY)
-        self.capacity_widget.enable(WidgetFields.getText)
+        self.capacity_widget = Widget(client.interface_id.Bankmain.CAPACITY)
+        self.capacity_widget.enable(WidgetFields.get_text)
 
-        self.item_widget = Widget(client.InterfaceID.Bankmain.ITEMS)
-        self.item_widget.enable(WidgetFields.getBounds)
-        self.item_widget.enable(WidgetFields.isHidden)
+        self.item_widget = Widget(client.interface_id.Bankmain.ITEMS)
+        self.item_widget.enable(WidgetFields.get_bounds)
+        self.item_widget.enable(WidgetFields.is_hidden)
 
     def __init__(self):
         """Override to prevent ItemContainer.__init__ from running."""
@@ -89,14 +89,17 @@ class Bank(ItemContainer):
 
     @property
     def items(self) -> list[Item | None]:
-        cached = client.cache.getItemContainer(self.CONTAINER_ID)
+        cached = client.cache.get_item_container(self.CONTAINER_ID)
+        if cached is None:
+            self._items = []
+            return self._items
         self._items = cached.items
         return self._items
 
     def is_open(self) -> bool:
         """Check if bank interface is open."""
 
-        if client.InterfaceID.BANKMAIN in client.interfaces.get_open_interfaces():
+        if client.interface_id.BANKMAIN in client.interfaces.get_open_interfaces():
             if not self.is_setup:
                 text = self.capacity_widget.get().get("text", None)
 
@@ -112,7 +115,7 @@ class Bank(ItemContainer):
         if not self.is_open():
             return None
 
-        return client.resources.varps.getVarbitByName("BANK_CURRENTTAB")
+        return client.resources.varps.get_varbit_by_name("BANK_CURRENTTAB")
 
     def get_itemcount_in_tab(self, tab_index: int) -> int:
         if tab_index > 8 or tab_index < 0:
@@ -121,22 +124,22 @@ class Bank(ItemContainer):
         if tab_index == 0:
             tabcounts = 0
             for i in range(1, 9):
-                count = client.resources.varps.getVarbitByName(f"BANK_TAB_{i}")
+                count = client.resources.varps.get_varbit_by_name(f"BANK_TAB_{i}")
                 if count is None:
                     count = 0
                 tabcounts += count
-            return self.getTotalCount() - tabcounts
+            return self.get_total_count() - tabcounts
 
-        return client.resources.varps.getVarbitByName(f"BANK_TAB_{tab_index}")
+        return client.resources.varps.get_varbit_by_name(f"BANK_TAB_{tab_index}")
 
     def get_current_x_amount(self) -> int:
-        return client.resources.varps.getVarbitByName("BANK_REQUESTEDQUANTITY")
+        return client.resources.varps.get_varbit_by_name("BANK_REQUESTEDQUANTITY")
 
     def set_noted_mode(self, noted: bool) -> bool:
         if not self.is_open():
             return False
 
-        currently_noted = client.resources.varps.getVarbitByName("BANK_WITHDRAWNOTES") > 0
+        currently_noted = client.resources.varps.get_varbit_by_name("BANK_WITHDRAWNOTES") > 0
 
         logger.info(f"Setting noted mode to {noted}, currently {currently_noted}")
 
@@ -146,8 +149,8 @@ class Bank(ItemContainer):
         if currently_noted and not noted:
             self.withdraw_item_button.click()
 
-        return timing.waitUntil(
-            lambda: client.resources.varps.getVarbitByName("BANK_WITHDRAWNOTES")
+        return timing.wait_until(
+            lambda: client.resources.varps.get_varbit_by_name("BANK_WITHDRAWNOTES")
             == (1 if noted else 0),
             timeout=2.0,
         )
@@ -156,19 +159,19 @@ class Bank(ItemContainer):
         if not self.is_open():
             return False
 
-        return client.resources.varps.getVarcValue(client.VarClientID.MESLAYERMODE) == 11
+        return client.resources.varps.get_varc_value(client.var_client_id.MESLAYERMODE) == 11
 
     def is_x_query_open(self) -> bool:
         if not self.is_open():
             return False
 
-        return client.resources.varps.getVarcValue(client.VarClientID.MESLAYERMODE) == 7
+        return client.resources.varps.get_varc_value(client.var_client_id.MESLAYERMODE) == 7
 
     def get_search_text(self) -> str:
         if not self.is_search_open():
             return ""
 
-        return client.resources.varps.getVarcValue(client.VarClientID.MESLAYERINPUT)
+        return client.resources.varps.get_varc_value(client.var_client_id.MESLAYERINPUT)
 
     def open_search(self) -> bool:
         if not self.is_open():
@@ -187,7 +190,7 @@ class Bank(ItemContainer):
 
         client.input.keyboard.type(text)
 
-        return timing.waitUntil(lambda: self.get_search_text() == text, timeout=0.5)
+        return timing.wait_until(lambda: self.get_search_text() == text, timeout=0.5)
 
     def itemcounts_per_tab(self):
         counts = []
@@ -200,10 +203,10 @@ class Bank(ItemContainer):
 
     def get_index(self, identifier: ItemIdentifier) -> int | None:
         """Get the slot index of an item in the bank."""
-        if not self.containsItem(identifier):
+        if not self.contains_item(identifier):
             return None
 
-        return self.findItemSlot(identifier)
+        return self.find_item_slot(identifier)
 
     def get_item_box(self, identifier: ItemIdentifier) -> Box | None:
         """Get the bounding box of an item in the bank."""
@@ -212,10 +215,10 @@ class Bank(ItemContainer):
         if index is None:
             return None
 
-        result = self.item_widget.getChild(index)
+        result = self.item_widget.get_child(index)
         try:
             print(result)
-            if result["isHidden"]:
+            if result["is_hidden"]:
                 return None
             rectdata = result["bounds"]
             return Box(
@@ -263,7 +266,7 @@ class Bank(ItemContainer):
 
     def make_item_visible(self, identifier: ItemIdentifier) -> Box | None:
         """Scroll the bank view to make an item visible and clickable."""
-        if not self.containsItem(identifier):
+        if not self.contains_item(identifier):
             raise ValueError("Item not found in bank")
 
         box = self.get_item_box(identifier)
@@ -275,6 +278,8 @@ class Bank(ItemContainer):
             if not self.open_tab(tab_index):
                 return None
             box = self.get_item_box(identifier)
+            if box is None:
+                return None
 
         scroll_count, scroll_up = self.get_scroll_count(box)
 
@@ -286,10 +291,12 @@ class Bank(ItemContainer):
 
             # Verify visibility
             box = self.get_item_box(identifier)
+            if box is None:
+                return None
 
         logger.info(f"found box: {box}")
 
-        if self.is_box_clickable(box):
+        if box is not None and self.is_box_clickable(box):
             return box
         else:
             return None
@@ -324,7 +331,7 @@ class Bank(ItemContainer):
 
         self.tab_buttons[tab_index].click()
 
-        return timing.waitUntil(lambda: self.get_open_tab() == tab_index, timeout=2.0)
+        return timing.wait_until(lambda: self.get_open_tab() == tab_index, timeout=2.0)
 
     def set_withdraw_quantity(self, quantity: str, wait: bool = True) -> bool:
         """Set the withdraw quantity mode."""
@@ -343,12 +350,12 @@ class Bank(ItemContainer):
         if not wait:
             return True
 
-        return timing.waitUntil(
-            lambda: client.resources.varps.getVarbitByName("BANK_QUANTITY_TYPE") == index, timeout=1
+        return timing.wait_until(
+            lambda: client.resources.varps.get_varbit_by_name("BANK_QUANTITY_TYPE") == index, timeout=1
         )
 
     def check_items_deposited(self, start_count) -> bool:
-        current_count = client.tabs.inventory.getTotalQuantity()
+        current_count = client.tabs.inventory.get_total_quantity()
         logger.info(f"start count: {start_count}, current count: {current_count}")
         return current_count < start_count
 
@@ -357,7 +364,7 @@ class Bank(ItemContainer):
         if not self.is_open():
             return False
 
-        start = client.tabs.inventory.getTotalQuantity()
+        start = client.tabs.inventory.get_total_quantity()
 
         if start == 0:
             return True  # Nothing to deposit
@@ -367,21 +374,21 @@ class Bank(ItemContainer):
         if not wait:
             return True
 
-        return timing.waitUntil(lambda: self.check_items_deposited(start), timeout=2.0)
+        return timing.wait_until(lambda: self.check_items_deposited(start), timeout=2.0)
 
     def deposit_equipment(self, wait: bool = True) -> bool:
         """Deposit all worn equipment."""
         if not self.is_open():
             return False
 
-        start = client.tabs.equipment.getTotalCount()
+        start = client.tabs.equipment.get_total_count()
 
         self.deposit_gear_button.click()
 
         if not wait:
             return True
 
-        return timing.waitUntil(lambda: client.tabs.equipment.getTotalCount() < start, timeout=2.0)
+        return timing.wait_until(lambda: client.tabs.equipment.get_total_count() < start, timeout=2.0)
 
     def withdraw_items(self, bank_items: list[BankItem], safe: bool = True) -> bool:
         """Withdraw multiple items from the bank."""
@@ -393,16 +400,18 @@ class Bank(ItemContainer):
             quantity = bank_item.quantity
             noted = bank_item.noted
 
-            if not self.containsItem(identifier):
+            if not self.contains_item(identifier):
                 if safe:
                     raise ValueError(f"Item {identifier} not found in bank!")
                 return False
 
-            slot = self.findItemSlot(identifier)
-            if slot is not None and self.items[slot].quantity < quantity:
-                if safe:
-                    raise ValueError(f"Not enough quantity of {identifier} in bank!")
-                return False
+            slot = self.find_item_slot(identifier)
+            if slot is not None:
+                item = self.items[slot]
+                if item is None or item.quantity < quantity:
+                    if safe:
+                        raise ValueError(f"Not enough quantity of {identifier} in bank!")
+                    return False
 
             if not self.is_open():
                 return False
@@ -415,23 +424,23 @@ class Bank(ItemContainer):
                 return False
 
             area.hover()
-            client.interactions.menu.waitHasOption("Withdraw")
+            client.interactions.menu.wait_has_option("Withdraw")
 
             if quantity == 1:
-                client.interactions.menu.clickOption("Withdraw-1")
+                client.interactions.menu.click_option("Withdraw-1")
             elif quantity == 5:
-                client.interactions.menu.clickOption("Withdraw-5")
+                client.interactions.menu.click_option("Withdraw-5")
             elif quantity == 10:
-                client.interactions.menu.clickOption("Withdraw-10")
+                client.interactions.menu.click_option("Withdraw-10")
             elif quantity <= 0:
-                client.interactions.menu.clickOption("Withdraw-All")
+                client.interactions.menu.click_option("Withdraw-All")
             elif self.get_current_x_amount() == quantity:
-                client.interactions.menu.clickOption(f"Withdraw-{quantity}")
+                client.interactions.menu.click_option(f"Withdraw-{quantity}")
             else:
-                client.interactions.menu.clickOption("Withdraw-X")
-                timing.waitUntil(lambda: self.is_x_query_open(), timeout=3.0)
+                client.interactions.menu.click_option("Withdraw-X")
+                timing.wait_until(lambda: self.is_x_query_open(), timeout=3.0)
                 client.input.keyboard.type(str(quantity))
-                client.input.keyboard.pressEnter()
+                client.input.keyboard.press_enter()
 
         return True
 

@@ -8,6 +8,7 @@ from escape.client import client
 from escape.types.box import Box
 from escape.types.gametab import GameTab, GameTabs
 from escape.types.interfaces.buttons import Buttons
+from escape.types.item import Item
 from escape.types.itemcontainer import ItemContainer
 
 
@@ -47,12 +48,12 @@ class Equipment(GameTabs, ItemContainer):
         GameTabs.__init__(self)
         self.containerId = self.CONTAINER_ID
         self.bottom_buttons = Buttons(
-            client.InterfaceID.WORNITEMS,
+            client.interface_id.WORNITEMS,
             [
-                client.InterfaceID.Wornitems.EQUIPMENT,
-                client.InterfaceID.Wornitems.PRICECHECKER,
-                client.InterfaceID.Wornitems.DEATHKEEP,
-                client.InterfaceID.Wornitems.CALL_FOLLOWER,
+                client.interface_id.Wornitems.EQUIPMENT,
+                client.interface_id.Wornitems.PRICECHECKER,
+                client.interface_id.Wornitems.DEATHKEEP,
+                client.interface_id.Wornitems.CALL_FOLLOWER,
             ],
             [
                 "View equipment stats",
@@ -63,20 +64,20 @@ class Equipment(GameTabs, ItemContainer):
         )
 
         self.slots = Buttons(
-            client.InterfaceID.WORNITEMS,
+            client.interface_id.WORNITEMS,
             [
-                client.InterfaceID.Wornitems.SLOT0,
-                client.InterfaceID.Wornitems.SLOT1,
-                client.InterfaceID.Wornitems.SLOT2,
-                client.InterfaceID.Wornitems.SLOT3,
-                client.InterfaceID.Wornitems.SLOT4,
-                client.InterfaceID.Wornitems.SLOT5,
-                client.InterfaceID.Wornitems.SLOT7,
-                client.InterfaceID.Wornitems.SLOT9,
-                client.InterfaceID.Wornitems.SLOT10,
-                client.InterfaceID.Wornitems.SLOT12,
-                client.InterfaceID.Wornitems.SLOT13,
-                client.InterfaceID.Wornitems.EXTRA_QUIVER_AMMO,
+                client.interface_id.Wornitems.SLOT0,
+                client.interface_id.Wornitems.SLOT1,
+                client.interface_id.Wornitems.SLOT2,
+                client.interface_id.Wornitems.SLOT3,
+                client.interface_id.Wornitems.SLOT4,
+                client.interface_id.Wornitems.SLOT5,
+                client.interface_id.Wornitems.SLOT7,
+                client.interface_id.Wornitems.SLOT9,
+                client.interface_id.Wornitems.SLOT10,
+                client.interface_id.Wornitems.SLOT12,
+                client.interface_id.Wornitems.SLOT13,
+                client.interface_id.Wornitems.EXTRA_QUIVER_AMMO,
             ],
             list(EquipmentSlots.__members__.keys()),
             menu_text="Remove",
@@ -98,9 +99,12 @@ class Equipment(GameTabs, ItemContainer):
         self.is_ready = True
 
     @property
-    def items(self):
+    def items(self) -> list[Item | None]:
         """Auto-sync items from cache when accessed."""
-        cached = client.cache.getItemContainer(self.CONTAINER_ID)
+        cached = client.cache.get_item_container(self.CONTAINER_ID)
+        if cached is None:
+            self._items = []
+            return self._items
         self._items = cached.items
         return self._items
 

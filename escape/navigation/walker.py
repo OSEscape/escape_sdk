@@ -40,7 +40,7 @@ class Walker:
         """Get player scene position (scene_x, scene_y) from cache."""
         from escape.client import client
 
-        pos = client.cache.scenePosition
+        pos = client.cache.scene_position
         if pos is None:
             return None
         return (pos.get("sceneX", 0), pos.get("sceneY", 0))
@@ -49,7 +49,7 @@ class Walker:
         """Get current walk target in scene coordinates."""
         from escape.client import client
 
-        target = client.cache.targetLocation
+        target = client.cache.target_location
         if target is None:
             return None
 
@@ -95,7 +95,7 @@ class Walker:
 
     def _find_first_obstacle_index(self, path: "Path") -> int:
         """Find the index of the first obstacle on the path."""
-        if not path.hasObstacles():
+        if not path.has_obstacles():
             return path.length()
 
         # Find the earliest obstacle origin
@@ -128,8 +128,8 @@ class Walker:
             return None
 
         # Filter by Chebyshev distance <= 19 (same as Java isTileClickable)
-        world_x = path.worldX[valid_indices]
-        world_y = path.worldY[valid_indices]
+        world_x = path.world_x[valid_indices]
+        world_y = path.world_y[valid_indices]
         dist = np.maximum(np.abs(world_x - player_x), np.abs(world_y - player_y))
         within_range = dist <= 19
         valid_indices = valid_indices[within_range]
@@ -145,7 +145,7 @@ class Walker:
         # Filter to tiles whose quad is FULLY inside viewport (all 4 corners)
         clickable_indices = []
         for idx in valid_indices:
-            quad = path.getQuad(int(idx))
+            quad = path.get_quad(int(idx))
             if quad is not None:
                 # Check all 4 vertices are inside viewport
                 all_inside = all(
@@ -161,8 +161,8 @@ class Walker:
         clickable_indices = np.array(clickable_indices)
 
         # Get world coordinates for clickable tiles
-        world_x = path.worldX[clickable_indices]
-        world_y = path.worldY[clickable_indices]
+        world_x = path.world_x[clickable_indices]
+        world_y = path.world_y[clickable_indices]
 
         # Calculate distance from player (Chebyshev)
         dist = np.maximum(np.abs(world_x - player_x), np.abs(world_y - player_y))
@@ -194,11 +194,11 @@ class Walker:
         quad.hover()
 
         # Wait for WALK action to appear in menu
-        if not client.interactions.menu.waitHasType("WALK", timeout=0.5):
+        if not client.interactions.menu.wait_has_type("WALK", timeout=0.5):
             return False
 
         # Click the walk action
-        return client.interactions.menu.clickOptionType("WALK")
+        return client.interactions.menu.click_option_type("WALK")
 
     def walk_to(
         self,
@@ -229,14 +229,14 @@ class Walker:
 
         # Get path to destination
         path = pathfinder.get_path(dest_x, dest_y, dest_plane)
-        if path is None or path.isEmpty():
+        if path is None or path.is_empty():
             return False
 
         # Find first obstacle (we'll walk up to it)
         obstacle_idx = self._find_first_obstacle_index(path)
 
         # Get visible path tiles (with margin to avoid edge clicks)
-        visible_indices = path.getVisibleIndices(margin=margin)
+        visible_indices = path.get_visible_indices(margin=margin)
 
         if len(visible_indices) == 0:
             # No visible path tiles - might need to turn camera or wait
@@ -249,7 +249,7 @@ class Walker:
             return False
 
         # Get the quad for this tile
-        quad = path.getQuad(target_idx)
+        quad = path.get_quad(target_idx)
         if quad is None:
             return False
 
@@ -264,11 +264,11 @@ class Walker:
         quad.hover()
 
         # Wait for WALK action to appear in menu
-        if not client.interactions.menu.waitHasType("WALK", timeout=0.5):
+        if not client.interactions.menu.wait_has_type("WALK", timeout=0.5):
             return False
 
         # Click the walk action
-        return client.interactions.menu.clickOptionType("WALK")
+        return client.interactions.menu.click_option_type("WALK")
 
     def is_moving(self) -> bool:
         """Check if player is currently moving (has a walk target)."""

@@ -318,6 +318,7 @@ class RuneLiteAPIUpdater:
         """Remove temporary download files (alias for cleanup_temp_files)"""
         self.cleanup_temp_files()
 
+
     def status(self):
         """Print current status"""
         print("=" * 80)

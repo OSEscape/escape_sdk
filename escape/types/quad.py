@@ -155,10 +155,10 @@ class Quad:
 
     def hover(self, randomize: bool = True) -> bool:
         """Move mouse to hover within this quad."""
-        from escape.globals import getClient
+        from escape.globals import get_client
         from escape.types.point import Point
 
-        current = Point(*getClient().input.mouse.position)
+        current = Point(*get_client().input.mouse.position)
         if self.contains(current):
             return True
         point = self.random_point() if randomize else self.center()
@@ -205,4 +205,4 @@ class Quad:
 
         x_points = [self.p1.x, self.p2.x, self.p3.x, self.p4.x]
         y_points = [self.p1.y, self.p2.y, self.p3.y, self.p4.y]
-        drawing.addPolygon(x_points, y_points, argb_color, filled, tag)
+        drawing.add_polygon(x_points, y_points, argb_color, filled, tag)

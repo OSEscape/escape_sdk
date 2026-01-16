@@ -216,7 +216,7 @@ class ProxyGenerator:
             return self._jni_to_python_type(return_part)
         return "Any"
 
-    def _extract_full_class_from_signature(self, signature: str) -> str:
+    def _extract_full_class_from_signature(self, signature: str) -> str | None:
         """Extract full Java class path from JNI signature return type."""
         if ")" not in signature:
             return None
@@ -989,7 +989,7 @@ def get_proxy_class(class_name: str) -> type:
 
         return True
 
-    def _generate_varbit_constants(self) -> str:
+    def _generate_varbit_constants(self) -> str | None:
         """Generate VarClientInt and VarClientStr constants."""
         constants = self.api_data.get("constants", {})
         code = []
@@ -1023,7 +1023,7 @@ def get_proxy_class(class_name: str) -> type:
 
         return "\n".join(code) if found_any else None
 
-    def _generate_other_constants(self) -> str:
+    def _generate_other_constants(self) -> str | None:
         """Generate NullItemID, NullObjectID, and NullNpcID constants."""
         constants = self.api_data.get("constants", {})
         code = []
@@ -1061,7 +1061,7 @@ def get_proxy_class(class_name: str) -> type:
 
         return "\n".join(code) if found_any else None
 
-    def _generate_item_id_constants(self) -> str:
+    def _generate_item_id_constants(self) -> str | None:
         """Generate ItemID constants with nested Noted and Placeholder classes."""
         item_ids = self.api_data.get("constants", {}).get("net.runelite.api.gameval.ItemID")
 
@@ -1102,7 +1102,7 @@ def get_proxy_class(class_name: str) -> type:
 
         return "\n".join(code)
 
-    def _generate_interface_id_constants(self) -> str:
+    def _generate_interface_id_constants(self) -> str | None:
         """Generate InterfaceID constants with nested widget classes."""
         interface_ids = self.api_data.get("interface_ids", {})
         if not interface_ids:

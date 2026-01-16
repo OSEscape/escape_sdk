@@ -1,7 +1,7 @@
 import typing
 from typing import Literal
 
-from escape.globals import getClient
+from escape.globals import get_client
 
 WidgetField = Literal[
     "getActions",
@@ -74,6 +74,7 @@ WidgetField = Literal[
 class _WidgetFields:
     """Provides autocomplete for widget field names."""
 
+    # snake_case attributes (PEP 8 convention)
     get_actions: WidgetField = "getActions"
     get_animation_id: WidgetField = "getAnimationId"
     get_border_type: WidgetField = "getBorderType"
@@ -140,6 +141,7 @@ class _WidgetFields:
     is_hidden: WidgetField = "isHidden"
 
 
+
 # Module-level instance for IDE autocomplete
 WidgetFields = _WidgetFields()
 
@@ -180,9 +182,9 @@ class Widget:
         return self
 
     @classmethod
-    def from_names(cls, *fields: WidgetField) -> "Widget":
+    def from_names(cls, widget_id: int, *fields: WidgetField) -> "Widget":
         """Build a mask in one line."""
-        w = cls()
+        w = cls(widget_id)
         for f in fields:
             w.enable(f)
         return w
@@ -192,8 +194,8 @@ class Widget:
         return {name: bool(self._mask & bit) for name, bit in self._FIELD_BITS.items()}
 
     def get(self) -> dict[str, typing.Any]:
-        client = getClient()
-        result = client.api.invokeCustomMethod(
+        client = get_client()
+        result = client.api.invoke_custom_method(
             target="WidgetInspector",
             method="getWidgetProperties",
             signature="(IJ)[B",
@@ -204,8 +206,8 @@ class Widget:
         return result
 
     def get_child(self, child_index: int) -> dict[str, typing.Any]:
-        client = getClient()
-        result = client.api.invokeCustomMethod(
+        client = get_client()
+        result = client.api.invoke_custom_method(
             target="WidgetInspector",
             method="getWidgetChild",
             signature="(IIJ)[B",
@@ -216,8 +218,8 @@ class Widget:
         return result
 
     def get_children(self) -> list[dict[str, typing.Any]]:
-        client = getClient()
-        result = client.api.invokeCustomMethod(
+        client = get_client()
+        result = client.api.invoke_custom_method(
             target="WidgetInspector",
             method="getWidgetChildren",
             signature="(IJ)[B",
@@ -228,8 +230,8 @@ class Widget:
         return result
 
     def get_children_masked(self, childmask: list[int]) -> list[dict[str, typing.Any]]:
-        client = getClient()
-        result = client.api.invokeCustomMethod(
+        client = get_client()
+        result = client.api.invoke_custom_method(
             target="WidgetInspector",
             method="getWidgetChildrenMasked",
             signature="(I[IJ)[B",
@@ -257,8 +259,8 @@ class Widget:
         parent_fields = Widget._FIELD_BITS["getParent"] | Widget._FIELD_BITS["getParentId"]
         async_safe = all((w.mask & parent_fields) == 0 for w in widgets)
 
-        client = getClient()
-        result = client.api.invokeCustomMethod(
+        client = get_client()
+        result = client.api.invoke_custom_method(
             target="WidgetInspector",
             method="getWidgetPropertiesBatch",
             signature="([I[J)[B",
@@ -281,8 +283,8 @@ class Widget:
         parent_fields = Widget._FIELD_BITS["getParent"] | Widget._FIELD_BITS["getParentId"]
         async_safe = all((w.mask & parent_fields) == 0 for w in widgets)
 
-        client = getClient()
-        result = client.api.invokeCustomMethod(
+        client = get_client()
+        result = client.api.invoke_custom_method(
             target="WidgetInspector",
             method="getWidgetChildrenBatch",
             signature="([I[J)[B",

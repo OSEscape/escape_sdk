@@ -1,6 +1,6 @@
 """Pytest configuration and fixtures."""
 
-import pytest
+import pytest  # type: ignore[reportMissingImports]
 
 from escape.client import Client
 

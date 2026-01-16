@@ -98,10 +98,10 @@ class Polygon:
 
     def hover(self, randomize: bool = True) -> bool:
         """Move mouse to hover within this polygon."""
-        from escape.globals import getClient
+        from escape.globals import get_client
         from escape.types.point import Point
 
-        current = Point(*getClient().input.mouse.position)
+        current = Point(*get_client().input.mouse.position)
         if self.contains(current):
             return True
         point = self.random_point() if randomize else self.center()
@@ -123,4 +123,4 @@ class Polygon:
 
         x_points = [v.x for v in self.vertices]
         y_points = [v.y for v in self.vertices]
-        drawing.addPolygon(x_points, y_points, argb_color, filled, tag)
+        drawing.add_polygon(x_points, y_points, argb_color, filled, tag)

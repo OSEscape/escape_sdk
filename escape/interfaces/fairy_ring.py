@@ -2,7 +2,7 @@ from escape._internal.logger import logger
 from escape.client import client
 from escape.types.box import Box
 from escape.types.widget import Widget, WidgetFields
-from escape.utilities.timing import waitUntil
+from escape.utilities.timing import wait_until
 
 
 class FairyRingInterface:
@@ -11,39 +11,39 @@ class FairyRingInterface:
     """
 
     def __init__(self):
-        self.group = client.InterfaceID.FAIRYRINGS
-        self.abcd_button = Widget(client.InterfaceID.Fairyrings.ROOT_MODEL3).enable(
-            WidgetFields.getRotationY
+        self.group = client.interface_id.FAIRYRINGS
+        self.abcd_button = Widget(client.interface_id.Fairyrings.ROOT_MODEL3).enable(
+            WidgetFields.get_rotation_y
         )
-        self.ijlk_button = Widget(client.InterfaceID.Fairyrings.ROOT_MODEL4).enable(
-            WidgetFields.getRotationY
+        self.ijlk_button = Widget(client.interface_id.Fairyrings.ROOT_MODEL4).enable(
+            WidgetFields.get_rotation_y
         )
-        self.pqrs_button = Widget(client.InterfaceID.Fairyrings.ROOT_MODEL5).enable(
-            WidgetFields.getRotationY
-        )
-
-        self.abcd_clockwise = Widget(client.InterfaceID.Fairyrings._1_CLOCKWISE).enable(
-            WidgetFields.getBounds
-        )
-        self.ijlk_clockwise = Widget(client.InterfaceID.Fairyrings._2_CLOCKWISE).enable(
-            WidgetFields.getBounds
-        )
-        self.pqrs_clockwise = Widget(client.InterfaceID.Fairyrings._3_CLOCKWISE).enable(
-            WidgetFields.getBounds
+        self.pqrs_button = Widget(client.interface_id.Fairyrings.ROOT_MODEL5).enable(
+            WidgetFields.get_rotation_y
         )
 
-        self.abcd_anti_clockwise = Widget(client.InterfaceID.Fairyrings._1_ANTICLOCKWISE).enable(
-            WidgetFields.getBounds
+        self.abcd_clockwise = Widget(client.interface_id.Fairyrings._1_CLOCKWISE).enable(
+            WidgetFields.get_bounds
         )
-        self.ijlk_anti_clockwise = Widget(client.InterfaceID.Fairyrings._2_ANTICLOCKWISE).enable(
-            WidgetFields.getBounds
+        self.ijlk_clockwise = Widget(client.interface_id.Fairyrings._2_CLOCKWISE).enable(
+            WidgetFields.get_bounds
         )
-        self.pqrs_anti_clockwise = Widget(client.InterfaceID.Fairyrings._3_ANTICLOCKWISE).enable(
-            WidgetFields.getBounds
+        self.pqrs_clockwise = Widget(client.interface_id.Fairyrings._3_CLOCKWISE).enable(
+            WidgetFields.get_bounds
         )
 
-        self.destination_button = Widget(client.InterfaceID.Fairyrings.CONFIRM).enable(
-            WidgetFields.getBounds
+        self.abcd_anti_clockwise = Widget(client.interface_id.Fairyrings._1_ANTICLOCKWISE).enable(
+            WidgetFields.get_bounds
+        )
+        self.ijlk_anti_clockwise = Widget(client.interface_id.Fairyrings._2_ANTICLOCKWISE).enable(
+            WidgetFields.get_bounds
+        )
+        self.pqrs_anti_clockwise = Widget(client.interface_id.Fairyrings._3_ANTICLOCKWISE).enable(
+            WidgetFields.get_bounds
+        )
+
+        self.destination_button = Widget(client.interface_id.Fairyrings.CONFIRM).enable(
+            WidgetFields.get_bounds
         )
 
         self.buttons = [
@@ -76,7 +76,7 @@ class FairyRingInterface:
         return "Z"
 
     def _get_all_info(self) -> list[dict]:
-        return Widget.getBatch(self.buttons)
+        return Widget.get_batch(self.buttons)
 
     def get_current_code(self) -> str:
         info = self.cached_info
@@ -141,10 +141,10 @@ class FairyRingInterface:
                         "bounds", [0, 0, 0, 0]
                     )  # Anti-clockwise buttons are at index 6,7,8
                     next_letter = self._next_letter(current_letter, False, i)
-                box = Box.fromRect(*button)
+                box = Box.from_rect(*button)
                 s = "Rotate clockwise" if steps > 0 else "Rotate counter-clockwise"
-                if box.clickOption(s):
-                    waitUntil(lambda i=i, nl=next_letter: self._check_index_to_target(i, nl), timeout=5)
+                if box.click_option(s):
+                    wait_until(lambda i=i, nl=next_letter: self._check_index_to_target(i, nl), timeout=5)
                 else:
                     return False
         self.cached_info = self._get_all_info()
@@ -155,8 +155,8 @@ class FairyRingInterface:
         self.cached_info = self._get_all_info()
         if self._rotate_to_sequence(target_code):
             dest_button_bounds = self.cached_info[9].get("bounds", [0, 0, 0, 0])
-            box = Box.fromRect(*dest_button_bounds)
-            box.clickOption("Confirm")
+            box = Box.from_rect(*dest_button_bounds)
+            box.click_option("Confirm")
             return True
         return False
 

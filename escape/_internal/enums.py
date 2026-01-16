@@ -5,6 +5,8 @@ Provides type-safe enum objects that prevent int/enum confusion
 """
 
 import json
+
+# pyright: reportUnsupportedDunderAll=false
 from typing import Any
 
 from escape._internal.logger import logger
@@ -60,30 +62,38 @@ class EnumMeta(type):
     Metaclass for enum classes to provide iteration and lookup capabilities
     """
 
+    _values: list[str]
+    _ordinal_map: dict[int, EnumValue]
+    _name_map: dict[str, EnumValue]
+
     def __iter__(cls):
         """Allow iterating over enum values"""
-        for name in cls._values:
+        values: list[str] = getattr(cls, "_values", [])
+        for name in values:
             yield getattr(cls, name)
 
     def __len__(cls):
         """Get number of enum values"""
-        return len(cls._values)
+        values: list[str] = getattr(cls, "_values", [])
+        return len(values)
 
     def __contains__(cls, item):
         """Check if value exists in enum"""
+        values: list[str] = getattr(cls, "_values", [])
         if isinstance(item, str):
-            return item in cls._values
+            return item in values
         elif isinstance(item, EnumValue):
-            return item._enum_name == cls.__name__ and item._value_name in cls._values
+            return item._enum_name == cls.__name__ and item._value_name in values
         elif isinstance(item, int):
-            return 0 <= item < len(cls._values)
+            return 0 <= item < len(values)
         return False
 
     def __getitem__(cls, key):
         """Allow lookup by ordinal or name"""
+        values: list[str] = getattr(cls, "_values", [])
         if isinstance(key, int):
             # Lookup by ordinal
-            for name in cls._values:
+            for name in values:
                 val = getattr(cls, name)
                 if val._ordinal == key:
                     return val
@@ -116,12 +126,16 @@ def create_enum_class(enum_name: str, values: list, value_map: dict | None = Non
     }
 
     # Add class methods
-    class_attrs["from_ordinal"] = classmethod(lambda cls, ordinal: cls._ordinal_map.get(ordinal))
-    class_attrs["from_name"] = classmethod(
-        lambda cls, name: cls._name_map.get(name.upper() if name else None)
+    class_attrs["from_ordinal"] = classmethod(
+        lambda cls, ordinal: getattr(cls, "_ordinal_map", {}).get(ordinal)
     )
-    class_attrs["values"] = classmethod(lambda cls: [getattr(cls, name) for name in cls._values])
-    class_attrs["names"] = classmethod(lambda cls: cls._values[:])
+    class_attrs["from_name"] = classmethod(
+        lambda cls, name: getattr(cls, "_name_map", {}).get(name.upper() if name else None)
+    )
+    class_attrs["values"] = classmethod(
+        lambda cls: [getattr(cls, name) for name in getattr(cls, "_values", [])]
+    )
+    class_attrs["names"] = classmethod(lambda cls: getattr(cls, "_values", [])[:])
 
     # Create EnumValue for each enum constant
     for ordinal, value_name in enumerate(values):

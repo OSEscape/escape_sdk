@@ -83,6 +83,8 @@ class DebugWindow:
 
         # Convert to PhotoImage and update label
         # Keep reference to prevent garbage collection
+        if DebugWindow._root is None or DebugWindow._label is None:
+            return
         DebugWindow._photo_image = self._pil_to_tk_photo(image)
         DebugWindow._label.configure(image=DebugWindow._photo_image)
 

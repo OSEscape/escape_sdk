@@ -4,6 +4,23 @@ from typing import Any
 
 from escape._internal.logger import logger
 
+__all__ = [
+    "get_varbit_by_name",
+    "get_varbit_by_index",
+    "get_varp_by_name",
+    "get_varp_by_index",
+    "get_varc_value",
+    "get_varbit_info",
+    "get_varc_name",
+    "list_varps",
+    "list_varbits",
+    "extract_bits",
+    "set_varps_data",
+    "set_varbits_data",
+    "get_varps_data_count",
+    "get_varbits_data_count",
+]
+
 # Module-level data (loaded by cache_manager at init)
 _varps_data: dict[int, dict[str, Any]] | None = None
 _varbits_data: dict[int, dict[str, Any]] | None = None
@@ -179,3 +196,26 @@ def _build_varc_cache() -> dict[int, str]:
 def get_varc_name(varc_id: int) -> str | None:
     """Get the name of a varc by its ID."""
     return _build_varc_cache().get(varc_id)
+
+
+# Setter functions for cache_manager
+def set_varps_data(data: dict[int, dict[str, Any]]) -> None:
+    """Set the varps data (called by cache_manager during initialization)."""
+    global _varps_data
+    _varps_data = data
+
+
+def set_varbits_data(data: dict[int, dict[str, Any]]) -> None:
+    """Set the varbits data (called by cache_manager during initialization)."""
+    global _varbits_data
+    _varbits_data = data
+
+
+def get_varps_data_count() -> int:
+    """Get the number of loaded varps."""
+    return len(_varps_data) if _varps_data else 0
+
+
+def get_varbits_data_count() -> int:
+    """Get the number of loaded varbits."""
+    return len(_varbits_data) if _varbits_data else 0

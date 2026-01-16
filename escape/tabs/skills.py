@@ -56,7 +56,7 @@ class Skills(GameTabs):
         from escape.client import client
 
         # Get from cache
-        data = client.cache.getAllSkills().get(skill_name)
+        data = client.cache.get_all_skills().get(skill_name)
         if data:
             return data
 
@@ -79,14 +79,14 @@ class Skills(GameTabs):
         """Get total level across all skills."""
         from escape.client import client
 
-        skills_data = client.cache.getAllSkills()
+        skills_data = client.cache.get_all_skills()
         return sum(data["level"] for data in skills_data.values())
 
     def get_total_experience(self) -> int:
         """Get total experience across all skills."""
         from escape.client import client
 
-        skills_data = client.cache.getAllSkills()
+        skills_data = client.cache.get_all_skills()
         return sum(data["xp"] for data in skills_data.values())
 
     def gained_xp(self) -> bool:

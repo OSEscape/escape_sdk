@@ -72,10 +72,21 @@ class StateBuilder:
         self.containers_initialized = False
 
         self.itemcontainers: dict[int, ItemContainer] = {}
+        self.inventory: list[int] = [-1] * 28  # Legacy inventory state
 
         self.itemcontainers[93] = ItemContainer(93, 28)  # Inventory
         self.itemcontainers[94] = ItemContainer(94, 14)  # Equipment
         self.itemcontainers[95] = ItemContainer(95, -1)  # Bank
+
+    @property
+    def equipment(self) -> ItemContainer:
+        """Get the equipment container (ID 94)."""
+        return self.itemcontainers[94]
+
+    @property
+    def bank(self) -> ItemContainer:
+        """Get the bank container (ID 95)."""
+        return self.itemcontainers[95]
 
     def add_event(self, channel: str, event: dict[str, Any]) -> None:
         """Process incoming event and update state."""
@@ -180,7 +191,9 @@ class StateBuilder:
         varp_id = event.get("varp_id")
         value = event.get("value")
 
-        if varp_id is None:
+        if not isinstance(varp_id, int):
+            return  # Invalid event
+        if not isinstance(value, int):
             return  # Invalid event
 
         # Special case: varbit_id == -1 means update full varp
@@ -188,7 +201,8 @@ class StateBuilder:
             self._edit_varp(varp_id, value)
         else:
             # Update varbit (with bit manipulation)
-            self._edit_varbit(varbit_id, varp_id, value)
+            if isinstance(varbit_id, int):
+                self._edit_varbit(varbit_id, varp_id, value)
 
     def _process_varc_changed(self, event: dict[str, Any]) -> None:
         """Update varc state from event."""
@@ -205,6 +219,9 @@ class StateBuilder:
         container_id = event.get("container_id")
         items_list = event.get("items", [])
 
+        if not isinstance(container_id, int):
+            return
+
         self.recently_changed_containers.append(
             [container_id, time()]
         )  # Keep track of last 100 changed containers
@@ -213,9 +230,9 @@ class StateBuilder:
             self.itemcontainers[container_id] = ItemContainer(container_id, -1)
 
         if items_list is None:
-            return None
+            return
 
-        self.itemcontainers[container_id].fromArray(items_list)
+        self.itemcontainers[container_id].from_array(items_list)
 
     def _process_stat_changed(self, event: dict[str, Any]) -> None:
         """Update skill levels/XP from stat_changed event."""
@@ -340,7 +357,7 @@ class StateBuilder:
         base_y = event.get("base_y", 0)
 
         # Set scene data on projection and invalidate cache
-        projection.setScene(tile_heights, bridge_flags, base_x, base_y, size_x, size_y)
+        projection.set_scene(tile_heights, bridge_flags, base_x, base_y, size_x, size_y)
         projection.invalidate()
 
         # Handle entity config (for WorldEntity instances)
@@ -353,9 +370,9 @@ class StateBuilder:
         # Only set entity config if we have non-zero bounds (inside a WorldEntity)
         if bounds_width > 0 or bounds_height > 0:
             config = EntityConfig(
-                boundsX=bounds_x, boundsY=bounds_y, boundsWidth=bounds_width, boundsHeight=bounds_height
+                bounds_x=bounds_x, bounds_y=bounds_y, bounds_width=bounds_width, bounds_height=bounds_height
             )
-            projection.setEntityConfig(config)
+            projection.set_entity_config(config)
         else:
             # Top-level world: use None for identity transform
-            projection.setEntityConfig(None)
+            projection.set_entity_config(None)

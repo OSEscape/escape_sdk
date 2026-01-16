@@ -45,7 +45,7 @@ class GeneralInterface:
         )
 
     def is_open(self) -> bool:
-        return self.group in client.interfaces.getOpenInterfaces()
+        return self.group in client.interfaces.get_open_interfaces()
 
     def is_right_option(self, w: dict, text: str = "") -> bool:
         if self.use_actions:
@@ -59,7 +59,10 @@ class GeneralInterface:
     def _get_scrollbox(self) -> Box | None:
         if not self.scrollbox:
             return None
-        b = Widget(self.scrollbox).enable(WidgetFields.get_bounds).get().get("bounds", [0, 0, 0, 0])
+        widget_info = Widget(self.scrollbox).enable(WidgetFields.get_bounds).get()
+        if not widget_info:
+            return None
+        b = widget_info.get("bounds", [0, 0, 0, 0])
         return Box.from_rect(*b) if b[2] > 0 and b[3] > 0 else None
 
     def _scroll(self, sb: Box, up: bool = False) -> None:
@@ -92,6 +95,8 @@ class GeneralInterface:
                     return box
                 self._scroll(sb, up=box.y1 < sb.y1)
             w = self._find_widget(text, idx)
+            if not w:
+                return None
         return None
 
     def interact(self, option_text: str = "", index: int = -1) -> bool:

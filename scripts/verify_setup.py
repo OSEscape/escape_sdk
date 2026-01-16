@@ -61,7 +61,7 @@ def check_required_files() -> bool:
         "Makefile",
         "escape/__init__.py",
         "escape/client.py",
-        "escape/_internal/query.py",
+        "escape/_internal/batch.py",
     ]
 
     missing_files = []
@@ -90,9 +90,9 @@ def check_imports() -> bool:
 
         logger.success("Successfully imported Client")
 
-        from escape._internal.query import QueryBuilder  # noqa: F401
+        from escape._internal.batch import Batch  # noqa: F401
 
-        logger.success("Successfully imported QueryBuilder")
+        logger.success("Successfully imported Batch")
 
         return True
     except ImportError as e:
@@ -111,17 +111,17 @@ def check_basic_functionality() -> bool:
         client = Client()
         logger.success("Client instantiation works")
 
-        if not client.isConnected():
-            logger.success("isConnected() returns False initially")
+        if not client.is_connected():
+            logger.success("is_connected() returns False initially")
         else:
-            logger.error("isConnected() should return False initially")
+            logger.error("is_connected() should return False initially")
             return False
 
         client.connect()
-        if client.isConnected():
-            logger.success("connect() and isConnected() work")
+        if client.is_connected():
+            logger.success("connect() and is_connected() work")
         else:
-            logger.error("connect() should set isConnected() to True")
+            logger.error("connect() should set is_connected() to True")
             return False
 
         return True

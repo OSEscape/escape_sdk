@@ -90,10 +90,10 @@ class Visualizer:
         """Draw a Circle on the image."""
         if self._draw is None:
             return
-        x1 = circle.centerX - circle.radius
-        y1 = circle.centerY - circle.radius
-        x2 = circle.centerX + circle.radius
-        y2 = circle.centerY + circle.radius
+        x1 = circle.center_x - circle.radius
+        y1 = circle.center_y - circle.radius
+        x2 = circle.center_x + circle.radius
+        y2 = circle.center_y + circle.radius
         self._draw.ellipse([x1, y1, x2, y2], outline=color, width=width, fill=fill)
 
     def draw_polygon(

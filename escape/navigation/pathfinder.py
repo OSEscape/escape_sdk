@@ -33,7 +33,7 @@ class Pathfinder:
 
         dest_packed = PackedPosition(destination_x, destination_y, destination_plane).packed
 
-        result = client.api.invokeCustomMethod(
+        result = client.api.invoke_custom_method(
             target="Pathfinder",
             method="getPathWithObstaclesPacked",
             signature="(I)[B",
@@ -44,7 +44,7 @@ class Pathfinder:
         if not result or "path" not in result:
             return None
 
-        return Path.fromDict(result)
+        return Path.from_dict(result)
 
     def get_path_from_position(
         self,
@@ -70,7 +70,7 @@ class Pathfinder:
     ) -> bool:
         """Check if destination is reachable."""
         path = self.get_path(destination_x, destination_y, destination_plane, use_transport)
-        return path is not None and not path.isEmpty()
+        return path is not None and not path.is_empty()
 
 
 # Module-level instance

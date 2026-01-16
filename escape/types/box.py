@@ -29,6 +29,7 @@ class Box:
         """Create a Box from Java Rectangle format (x, y, width, height)."""
         return cls(x, y, x + width, y + height)
 
+
     def width(self) -> int:
         """Get width of the box."""
         return self.x2 - self.x1
@@ -71,10 +72,10 @@ class Box:
 
     def hover(self, randomize: bool = True) -> bool:
         """Move mouse to hover within this box."""
-        from escape.globals import getClient
+        from escape.globals import get_client
         from escape.types.point import Point
 
-        current = Point(*getClient().input.mouse.position)
+        current = Point(*get_client().input.mouse.position)
         if self.contains(current):
             return True
         point = self.random_point() if randomize else self.center()
@@ -90,9 +91,10 @@ class Box:
         from escape.client import client
 
         self.hover(randomize=randomize)
-        if client.interactions.menu.waitHasOption(option):
-            return client.interactions.menu.clickOption(option)
+        if client.interactions.menu.wait_has_option(option):
+            return client.interactions.menu.click_option(option)
         return False
+
 
     def __repr__(self) -> str:
         return f"Box({self.x1}, {self.y1}, {self.x2}, {self.y2})"
@@ -103,7 +105,7 @@ class Box:
 
         viz = Visualizer()
         if viz.capture():
-            viz.drawBox(self, color=color, width=width)
+            viz.draw_box(self, color=color, width=width)
             viz.render()
 
 
@@ -136,3 +138,4 @@ def create_grid(
 
             boxes.append(Box(x1, y1, x2, y2))
     return boxes
+

@@ -18,8 +18,8 @@ def current_time() -> float:
 
 def current_tick() -> int:
     """Get the current tick count from the game client."""
-    client = globals.getClient()
-    return client.cache.tick
+    client = globals.get_client()
+    return client.cache.tick or 0
 
 
 def wait_ticks(ticks: int):
@@ -84,3 +84,4 @@ def measure_time(func: Callable[[], Any]) -> tuple[Any, float]:
     result = func()
     elapsed = time.time() - start
     return result, elapsed
+

@@ -107,9 +107,8 @@ class Tabs:
         """Get the currently open tab, or None if unknown."""
         from escape.client import client
 
-        index = client.cache.getVarc(client.VarClientID.TOPLEVEL_PANEL)
+        index = client.cache.get_varc(client.var_client_id.TOPLEVEL_PANEL)
         return GameTab(index) if index in GameTab._value2member_map_ else None
-
 
 # Module-level instance
 tabs = Tabs()
@@ -130,8 +129,6 @@ __all__ = [
     "inventory",
     "Equipment",
     "equipment",
-    "EquipmentSlotsPrayer",
-    "PrayerTypeprayer",
     "Magic",
     "magic",
     "Grouping",

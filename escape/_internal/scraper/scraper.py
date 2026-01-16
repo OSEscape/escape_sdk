@@ -72,7 +72,7 @@ class EfficientRuneLiteScraper:
             "Object": "Ljava/lang/Object;",
         }
 
-    def scrape_local_directory(self, api_path: str):
+    def scrape_local_directory(self, api_path: str | Path):
         """Scrape all Java files from local RuneLite API directory."""
         logger.info("Local file scraping starting")
         logger.info(f"Scanning directory: {api_path}")
@@ -431,7 +431,7 @@ class EfficientRuneLiteScraper:
         content: str,
         class_name: str,
         package_path: str = "net/runelite/api",
-        storage_key: str = None,
+        storage_key: str | None = None,
     ):
         if storage_key is None:
             storage_key = class_name
@@ -628,7 +628,7 @@ class EfficientRuneLiteScraper:
         content: str,
         enum_name: str,
         package_path: str = "net/runelite/api",
-        storage_key: str = None,
+        storage_key: str | None = None,
     ):
         """Parse an enum file and extract values."""
         if storage_key is None:
@@ -954,7 +954,7 @@ class EfficientRuneLiteScraper:
 
         return db
 
-    def _parse_jni_signature(self, signature: str) -> tuple[list[str], str]:
+    def _parse_jni_signature(self, signature: str) -> tuple[list[str], str | None]:
         """Parse JNI signature to extract parameter and return types."""
         match = re.match(r"\((.*?)\)(.+)", signature)
         if not match:
