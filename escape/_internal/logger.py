@@ -37,7 +37,7 @@ _logger.add(
 logger: "Logger" = _logger
 
 
-def setLevel(level: str) -> None:
+def set_level(level: str) -> None:
     """
     Set the global logging level.
 
@@ -55,7 +55,7 @@ def setLevel(level: str) -> None:
     )
 
 
-def enableFileLogging(path: str, level: str = "DEBUG", rotation: str = "10 MB") -> None:
+def enable_file_logging(path: str, level: str = "DEBUG", rotation: str = "10 MB") -> None:
     """
     Enable logging to a file in addition to console.
 
@@ -74,7 +74,7 @@ def enableFileLogging(path: str, level: str = "DEBUG", rotation: str = "10 MB") 
     )
 
 
-def enableJsonLogging(path: str, level: str = "DEBUG", rotation: str = "10 MB") -> None:
+def enable_json_logging(path: str, level: str = "DEBUG", rotation: str = "10 MB") -> None:
     """
     Enable JSON structured logging to a file (for log aggregators).
 
@@ -92,4 +92,4 @@ def enableJsonLogging(path: str, level: str = "DEBUG", rotation: str = "10 MB") 
     )
 
 
-__all__ = ["logger", "setLevel", "enableFileLogging", "enableJsonLogging"]
+__all__ = ["logger", "set_level", "enable_file_logging", "enable_json_logging"]

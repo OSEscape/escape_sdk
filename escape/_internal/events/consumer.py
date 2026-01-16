@@ -42,9 +42,9 @@ class EventConsumer:
 
         # Inotify setup
         self.inotify: INotify | None = None
-        self._setupInotify()
+        self._setup_inotify()
 
-    def _setupInotify(self) -> None:
+    def _setup_inotify(self) -> None:
         """Setup inotify watch on doorbell file."""
         self.inotify = INotify()
 
@@ -82,11 +82,11 @@ class EventConsumer:
 
         # Process initial backlog of events before continuing
         if wait_for_warmup:
-            return self.waitForWarmup(timeout=warmup_timeout)
+            return self.wait_for_warmup(timeout=warmup_timeout)
 
         return True
 
-    def waitForWarmup(self, timeout: float = 5.0) -> bool:
+    def wait_for_warmup(self, timeout: float = 5.0) -> bool:
         """Wait for initial warmup phase to complete."""
         if self._warmup_complete.wait(timeout=timeout):
             return True
@@ -120,7 +120,7 @@ class EventConsumer:
         print()
 
         # Perform initial warmup - process all existing events before entering main loop
-        self._performWarmup()
+        self._perform_warmup()
 
         while self.running:
             try:
@@ -129,7 +129,7 @@ class EventConsumer:
 
                 if events:
                     # Doorbell was rung! Process all channels
-                    self._processAllChannels()
+                    self._process_all_channels()
 
             except KeyboardInterrupt:
                 break
@@ -140,7 +140,7 @@ class EventConsumer:
                 traceback.print_exc()
                 time.sleep(1)
 
-    def _performWarmup(self) -> None:
+    def _perform_warmup(self) -> None:
         """Process all existing events during startup."""
         logger.info("Warming up event cache")
         start_time = time.time()
@@ -148,12 +148,12 @@ class EventConsumer:
 
         # Process all ring buffer channels
         for channel in RING_BUFFER_CHANNELS:
-            count = self._processRingBuffer(channel)
+            count = self._process_ring_buffer(channel)
             total_events += count
 
         # Process all latest-state channels
         for channel in LATEST_STATE_CHANNELS:
-            self._processLatestState(channel)
+            self._process_latest_state(channel)
 
         # Calculate stats
         elapsed_ms = (time.time() - start_time) * 1000
@@ -172,19 +172,19 @@ class EventConsumer:
         # Signal that warmup is complete
         self._warmup_complete.set()
 
-    def _processAllChannels(self) -> None:
+    def _process_all_channels(self) -> None:
         """Process all ring buffer and latest-state channels."""
         start_time = time.time()
         total_events = 0
 
         # Process ring buffer channels (guaranteed delivery)
         for channel in RING_BUFFER_CHANNELS:
-            count = self._processRingBuffer(channel)
+            count = self._process_ring_buffer(channel)
             total_events += count
 
         # Process latest-state channels (current state only)
         for channel in LATEST_STATE_CHANNELS:
-            self._processLatestState(channel)
+            self._process_latest_state(channel)
 
         # Log if we processed more than 10 events
         if total_events > 10:
@@ -194,7 +194,7 @@ class EventConsumer:
                 f"Cleared {total_events} events in {elapsed_ms:.1f}ms ({per_event_us:.0f}μs/event)"
             )
 
-    def _processRingBuffer(self, channel: str) -> int:
+    def _process_ring_buffer(self, channel: str) -> int:
         """Process ring buffer events for a channel."""
         pattern = f"{SHM_DIR}/{channel}.*"
         files = sorted(
@@ -234,7 +234,7 @@ class EventConsumer:
 
                 # Store event in cache
                 # print(f"🔔 [{channel}] Processing event seq={seq} with event {event}")
-                self.cache.addEvent(channel, event)
+                self.cache.add_event(channel, event)
 
                 # Update sequence tracker
                 self.last_seq[channel] = seq
@@ -248,7 +248,7 @@ class EventConsumer:
 
         return events_processed
 
-    def _processLatestState(self, channel: str) -> bool:
+    def _process_latest_state(self, channel: str) -> bool:
         """Process latest-state event for a channel."""
         filepath = f"{SHM_DIR}/{channel}"
 
@@ -272,7 +272,7 @@ class EventConsumer:
                 state = msgpack.unpackb(f.read(), raw=False, strict_map_key=False)
 
             # Update cache - all latest-state events use same method now
-            self.cache.addEvent(channel, state)
+            self.cache.add_event(channel, state)
 
             return True
 

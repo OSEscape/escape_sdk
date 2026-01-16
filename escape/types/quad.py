@@ -18,14 +18,14 @@ class Quad:
     p4: "Point"
 
     @classmethod
-    def fromPoints(cls, points: List["Point"]) -> "Quad":
+    def from_points(cls, points: List["Point"]) -> "Quad":
         """Create a Quad from a list of 4 points."""
         if len(points) != 4:
             raise ValueError(f"Quad requires exactly 4 points, got {len(points)}")
         return cls(points[0], points[1], points[2], points[3])
 
     @classmethod
-    def fromCoords(cls, coords: List[tuple[int, int]]) -> "Quad":
+    def from_coords(cls, coords: List[tuple[int, int]]) -> "Quad":
         """Create a Quad from a list of (x, y) coordinate tuples."""
         from escape.types.point import Point
 
@@ -35,17 +35,17 @@ class Quad:
         return cls(points[0], points[1], points[2], points[3])
 
     @classmethod
-    def fromArrays(cls, xCoords: List[int], yCoords: List[int]) -> "Quad":
+    def from_arrays(cls, x_coords: List[int], y_coords: List[int]) -> "Quad":
         """Create a Quad from separate x and y coordinate arrays."""
         from escape.types.point import Point
 
-        if len(xCoords) != 4 or len(yCoords) != 4:
+        if len(x_coords) != 4 or len(y_coords) != 4:
             raise ValueError("Quad requires exactly 4 x and 4 y coordinates")
         return cls(
-            Point(xCoords[0], yCoords[0]),
-            Point(xCoords[1], yCoords[1]),
-            Point(xCoords[2], yCoords[2]),
-            Point(xCoords[3], yCoords[3]),
+            Point(x_coords[0], y_coords[0]),
+            Point(x_coords[1], y_coords[1]),
+            Point(x_coords[2], y_coords[2]),
+            Point(x_coords[3], y_coords[3]),
         )
 
     @property
@@ -71,16 +71,16 @@ class Quad:
         """Helper for cross product sign calculation."""
         return (p1x - p3x) * (p2y - p3y) - (p2x - p3x) * (p1y - p3y)
 
-    def _pointInTriangle(self, px: int, py: int, v1: "Point", v2: "Point", v3: "Point") -> bool:
+    def _point_in_triangle(self, px: int, py: int, v1: "Point", v2: "Point", v3: "Point") -> bool:
         """Check if point is in triangle using barycentric coordinates."""
         d1 = self._sign(px, py, v1.x, v1.y, v2.x, v2.y)
         d2 = self._sign(px, py, v2.x, v2.y, v3.x, v3.y)
         d3 = self._sign(px, py, v3.x, v3.y, v1.x, v1.y)
 
-        hasNeg = (d1 < 0) or (d2 < 0) or (d3 < 0)
-        hasPos = (d1 > 0) or (d2 > 0) or (d3 > 0)
+        has_neg = (d1 < 0) or (d2 < 0) or (d3 < 0)
+        has_pos = (d1 > 0) or (d2 > 0) or (d3 > 0)
 
-        return not (hasNeg and hasPos)
+        return not (has_neg and has_pos)
 
     def contains(self, point: "Point") -> bool:
         """Check if a point is within this quad using triangle decomposition."""
@@ -88,7 +88,7 @@ class Quad:
 
         # Split quad into two triangles: (p1, p2, p3) and (p1, p3, p4)
         # Point is in quad if it's in either triangle
-        return self._pointInTriangle(px, py, self.p1, self.p2, self.p3) or self._pointInTriangle(
+        return self._point_in_triangle(px, py, self.p1, self.p2, self.p3) or self._point_in_triangle(
             px, py, self.p1, self.p3, self.p4
         )
 
@@ -104,7 +104,7 @@ class Quad:
             area -= vertices[j].x * vertices[i].y
         return abs(area) / 2.0
 
-    def randomPoint(self) -> "Point":
+    def random_point(self) -> "Point":
         """Generate a random point within this quad using bilinear interpolation."""
         from escape.types.point import Point
 
@@ -136,10 +136,10 @@ class Quad:
             return point
 
         # For concave quads, use rejection sampling as fallback
-        minX, minY, maxX, maxY = self.bounds()
+        min_x, min_y, max_x, max_y = self.bounds()
         for _ in range(100):
-            x = random.randint(minX, maxX)
-            y = random.randint(minY, maxY)
+            x = random.randint(min_x, max_x)
+            y = random.randint(min_y, max_y)
             point = Point(x, y)
             if self.contains(point):
                 return point
@@ -149,7 +149,7 @@ class Quad:
 
     def click(self, button: str = "left", randomize: bool = True) -> None:
         """Click within this quad."""
-        point = self.randomPoint() if randomize else self.center()
+        point = self.random_point() if randomize else self.center()
         point.click(button=button)
 
     def hover(self, randomize: bool = True) -> bool:
@@ -160,25 +160,25 @@ class Quad:
         current = Point(*getClient().input.mouse.position)
         if self.contains(current):
             return True
-        point = self.randomPoint() if randomize else self.center()
+        point = self.random_point() if randomize else self.center()
         point.hover()
         return True
 
-    def rightClick(self, randomize: bool = True) -> None:
+    def right_click(self, randomize: bool = True) -> None:
         """Right-click within this quad."""
         self.click(button="right", randomize=randomize)
 
-    def toPolygon(self) -> "Polygon":
+    def to_polygon(self) -> "Polygon":
         """Convert this quad to a Polygon."""
         from escape.types.polygon import Polygon
 
         return Polygon(self.vertices)
 
-    def isConvex(self) -> bool:
+    def is_convex(self) -> bool:
         """Check if this quad is convex."""
         vertices = self.vertices
 
-        def crossProduct(o: "Point", a: "Point", b: "Point") -> float:
+        def cross_product(o: "Point", a: "Point", b: "Point") -> float:
             return (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x)
 
         signs = []
@@ -186,7 +186,7 @@ class Quad:
             o = vertices[i]
             a = vertices[(i + 1) % 4]
             b = vertices[(i + 2) % 4]
-            cross = crossProduct(o, a, b)
+            cross = cross_product(o, a, b)
             if cross != 0:
                 signs.append(cross > 0)
 
@@ -197,11 +197,11 @@ class Quad:
         return f"Quad({self.p1}, {self.p2}, {self.p3}, {self.p4})"
 
     def debug(
-        self, argbColor: int = 0xFFFF0000, filled: bool = False, tag: str | None = None
+        self, argb_color: int = 0xFFFF0000, filled: bool = False, tag: str | None = None
     ) -> None:
         """Draw this quad as an overlay on RuneLite."""
         from escape.input.drawing import drawing
 
-        xPoints = [self.p1.x, self.p2.x, self.p3.x, self.p4.x]
-        yPoints = [self.p1.y, self.p2.y, self.p3.y, self.p4.y]
-        drawing.addPolygon(xPoints, yPoints, argbColor, filled, tag)
+        x_points = [self.p1.x, self.p2.x, self.p3.x, self.p4.x]
+        y_points = [self.p1.y, self.p2.y, self.p3.y, self.p4.y]
+        drawing.addPolygon(x_points, y_points, argb_color, filled, tag)

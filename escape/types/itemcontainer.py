@@ -9,19 +9,19 @@ from escape.types.item import Item, ItemIdentifier
 class ItemContainer:
     """Base class for OSRS item containers (inventory, bank, equipment, etc.)."""
 
-    def __init__(self, containerId: int = -1, slotCount: int = -1, items: List[Item | None] = None):
+    def __init__(self, container_id: int = -1, slot_count: int = -1, items: List[Item | None] = None):
         """Initialize item container."""
-        self.containerId = containerId
-        self.slotCount = slotCount
+        self.container_id = container_id
+        self.slot_count = slot_count
         self.items = items if items is not None else []
 
-    def fromArray(self, data: List[Dict[str, Any]]):
+    def from_array(self, data: List[Dict[str, Any]]):
         """Populate ItemContainer from array of item dicts."""
-        parsedItems = [
-            Item.fromDict(itemData) if itemData is not None else None for itemData in data
+        parsed_items = [
+            Item.from_dict(item_data) if item_data is not None else None for item_data in data
         ]
 
-        self.items = parsedItems
+        self.items = parsed_items
 
     def populate(self):
         client = getClient()
@@ -30,58 +30,58 @@ class ItemContainer:
             target="EventBusListener",
             method="getItemContainerPacked",
             signature="(I)[B",
-            args=[self.containerId],
+            args=[self.container_id],
             async_exec=False,
         )
 
         if result:
-            self.fromArray(result)
+            self.from_array(result)
 
-    def toDict(self) -> Dict[str, Any]:
+    def to_dict(self) -> Dict[str, Any]:
         """Convert ItemContainer back to dict format."""
         return {
-            "containerId": self.containerId,
-            "slotCount": self.slotCount,
-            "items": [item.toDict() if item is not None else None for item in self.items],
+            "containerId": self.container_id,
+            "slotCount": self.slot_count,
+            "items": [item.to_dict() if item is not None else None for item in self.items],
         }
 
-    def getTotalCount(self) -> int:
+    def get_total_count(self) -> int:
         """Get count of non-empty slots."""
         return sum(1 for item in self.items if item is not None)
 
-    def getTotalQuantity(self) -> int:
+    def get_total_quantity(self) -> int:
         """Get total quantity of all items (sum of stacks)."""
         return sum(item.quantity for item in self.items if item is not None)
 
-    def getItemCount(self, identifier: ItemIdentifier) -> int:
+    def get_item_count(self, identifier: ItemIdentifier) -> int:
         """Get count of items matching the given ID or name."""
         if isinstance(identifier, int):
             return sum(1 for item in self.items if item is not None and item.id == identifier)
         return sum(1 for item in self.items if item is not None and identifier in item.name)
 
-    def getItems(self, identifier: ItemIdentifier) -> List[Item]:
+    def get_items(self, identifier: ItemIdentifier) -> List[Item]:
         """Get all items matching the given ID or name."""
         if isinstance(identifier, int):
             return [item for item in self.items if item is not None and item.id == identifier]
         return [item for item in self.items if item is not None and identifier in item.name]
 
-    def getSlot(self, slotIndex: int) -> Item | None:
+    def get_slot(self, slot_index: int) -> Item | None:
         """Get item at specific slot index."""
-        if 0 <= slotIndex < len(self.items):
-            return self.items[slotIndex]
+        if 0 <= slot_index < len(self.items):
+            return self.items[slot_index]
         return None
 
-    def getSlots(self, slots: List[int]) -> List[Item | None]:
+    def get_slots(self, slots: List[int]) -> List[Item | None]:
         """Get items at specific slot indices."""
         result = []
-        for slotIndex in slots:
-            if 0 <= slotIndex < len(self.items):
-                result.append(self.items[slotIndex])
+        for slot_index in slots:
+            if 0 <= slot_index < len(self.items):
+                result.append(self.items[slot_index])
             else:
                 result.append(None)
         return result
 
-    def findItemSlot(self, identifier: ItemIdentifier) -> int | None:
+    def find_item_slot(self, identifier: ItemIdentifier) -> int | None:
         """Find the first slot index containing an item matching the ID or name."""
         if isinstance(identifier, int):
             for index, item in enumerate(self.items):
@@ -93,7 +93,7 @@ class ItemContainer:
                     return index
         return None
 
-    def findItemSlots(self, identifier: ItemIdentifier) -> List[int]:
+    def find_item_slots(self, identifier: ItemIdentifier) -> List[int]:
         """Find all slot indices containing items matching the ID or name."""
         slots = []
         if isinstance(identifier, int):
@@ -106,17 +106,17 @@ class ItemContainer:
                     slots.append(index)
         return slots
 
-    def containsItem(self, identifier: ItemIdentifier) -> bool:
+    def contains_item(self, identifier: ItemIdentifier) -> bool:
         """Check if container contains an item matching the ID or name."""
         if isinstance(identifier, int):
             return any(item is not None and item.id == identifier for item in self.items)
         return any(item is not None and identifier in item.name for item in self.items)
 
-    def containsAllItems(self, identifiers: List[ItemIdentifier]) -> bool:
+    def contains_all_items(self, identifiers: List[ItemIdentifier]) -> bool:
         """Check if container contains all items matching the given IDs or names."""
-        return all(self.containsItem(identifier) for identifier in identifiers)
+        return all(self.contains_item(identifier) for identifier in identifiers)
 
-    def getItemQuantity(self, identifier: ItemIdentifier) -> int:
+    def get_item_quantity(self, identifier: ItemIdentifier) -> int:
         """Get total quantity of items matching the given ID or name."""
         if isinstance(identifier, int):
             return sum(
@@ -126,26 +126,26 @@ class ItemContainer:
             item.quantity for item in self.items if item is not None and identifier in item.name
         )
 
-    def isEmpty(self) -> bool:
+    def is_empty(self) -> bool:
         """Check if container has no items."""
         return all(item is None for item in self.items)
 
-    def isFull(self) -> bool:
+    def is_full(self) -> bool:
         """Check if container is full."""
-        if self.slotCount > 0:
-            return self.getTotalCount() >= self.slotCount
+        if self.slot_count > 0:
+            return self.get_total_count() >= self.slot_count
         return all(item is not None for item in self.items)
 
     def __repr__(self) -> str:
         """String representation."""
-        return f"ItemContainer(id={self.containerId}, items={self.toDict()})"
+        return f"ItemContainer(id={self.container_id}, items={self.to_dict()})"
 
     def __eq__(self, other) -> bool:
         """Check equality with another ItemContainer."""
         if not isinstance(other, ItemContainer):
             return False
         return (
-            self.containerId == other.containerId
-            and self.slotCount == other.slotCount
+            self.container_id == other.container_id
+            and self.slot_count == other.slot_count
             and self.items == other.items
         )

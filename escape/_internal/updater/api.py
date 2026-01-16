@@ -19,10 +19,10 @@ class RuneLiteAPIUpdater:
     def __init__(self, project_root: Path | None = None):
         """Initialize updater with cache manager paths."""
         # Use cache manager for all paths
-        from ..cache_manager import getCacheManager
+        from ..cache_manager import get_cache_manager
 
-        cache_manager = getCacheManager()
-        self.data_dir = cache_manager.getDataPath("api")
+        cache_manager = get_cache_manager()
+        self.data_dir = cache_manager.get_data_path("api")
         self.temp_dir = self.data_dir / "temp"  # Temporary download location
         self.api_data_file = self.data_dir / "runelite_api_data.json"
         self.version_file = self.data_dir / "runelite_version.json"
@@ -37,7 +37,7 @@ class RuneLiteAPIUpdater:
         # Ensure data directory exists
         self.data_dir.mkdir(parents=True, exist_ok=True)
 
-    def getCurrentVersion(self) -> Dict | None:
+    def get_current_version(self) -> Dict | None:
         """Get currently installed version info"""
         if not self.version_file.exists():
             return None
@@ -49,7 +49,7 @@ class RuneLiteAPIUpdater:
             logger.warning(f"Could not read version file: {e}")
             return None
 
-    def getLatestGithubVersion(self) -> Dict | None:
+    def get_latest_github_version(self) -> Dict | None:
         """Get latest commit info from GitHub."""
         try:
             req = urllib.request.Request(
@@ -75,7 +75,7 @@ class RuneLiteAPIUpdater:
             logger.warning(f"Error parsing GitHub response: {e}")
             return None
 
-    def shouldUpdate(self, force: bool = False, max_age_days: int = 7) -> Tuple[bool, str]:
+    def should_update(self, force: bool = False, max_age_days: int = 7) -> Tuple[bool, str]:
         """Determine if update is needed based on force flag, age, or new commits."""
         if force:
             return True, "Forced update requested"
@@ -85,7 +85,7 @@ class RuneLiteAPIUpdater:
             return True, "API data not found"
 
         # Get current version
-        current = self.getCurrentVersion()
+        current = self.get_current_version()
         if not current:
             return True, "No version info found"
 
@@ -99,13 +99,13 @@ class RuneLiteAPIUpdater:
             pass
 
         # Check against GitHub
-        latest = self.getLatestGithubVersion()
+        latest = self.get_latest_github_version()
         if latest and current.get("sha") != latest["sha"]:
             return True, f"New commit available: {latest['message'][:50]}"
 
         return False, "Up to date"
 
-    def downloadRuneliteSource(self) -> Path | None:
+    def download_runelite_source(self) -> Path | None:
         """Download RuneLite source code to temporary location."""
         logger.info("Downloading RuneLite source from GitHub")
 
@@ -153,7 +153,7 @@ class RuneLiteAPIUpdater:
 
             if not api_path.exists():
                 logger.error(f"API path not found: {api_path}")
-                self.cleanupTempFiles()
+                self.cleanup_temp_files()
                 return None
 
             logger.success(f"Extracted to {api_path}")
@@ -161,17 +161,17 @@ class RuneLiteAPIUpdater:
 
         except Exception as e:
             logger.error(f"Download failed: {e}")
-            self.cleanupTempFiles()
+            self.cleanup_temp_files()
             return None
 
-    def cleanupTempFiles(self):
+    def cleanup_temp_files(self):
         """Remove temporary download files."""
         if self.temp_dir.exists():
             logger.info("Cleaning up temporary files")
             shutil.rmtree(self.temp_dir, ignore_errors=True)
             logger.success("Temp files removed")
 
-    def runScraper(self, api_path: Path) -> bool:
+    def run_scraper(self, api_path: Path) -> bool:
         """Run the scraper on the API source."""
         logger.info("\n Running scraper on API source")
 
@@ -181,7 +181,7 @@ class RuneLiteAPIUpdater:
 
             # Create scraper and run
             scraper = EfficientRuneLiteScraper()
-            scraper.scrapeLocalDirectory(api_path)
+            scraper.scrape_local_directory(api_path)
 
             # Save to correct location
             output_file = self.api_data_file
@@ -214,7 +214,7 @@ class RuneLiteAPIUpdater:
             traceback.print_exc()
             return False
 
-    def updateVersionInfo(self):
+    def update_version_info(self):
         """Save version information after successful update"""
         version_info = {
             "updated_at": datetime.now().isoformat(),
@@ -222,7 +222,7 @@ class RuneLiteAPIUpdater:
         }
 
         # Add GitHub info if available
-        github_info = self.getLatestGithubVersion()
+        github_info = self.get_latest_github_version()
         if github_info:
             version_info.update(github_info)
 
@@ -231,7 +231,7 @@ class RuneLiteAPIUpdater:
 
         logger.success(f"\n Version info saved to {self.version_file}")
 
-    def regenerateConstants(self) -> bool:
+    def regenerate_constants(self) -> bool:
         """Regenerate constants from API data."""
         logger.info("\n Regenerating constants")
 
@@ -247,7 +247,7 @@ class RuneLiteAPIUpdater:
 
             # Generate constants (takes file path, not dict)
             generator = ProxyGenerator(str(self.api_data_file))
-            generator.saveConstants(str(constants_file))
+            generator.save_constants(str(constants_file))
 
             # Verify it was created
             if not constants_file.exists():
@@ -273,7 +273,7 @@ class RuneLiteAPIUpdater:
         print("=" * 80)
 
         # Check if update needed
-        needs_update, reason = self.shouldUpdate(force, max_age_days)
+        needs_update, reason = self.should_update(force, max_age_days)
 
         if not needs_update:
             logger.success(f"\n {reason}")
@@ -283,16 +283,16 @@ class RuneLiteAPIUpdater:
 
         # Always download fresh source (no caching)
         # Download to temp directory
-        api_path = self.downloadRuneliteSource()
+        api_path = self.download_runelite_source()
         if not api_path:
             logger.error("\n Failed to download RuneLite source")
             return False
 
         # Run scraper
-        scrape_success = self.runScraper(api_path)
+        scrape_success = self.run_scraper(api_path)
 
         # Always cleanup temp files after scraping (success or failure)
-        self.cleanupTempFiles()
+        self.cleanup_temp_files()
 
         if not scrape_success:
             logger.error("\n Scraper failed")
@@ -300,14 +300,14 @@ class RuneLiteAPIUpdater:
 
         # Regenerate constants before updating version file
         # This ensures we don't mark as "updated" if generation fails
-        constants_success = self.regenerateConstants()
+        constants_success = self.regenerate_constants()
         if not constants_success:
             logger.error("\n Constants generation failed")
             return False
 
         # Update version info LAST - only after everything succeeds
         # This prevents stale cache if we crash mid-run
-        self.updateVersionInfo()
+        self.update_version_info()
 
         print("\n" + "=" * 80)
         logger.success("Update complete!")
@@ -315,9 +315,9 @@ class RuneLiteAPIUpdater:
 
         return True
 
-    def cleanTempFiles(self):
-        """Remove temporary download files (alias for cleanupTempFiles)"""
-        self.cleanupTempFiles()
+    def clean_temp_files(self):
+        """Remove temporary download files (alias for cleanup_temp_files)"""
+        self.cleanup_temp_files()
 
     def status(self):
         """Print current status"""
@@ -343,7 +343,7 @@ class RuneLiteAPIUpdater:
             logger.error(f"\n API data not found: {self.api_data_file}")
 
         # Check version
-        version = self.getCurrentVersion()
+        version = self.get_current_version()
         if version:
             logger.info("\n Current version")
             logger.info(f"Updated: {version.get('updated_at', 'unknown')}")
@@ -354,7 +354,7 @@ class RuneLiteAPIUpdater:
 
         # Check for updates
         logger.info("\n Checking for updates")
-        latest = self.getLatestGithubVersion()
+        latest = self.get_latest_github_version()
         if latest:
             logger.info(f"Latest commit: {latest['sha'][:8]}")
             logger.info(f"Date: {latest['date']}")

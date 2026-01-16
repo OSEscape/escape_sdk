@@ -50,7 +50,7 @@ class EnumValue:
         return self._value_name
 
     @property
-    def enumType(self):
+    def enum_type(self):
         """Get the enum type name"""
         return self._enum_name
 
@@ -101,7 +101,7 @@ class EnumMeta(type):
             raise TypeError(f"Invalid key type: {type(key)}")
 
 
-def createEnumClass(enum_name: str, values: list, value_map: Dict | None = None) -> Type:
+def create_enum_class(enum_name: str, values: list, value_map: Dict | None = None) -> Type:
     """
     Create a single enum class from scraped data
     """
@@ -143,7 +143,7 @@ def createEnumClass(enum_name: str, values: list, value_map: Dict | None = None)
     return enum_class
 
 
-def generateAllEnumClasses(api_data: Dict) -> Dict[str, Type]:
+def generate_all_enum_classes(api_data: Dict) -> Dict[str, Type]:
     """
     Generate all enum classes from the scraped API data
     """
@@ -166,23 +166,23 @@ def generateAllEnumClasses(api_data: Dict) -> Dict[str, Type]:
             value_map = {}
 
         if values:
-            enum_class = createEnumClass(enum_name, values, value_map)
+            enum_class = create_enum_class(enum_name, values, value_map)
             enum_classes[enum_name] = enum_class
 
     return enum_classes
 
 
-def loadEnumsFromFile(api_data_file: str | None = None) -> Dict[str, Type]:
+def load_enums_from_file(api_data_file: str | None = None) -> Dict[str, Type]:
     """
     Load enum classes from the API data file
     """
     # Default to the standard location in data/api directory
     if api_data_file is None:
         # Look for data file in cache directory
-        from .cache_manager import getCacheManager
+        from .cache_manager import get_cache_manager
 
-        cache_manager = getCacheManager()
-        api_data_file = str(cache_manager.getDataPath("api") / "runelite_api_data.json")
+        cache_manager = get_cache_manager()
+        api_data_file = str(cache_manager.get_data_path("api") / "runelite_api_data.json")
 
     # Load the API data
     try:
@@ -197,7 +197,7 @@ def loadEnumsFromFile(api_data_file: str | None = None) -> Dict[str, Type]:
         return {}
 
     # Generate enum classes
-    enum_classes = generateAllEnumClasses(api_data)
+    enum_classes = generate_all_enum_classes(api_data)
 
     logger.success(f"Generated {len(enum_classes)} enum classes from API data")
 
@@ -205,7 +205,7 @@ def loadEnumsFromFile(api_data_file: str | None = None) -> Dict[str, Type]:
 
 
 # Auto-generate enums on module import
-_enum_classes = loadEnumsFromFile()
+_enum_classes = load_enums_from_file()
 
 # Export all enum classes to module namespace
 for _name, _cls in _enum_classes.items():
@@ -222,17 +222,17 @@ __all__ = [
 
 
 # Provide convenient access to common enums (if they exist)
-def getEnum(enum_name: str) -> Type | None:
+def get_enum(enum_name: str) -> Type | None:
     """Get an enum class by name"""
     return _enum_classes.get(enum_name)
 
 
-def listAllEnums() -> list:
+def list_all_enums() -> list:
     """List all available enum names"""
     return sorted(_enum_classes.keys())
 
 
-def enumInfo(enum_name: str) -> Dict[str, Any]:
+def enum_info(enum_name: str) -> Dict[str, Any]:
     """Get information about an enum"""
     enum_class = _enum_classes.get(enum_name)
     if not enum_class:

@@ -104,35 +104,35 @@ class Equipment(GameTabs, ItemContainer):
         self._items = cached.items
         return self._items
 
-    def openEquipmentView(self) -> bool:
+    def open_equipment_view(self) -> bool:
         """Open the equipment view within the equipment tab."""
         if not self.open():
             return False
 
         return self.bottom_buttons.interact("View equipment stats")
 
-    def openPriceChecker(self) -> bool:
+    def open_price_checker(self) -> bool:
         """Open the price checker within the equipment tab."""
         if not self.open():
             return False
 
         return self.bottom_buttons.interact("View guide prices")
 
-    def openViewKeptOnDeath(self) -> bool:
+    def open_view_kept_on_death(self) -> bool:
         """Open the view kept on death within the equipment tab."""
         if not self.open():
             return False
 
         return self.bottom_buttons.interact("View items kept on death")
 
-    def callFollower(self) -> bool:
+    def call_follower(self) -> bool:
         """Call the follower within the equipment tab."""
         if not self.open():
             return False
 
         return self.bottom_buttons.interact("Call follower")
 
-    def removeSlot(self, slot: EquipmentSlots | str) -> bool:
+    def remove_slot(self, slot: EquipmentSlots | str) -> bool:
         """Remove an item from a specific equipment slot."""
         if not self.open():
             return False
@@ -140,14 +140,14 @@ class Equipment(GameTabs, ItemContainer):
         slot_name = slot.name if isinstance(slot, EquipmentSlots) else slot
         return self.slots.interact(slot_name)
 
-    def removeSlots(self, slots: list[EquipmentSlots | str]) -> int:
+    def remove_slots(self, slots: list[EquipmentSlots | str]) -> int:
         """Remove items from multiple equipment slots, returning count removed."""
         if not self.open():
             return 0
 
         removed_count = 0
         for slot in slots:
-            if self.removeSlot(slot):
+            if self.remove_slot(slot):
                 removed_count += 1
         return removed_count
 

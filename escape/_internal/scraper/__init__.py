@@ -2,10 +2,10 @@
 
 from ..updater.api import RuneLiteAPIUpdater
 
-__all__ = ["RuneLiteAPIUpdater", "ensureApiData"]
+__all__ = ["RuneLiteAPIUpdater", "ensure_api_data"]
 
 
-def ensureApiData(force: bool = False, max_age_days: int = 7, quiet: bool = False) -> bool:
+def ensure_api_data(force: bool = False, max_age_days: int = 7, quiet: bool = False) -> bool:
     """Ensure API data is present and up-to-date."""
     import sys
     from io import StringIO

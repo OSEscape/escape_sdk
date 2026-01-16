@@ -6,21 +6,21 @@ from escape.client import Client
 class TestClient:
     """Test suite for Client class."""
 
-    def testClientInitialization(self):
+    def test_client_initialization(self):
         """Test that client initializes properly."""
         client = Client()
         assert client is not None
         assert not client.isConnected()
 
-    def testClientConnection(self, client):
+    def test_client_connection(self, client):
         """Test client connection."""
         assert not client.isConnected()
         result = client.connect()
         assert result is True
         assert client.isConnected()
 
-    def testClientDisconnection(self, connectedClient):
+    def test_client_disconnection(self, connected_client):
         """Test client disconnection."""
-        assert connectedClient.isConnected()
-        connectedClient.disconnect()
-        assert not connectedClient.isConnected()
+        assert connected_client.isConnected()
+        connected_client.disconnect()
+        assert not connected_client.isConnected()

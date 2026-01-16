@@ -25,7 +25,7 @@ class Box:
             self.y1, self.y2 = self.y2, self.y1
 
     @classmethod
-    def fromRect(cls, x: int, y: int, width: int, height: int) -> "Box":
+    def from_rect(cls, x: int, y: int, width: int, height: int) -> "Box":
         """Create a Box from Java Rectangle format (x, y, width, height)."""
         return cls(x, y, x + width, y + height)
 
@@ -58,7 +58,7 @@ class Box:
             )
         return self.x1 <= other.x < self.x2 and self.y1 <= other.y < self.y2
 
-    def randomPoint(self) -> "Point":
+    def random_point(self) -> "Point":
         """Generate a random point within this box."""
         from escape.types.point import Point
 
@@ -66,7 +66,7 @@ class Box:
 
     def click(self, button: str = "left", randomize: bool = True) -> None:
         """Click within this box."""
-        point = self.randomPoint() if randomize else self.center()
+        point = self.random_point() if randomize else self.center()
         point.click(button=button)
 
     def hover(self, randomize: bool = True) -> bool:
@@ -77,15 +77,15 @@ class Box:
         current = Point(*getClient().input.mouse.position)
         if self.contains(current):
             return True
-        point = self.randomPoint() if randomize else self.center()
+        point = self.random_point() if randomize else self.center()
         point.hover()
         return True
 
-    def rightClick(self, randomize: bool = True) -> None:
+    def right_click(self, randomize: bool = True) -> None:
         """Right-click within this box."""
         self.click(button="right", randomize=randomize)
 
-    def clickOption(self, option: str, randomize: bool = True) -> bool:
+    def click_option(self, option: str, randomize: bool = True) -> bool:
         """Click a specific option from the context menu after right-clicking within this box."""
         from escape.client import client
 
@@ -107,23 +107,23 @@ class Box:
             viz.render()
 
 
-def createGrid(
-    startX: int,
-    startY: int,
+def create_grid(
+    start_x: int,
+    start_y: int,
     width: int,
     height: int,
     columns: int,
     rows: int,
-    spacingX: int = 0,
-    spacingY: int = 0,
+    spacing_x: int = 0,
+    spacing_y: int = 0,
     padding: int = 0,
 ) -> list[Box]:
     """Create a grid of Box objects."""
     boxes = []
     for row in range(rows):
         for col in range(columns):
-            x1 = startX + col * (width + spacingX)
-            y1 = startY + row * (height + spacingY)
+            x1 = start_x + col * (width + spacing_x)
+            y1 = start_y + row * (height + spacing_y)
             x2 = x1 + width
             y2 = y1 + height
 

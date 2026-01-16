@@ -15,7 +15,7 @@ from typing import List, Tuple
 from escape._internal.logger import logger
 
 
-def isCamelCase(name: str) -> bool:
+def is_camel_case(name: str) -> bool:
     """
     Check if a name follows camelCase convention.
 
@@ -40,7 +40,7 @@ def isCamelCase(name: str) -> bool:
     return bool(re.match(camel_case_pattern, name))
 
 
-def isPascalCase(name: str) -> bool:
+def is_pascal_case(name: str) -> bool:
     """
     Check if a name follows PascalCase convention.
 
@@ -54,7 +54,7 @@ def isPascalCase(name: str) -> bool:
     return bool(re.match(pascal_case_pattern, name))
 
 
-def isUpperCase(name: str) -> bool:
+def is_upper_case(name: str) -> bool:
     """
     Check if a name follows UPPER_CASE convention.
 
@@ -81,7 +81,7 @@ class NamingChecker(ast.NodeVisitor):
         self.filename = filename
         self.errors: List[Tuple[int, str]] = []
 
-    def _isProperty(self, node: ast.FunctionDef) -> bool:
+    def _is_property(self, node: ast.FunctionDef) -> bool:
         """
         Check if a function has @property decorator.
 
@@ -96,28 +96,28 @@ class NamingChecker(ast.NodeVisitor):
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
         """Visit function definitions and check naming."""
         # Allow any naming for @property decorators (PascalCase, snake_case, camelCase)
-        if self._isProperty(node):
+        if self._is_property(node):
             self.generic_visit(node)
             return
 
-        if not isCamelCase(node.name):
+        if not is_camel_case(node.name):
             self.errors.append(
                 (
                     node.lineno,
                     f"Function '{node.name}' should be camelCase "
-                    f"(e.g., '{self._suggestCamelCase(node.name)}')",
+                    f"(e.g., '{self._suggest_camel_case(node.name)}')",
                 )
             )
         self.generic_visit(node)
 
     def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:
         """Visit async function definitions and check naming."""
-        if not isCamelCase(node.name):
+        if not is_camel_case(node.name):
             self.errors.append(
                 (
                     node.lineno,
                     f"Async function '{node.name}' should be camelCase "
-                    f"(e.g., '{self._suggestCamelCase(node.name)}')",
+                    f"(e.g., '{self._suggest_camel_case(node.name)}')",
                 )
             )
         self.generic_visit(node)
@@ -127,17 +127,17 @@ class NamingChecker(ast.NodeVisitor):
         # Allow private classes (leading underscore)
         name_to_check = node.name.lstrip("_")
 
-        if name_to_check and not isPascalCase(name_to_check):
+        if name_to_check and not is_pascal_case(name_to_check):
             self.errors.append(
                 (
                     node.lineno,
                     f"Class '{node.name}' should be PascalCase "
-                    f"(e.g., '{self._suggestPascalCase(node.name)}')",
+                    f"(e.g., '{self._suggest_pascal_case(node.name)}')",
                 )
             )
         self.generic_visit(node)
 
-    def _suggestCamelCase(self, name: str) -> str:
+    def _suggest_camel_case(self, name: str) -> str:
         """
         Suggest a camelCase version of a name.
 
@@ -157,7 +157,7 @@ class NamingChecker(ast.NodeVisitor):
             return name[0].lower() + name[1:]
         return name
 
-    def _suggestPascalCase(self, name: str) -> str:
+    def _suggest_pascal_case(self, name: str) -> str:
         """
         Suggest a PascalCase version of a name.
 
@@ -178,7 +178,7 @@ class NamingChecker(ast.NodeVisitor):
         return name
 
 
-def checkFile(filepath: Path) -> List[Tuple[int, str]]:
+def check_file(filepath: Path) -> List[Tuple[int, str]]:
     """
     Check a Python file for naming convention violations.
 
@@ -234,7 +234,7 @@ def main() -> int:
         if any(pattern in filepath_str for pattern in exclude_patterns):
             continue
 
-        errors = checkFile(filepath)
+        errors = check_file(filepath)
         if errors:
             logger.info(f"\n{filepath}")
             for lineno, message in errors:

@@ -15,11 +15,11 @@ if TYPE_CHECKING:
 class CameraState:
     """Per-frame camera state."""
 
-    cameraX: float
-    cameraY: float
-    cameraZ: float
-    cameraPitch: float  # radians
-    cameraYaw: float  # radians
+    camera_x: float
+    camera_y: float
+    camera_z: float
+    camera_pitch: float  # radians
+    camera_yaw: float  # radians
     scale: int
 
 
@@ -27,187 +27,187 @@ class CameraState:
 class EntityTransform:
     """Per-frame entity transform data (for WorldEntity instances)."""
 
-    entityX: int
-    entityY: int
+    entity_x: int
+    entity_y: int
     orientation: int  # 0-2047 JAU
-    groundHeight: int
+    ground_height: int
 
 
 @dataclass
 class EntityConfig:
     """Static WorldEntity config - set once on WorldView load."""
 
-    boundsX: int
-    boundsY: int
-    boundsWidth: int
-    boundsHeight: int
+    bounds_x: int
+    bounds_y: int
+    bounds_width: int
+    bounds_height: int
 
     @property
-    def centerX(self) -> int:
-        return (self.boundsX + self.boundsWidth // 2) * 128
+    def center_x(self) -> int:
+        return (self.bounds_x + self.bounds_width // 2) * 128
 
     @property
-    def centerY(self) -> int:
-        return (self.boundsY + self.boundsHeight // 2) * 128
+    def center_y(self) -> int:
+        return (self.bounds_y + self.bounds_height // 2) * 128
 
 
 class TileGrid:
     """Cached projection of all tile corners in the scene."""
 
     __slots__ = (
-        "cornerX",
-        "cornerY",
-        "cornerValid",
-        "sizeX",
-        "sizeY",
-        "baseX",
-        "baseY",
+        "corner_x",
+        "corner_y",
+        "corner_valid",
+        "size_x",
+        "size_y",
+        "base_x",
+        "base_y",
         "plane",
-        "viewMinX",
-        "viewMaxX",
-        "viewMinY",
-        "viewMaxY",
-        "_sceneXs",
-        "_sceneYs",
-        "_tileValid",
-        "_tileOnScreen",
+        "view_min_x",
+        "view_max_x",
+        "view_min_y",
+        "view_max_y",
+        "_scene_xs",
+        "_scene_ys",
+        "_tile_valid",
+        "_tile_on_screen",
     )
 
     def __init__(
         self,
-        cornerX: np.ndarray,
-        cornerY: np.ndarray,
-        cornerValid: np.ndarray,
-        sizeX: int,
-        sizeY: int,
-        baseX: int,
-        baseY: int,
+        corner_x: np.ndarray,
+        corner_y: np.ndarray,
+        corner_valid: np.ndarray,
+        size_x: int,
+        size_y: int,
+        base_x: int,
+        base_y: int,
         plane: int,
-        viewMinX: int,
-        viewMaxX: int,
-        viewMinY: int,
-        viewMaxY: int,
+        view_min_x: int,
+        view_max_x: int,
+        view_min_y: int,
+        view_max_y: int,
     ):
-        self.cornerX = cornerX  # int32[(sizeX+1)*(sizeY+1)]
-        self.cornerY = cornerY  # int32[(sizeX+1)*(sizeY+1)]
-        self.cornerValid = cornerValid  # bool[(sizeX+1)*(sizeY+1)]
-        self.sizeX = sizeX
-        self.sizeY = sizeY
-        self.baseX = baseX
-        self.baseY = baseY
+        self.corner_x = corner_x  # int32[(size_x+1)*(size_y+1)]
+        self.corner_y = corner_y  # int32[(size_x+1)*(size_y+1)]
+        self.corner_valid = corner_valid  # bool[(size_x+1)*(size_y+1)]
+        self.size_x = size_x
+        self.size_y = size_y
+        self.base_x = base_x
+        self.base_y = base_y
         self.plane = plane
-        self.viewMinX = viewMinX
-        self.viewMaxX = viewMaxX
-        self.viewMinY = viewMinY
-        self.viewMaxY = viewMaxY
+        self.view_min_x = view_min_x
+        self.view_max_x = view_max_x
+        self.view_min_y = view_min_y
+        self.view_max_y = view_max_y
 
         # Pre-compute tile scene coordinates (used for filtering)
-        tileCount = sizeX * sizeY
-        self._sceneXs = (np.arange(tileCount, dtype=np.int32) // sizeY).astype(np.int16)
-        self._sceneYs = (np.arange(tileCount, dtype=np.int32) % sizeY).astype(np.int16)
+        tile_count = size_x * size_y
+        self._scene_xs = (np.arange(tile_count, dtype=np.int32) // size_y).astype(np.int16)
+        self._scene_ys = (np.arange(tile_count, dtype=np.int32) % size_y).astype(np.int16)
 
         # Pre-compute tile validity and visibility (lazy, computed on first access)
-        self._tileValid: np.ndarray | None = None
-        self._tileOnScreen: np.ndarray | None = None
+        self._tile_valid: np.ndarray | None = None
+        self._tile_on_screen: np.ndarray | None = None
 
-    def _cornerIdx(self, x: int, y: int) -> int:
+    def _corner_idx(self, x: int, y: int) -> int:
         """Get flat index for corner at (x, y)."""
-        return x * (self.sizeY + 1) + y
+        return x * (self.size_y + 1) + y
 
-    def _tileIdx(self, x: int, y: int) -> int:
+    def _tile_idx(self, x: int, y: int) -> int:
         """Get flat index for tile at (x, y)."""
-        return x * self.sizeY + y
+        return x * self.size_y + y
 
     @property
-    def tileValid(self) -> np.ndarray:
-        """Bool array of tile validity (all 4 corners valid). Shape: [sizeX * sizeY]."""
-        if self._tileValid is None:
-            sy1 = self.sizeY + 1
+    def tile_valid(self) -> np.ndarray:
+        """Bool array of tile validity (all 4 corners valid). Shape: [size_x * size_y]."""
+        if self._tile_valid is None:
+            sy1 = self.size_y + 1
             # Get corner indices for all tiles
-            tileIdxs = np.arange(self.sizeX * self.sizeY, dtype=np.int32)
-            tx = tileIdxs // self.sizeY
-            ty = tileIdxs % self.sizeY
+            tile_idxs = np.arange(self.size_x * self.size_y, dtype=np.int32)
+            tx = tile_idxs // self.size_y
+            ty = tile_idxs % self.size_y
             # Corner indices: NW, NE, SE, SW
             nw = tx * sy1 + ty
             ne = (tx + 1) * sy1 + ty
             se = (tx + 1) * sy1 + (ty + 1)
             sw = tx * sy1 + (ty + 1)
-            self._tileValid = (
-                self.cornerValid[nw]
-                & self.cornerValid[ne]
-                & self.cornerValid[se]
-                & self.cornerValid[sw]
+            self._tile_valid = (
+                self.corner_valid[nw]
+                & self.corner_valid[ne]
+                & self.corner_valid[se]
+                & self.corner_valid[sw]
             )
-        return self._tileValid
+        return self._tile_valid
 
     @property
-    def tileOnScreen(self) -> np.ndarray:
-        """Bool array of tiles with center on screen. Shape: [sizeX * sizeY]."""
-        if self._tileOnScreen is None:
+    def tile_on_screen(self) -> np.ndarray:
+        """Bool array of tiles with center on screen. Shape: [size_x * size_y]."""
+        if self._tile_on_screen is None:
             # Compute tile centers from corners
-            centerX, centerY = self.getTileCenters()
-            self._tileOnScreen = (
-                self.tileValid
-                & (centerX >= self.viewMinX)
-                & (centerX < self.viewMaxX)
-                & (centerY >= self.viewMinY)
-                & (centerY < self.viewMaxY)
+            center_x, center_y = self.get_tile_centers()
+            self._tile_on_screen = (
+                self.tile_valid
+                & (center_x >= self.view_min_x)
+                & (center_x < self.view_max_x)
+                & (center_y >= self.view_min_y)
+                & (center_y < self.view_max_y)
             )
-        return self._tileOnScreen
+        return self._tile_on_screen
 
-    def getTileCenters(self) -> tuple[np.ndarray, np.ndarray]:
-        """Get screen coordinates of tile centers. Returns (centerX, centerY) arrays."""
-        sy1 = self.sizeY + 1
-        tileIdxs = np.arange(self.sizeX * self.sizeY, dtype=np.int32)
-        tx = tileIdxs // self.sizeY
-        ty = tileIdxs % self.sizeY
+    def get_tile_centers(self) -> tuple[np.ndarray, np.ndarray]:
+        """Get screen coordinates of tile centers. Returns (center_x, center_y) arrays."""
+        sy1 = self.size_y + 1
+        tile_idxs = np.arange(self.size_x * self.size_y, dtype=np.int32)
+        tx = tile_idxs // self.size_y
+        ty = tile_idxs % self.size_y
         nw = tx * sy1 + ty
         ne = (tx + 1) * sy1 + ty
         se = (tx + 1) * sy1 + (ty + 1)
         sw = tx * sy1 + (ty + 1)
-        centerX = (self.cornerX[nw] + self.cornerX[ne] + self.cornerX[se] + self.cornerX[sw]) >> 2
-        centerY = (self.cornerY[nw] + self.cornerY[ne] + self.cornerY[se] + self.cornerY[sw]) >> 2
-        return centerX, centerY
+        center_x = (self.corner_x[nw] + self.corner_x[ne] + self.corner_x[se] + self.corner_x[sw]) >> 2
+        center_y = (self.corner_y[nw] + self.corner_y[ne] + self.corner_y[se] + self.corner_y[sw]) >> 2
+        return center_x, center_y
 
-    def getTileCorners(self, tileIdx: int) -> tuple[int, int, int, int, int, int, int, int]:
-        """Get screen coords of tile corners: (nwX, nwY, neX, neY, seX, seY, swX, swY)."""
-        tx = tileIdx // self.sizeY
-        ty = tileIdx % self.sizeY
-        sy1 = self.sizeY + 1
+    def get_tile_corners(self, tile_idx: int) -> tuple[int, int, int, int, int, int, int, int]:
+        """Get screen coords of tile corners: (nw_x, nw_y, ne_x, ne_y, se_x, se_y, sw_x, sw_y)."""
+        tx = tile_idx // self.size_y
+        ty = tile_idx % self.size_y
+        sy1 = self.size_y + 1
         nw = tx * sy1 + ty
         ne = (tx + 1) * sy1 + ty
         se = (tx + 1) * sy1 + (ty + 1)
         sw = tx * sy1 + (ty + 1)
         return (
-            int(self.cornerX[nw]),
-            int(self.cornerY[nw]),
-            int(self.cornerX[ne]),
-            int(self.cornerY[ne]),
-            int(self.cornerX[se]),
-            int(self.cornerY[se]),
-            int(self.cornerX[sw]),
-            int(self.cornerY[sw]),
+            int(self.corner_x[nw]),
+            int(self.corner_y[nw]),
+            int(self.corner_x[ne]),
+            int(self.corner_y[ne]),
+            int(self.corner_x[se]),
+            int(self.corner_y[se]),
+            int(self.corner_x[sw]),
+            int(self.corner_y[sw]),
         )
 
-    def getTileQuad(self, tileIdx: int) -> "Quad":
+    def get_tile_quad(self, tile_idx: int) -> "Quad":
         """Get Quad for tile at flat index."""
         from escape.types import Quad
 
-        nwX, nwY, neX, neY, seX, seY, swX, swY = self.getTileCorners(tileIdx)
-        return Quad.fromCoords([(nwX, nwY), (neX, neY), (seX, seY), (swX, swY)])
+        nw_x, nw_y, ne_x, ne_y, se_x, se_y, sw_x, sw_y = self.get_tile_corners(tile_idx)
+        return Quad.fromCoords([(nw_x, nw_y), (ne_x, ne_y), (se_x, se_y), (sw_x, sw_y)])
 
-    def getVisibleIndices(self, mask: np.ndarray | None = None, margin: int = 0) -> np.ndarray:
+    def get_visible_indices(self, mask: np.ndarray | None = None, margin: int = 0) -> np.ndarray:
         """Get flat indices of visible tiles, optionally filtered by mask."""
         if margin == 0:
-            visible = self.tileOnScreen
+            visible = self.tile_on_screen
         else:
-            centerX, centerY = self.getTileCenters()
+            center_x, center_y = self.get_tile_centers()
             visible = (
-                self.tileValid
-                & (centerX >= self.viewMinX - margin)
-                & (centerX < self.viewMaxX + margin)
-                & (centerY >= self.viewMinY - margin)
-                & (centerY < self.viewMaxY + margin)
+                self.tile_valid
+                & (center_x >= self.view_min_x - margin)
+                & (center_x < self.view_max_x + margin)
+                & (center_y >= self.view_min_y - margin)
+                & (center_y < self.view_max_y + margin)
             )
 
         if mask is not None:
@@ -239,39 +239,39 @@ class Projection:
         # Sin/cos lookup tables (JAU: 0-2047)
         unit = np.pi / 1024
         angles = np.arange(2048) * unit
-        self._sinTable = np.sin(angles).astype(np.float32)
-        self._cosTable = np.cos(angles).astype(np.float32)
+        self._sin_table = np.sin(angles).astype(np.float32)
+        self._cos_table = np.cos(angles).astype(np.float32)
 
         # Scene data
-        self.tileHeights: np.ndarray | None = None
-        self.bridgeFlags: np.ndarray | None = None
-        self.baseX: int = 0
-        self.baseY: int = 0
-        self.sizeX: int = 104
-        self.sizeY: int = 104
-        self.entityConfig: EntityConfig | None = None
+        self.tile_heights: np.ndarray | None = None
+        self.bridge_flags: np.ndarray | None = None
+        self.base_x: int = 0
+        self.base_y: int = 0
+        self.size_x: int = 104
+        self.size_y: int = 104
+        self.entity_config: EntityConfig | None = None
 
         # Camera trig (updated on refresh)
-        self._camX: float = 0
-        self._camY: float = 0
-        self._camZ: float = 0
+        self._cam_x: float = 0
+        self._cam_y: float = 0
+        self._cam_z: float = 0
         self._scale: int = 512
-        self._pitchSin: float = 0
-        self._pitchCos: float = 1
-        self._yawSin: float = 0
-        self._yawCos: float = 1
+        self._pitch_sin: float = 0
+        self._pitch_cos: float = 1
+        self._yaw_sin: float = 0
+        self._yaw_cos: float = 1
 
         # Entity transform
-        self._entityX: int = 0
-        self._entityY: int = 0
-        self._orientSin: float = 0
-        self._orientCos: float = 1
-        self._groundHeight: int = 0
-        self._centerX: int = 0
-        self._centerY: int = 0
+        self._entity_x: int = 0
+        self._entity_y: int = 0
+        self._orient_sin: float = 0
+        self._orient_cos: float = 1
+        self._ground_height: int = 0
+        self._center_x: int = 0
+        self._center_y: int = 0
 
         # Tile cache
-        self._tileGrid: TileGrid | None = None
+        self._tile_grid: TileGrid | None = None
         self._stale: bool = True
 
     def invalidate(self):
@@ -281,48 +281,48 @@ class Projection:
     @property
     def tiles(self) -> TileGrid | None:
         """Get cached tile projections, recomputing if stale."""
-        if not self._stale and self._tileGrid is not None:
-            return self._tileGrid
+        if not self._stale and self._tile_grid is not None:
+            return self._tile_grid
 
-        if not self._refreshCamera():
+        if not self._refresh_camera():
             return None
 
-        if self.tileHeights is None:
+        if self.tile_heights is None:
             return None
 
-        self._computeTileGrid()
-        return self._tileGrid
+        self._compute_tile_grid()
+        return self._tile_grid
 
-    def _refreshCamera(self) -> bool:
+    def _refresh_camera(self) -> bool:
         """Load camera state from EventCache. Returns True if successful."""
         from escape.globals import getEventCache
 
         cache = getEventCache()
-        camData = cache.getCameraState()
-        if not camData:
+        cam_data = cache.getCameraState()
+        if not cam_data:
             return False
 
-        self._camX, self._camY, self._camZ = camData[0], camData[1], camData[2]
-        pitch, yaw, self._scale = camData[3], camData[4], camData[5]
-        self._pitchSin = np.sin(pitch)
-        self._pitchCos = np.cos(pitch)
-        self._yawSin = np.sin(yaw)
-        self._yawCos = np.cos(yaw)
+        self._cam_x, self._cam_y, self._cam_z = cam_data[0], cam_data[1], cam_data[2]
+        pitch, yaw, self._scale = cam_data[3], cam_data[4], cam_data[5]
+        self._pitch_sin = np.sin(pitch)
+        self._pitch_cos = np.cos(pitch)
+        self._yaw_sin = np.sin(yaw)
+        self._yaw_cos = np.cos(yaw)
 
         # Entity transform
-        entData = cache.getEntityTransform()
-        if entData:
-            self._entityX, self._entityY = entData[0], entData[1]
-            self._orientSin = self._sinTable[entData[2]]
-            self._orientCos = self._cosTable[entData[2]]
-            self._groundHeight = entData[3]
+        ent_data = cache.getEntityTransform()
+        if ent_data:
+            self._entity_x, self._entity_y = ent_data[0], ent_data[1]
+            self._orient_sin = self._sin_table[ent_data[2]]
+            self._orient_cos = self._cos_table[ent_data[2]]
+            self._ground_height = ent_data[3]
         else:
-            self._entityX = self._entityY = self._groundHeight = 0
-            self._orientSin, self._orientCos = 0.0, 1.0
+            self._entity_x = self._entity_y = self._ground_height = 0
+            self._orient_sin, self._orient_cos = 0.0, 1.0
 
         return True
 
-    def _computeTileGrid(self):
+    def _compute_tile_grid(self):
         """Compute corner projections for all tiles."""
         # Get current plane
         from escape.globals import getEventCache
@@ -330,117 +330,117 @@ class Projection:
         gametick = getEventCache().getGametickState()
         plane = gametick.get("plane", 0) if gametick else 0
 
-        # Generate corner grid: (sizeX+1) x (sizeY+1)
-        cx = np.arange(self.sizeX + 1, dtype=np.int32)
-        cy = np.arange(self.sizeY + 1, dtype=np.int32)
-        gridX, gridY = np.meshgrid(cx, cy, indexing="ij")
+        # Generate corner grid: (size_x+1) x (size_y+1)
+        cx = np.arange(self.size_x + 1, dtype=np.int32)
+        cy = np.arange(self.size_y + 1, dtype=np.int32)
+        grid_x, grid_y = np.meshgrid(cx, cy, indexing="ij")
 
         # Local coords for corners (not +64 for centers)
-        localX = (gridX << 7).ravel().astype(np.float32)
-        localY = (gridY << 7).ravel().astype(np.float32)
+        local_x = (grid_x << 7).ravel().astype(np.float32)
+        local_y = (grid_y << 7).ravel().astype(np.float32)
 
         # Project
-        screenX, screenY, valid = self._projectBatch(localX, localY, plane)
+        screen_x, screen_y, valid = self._project_batch(local_x, local_y, plane)
 
-        self._tileGrid = TileGrid(
-            cornerX=screenX.astype(np.int32),
-            cornerY=screenY.astype(np.int32),
-            cornerValid=valid,
-            sizeX=self.sizeX,
-            sizeY=self.sizeY,
-            baseX=self.baseX,
-            baseY=self.baseY,
+        self._tile_grid = TileGrid(
+            corner_x=screen_x.astype(np.int32),
+            corner_y=screen_y.astype(np.int32),
+            corner_valid=valid,
+            size_x=self.size_x,
+            size_y=self.size_y,
+            base_x=self.base_x,
+            base_y=self.base_y,
             plane=plane,
-            viewMinX=self.VIEWPORT_X_OFFSET,
-            viewMaxX=self.VIEWPORT_X_OFFSET + self.VIEWPORT_WIDTH,
-            viewMinY=self.VIEWPORT_Y_OFFSET,
-            viewMaxY=self.VIEWPORT_Y_OFFSET + self.VIEWPORT_HEIGHT,
+            view_min_x=self.VIEWPORT_X_OFFSET,
+            view_max_x=self.VIEWPORT_X_OFFSET + self.VIEWPORT_WIDTH,
+            view_min_y=self.VIEWPORT_Y_OFFSET,
+            view_max_y=self.VIEWPORT_Y_OFFSET + self.VIEWPORT_HEIGHT,
         )
         self._stale = False
 
-    def _projectBatch(
-        self, localX: np.ndarray, localY: np.ndarray, plane: int
+    def _project_batch(
+        self, local_x: np.ndarray, local_y: np.ndarray, plane: int
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Core projection: local coords -> screen coords."""
         # Tile heights with bridge correction
-        sceneX = (localX.astype(np.int32) >> 7).clip(0, self.sizeX - 1)
-        sceneY = (localY.astype(np.int32) >> 7).clip(0, self.sizeY - 1)
-        tilePlane = np.where((plane < 3) & self.bridgeFlags[sceneX, sceneY], plane + 1, plane)
-        z = self.tileHeights[tilePlane, sceneX, sceneY].astype(np.float32) + self._groundHeight
+        scene_x = (local_x.astype(np.int32) >> 7).clip(0, self.size_x - 1)
+        scene_y = (local_y.astype(np.int32) >> 7).clip(0, self.size_y - 1)
+        tile_plane = np.where((plane < 3) & self.bridge_flags[scene_x, scene_y], plane + 1, plane)
+        z = self.tile_heights[tile_plane, scene_x, scene_y].astype(np.float32) + self._ground_height
 
         # Entity transform (identity if top-level)
-        if self.entityConfig is None:
-            worldX, worldY = localX, localY
+        if self.entity_config is None:
+            world_x, world_y = local_x, local_y
         else:
-            cx = localX - self._centerX
-            cy = localY - self._centerY
-            worldX = self._entityX + cy * self._orientSin + cx * self._orientCos
-            worldY = self._entityY + cy * self._orientCos - cx * self._orientSin
+            cx = local_x - self._center_x
+            cy = local_y - self._center_y
+            world_x = self._entity_x + cy * self._orient_sin + cx * self._orient_cos
+            world_y = self._entity_y + cy * self._orient_cos - cx * self._orient_sin
 
         # Camera-relative
-        dx = worldX - self._camX
-        dy = worldY - self._camY
-        dz = z - self._camZ
+        dx = world_x - self._cam_x
+        dy = world_y - self._cam_y
+        dz = z - self._cam_z
 
         # Rotate by yaw and pitch
-        x1 = dx * self._yawCos + dy * self._yawSin
-        y1 = dy * self._yawCos - dx * self._yawSin
-        y2 = dz * self._pitchCos - y1 * self._pitchSin
-        depth = y1 * self._pitchCos + dz * self._pitchSin
+        x1 = dx * self._yaw_cos + dy * self._yaw_sin
+        y1 = dy * self._yaw_cos - dx * self._yaw_sin
+        y2 = dz * self._pitch_cos - y1 * self._pitch_sin
+        depth = y1 * self._pitch_cos + dz * self._pitch_sin
 
         # Project
         valid = depth >= 50
-        safeDepth = np.where(valid, depth, 1.0)
-        screenX = (self.VIEWPORT_WIDTH / 2 + x1 * self._scale / safeDepth).astype(np.int32)
-        screenY = (self.VIEWPORT_HEIGHT / 2 + y2 * self._scale / safeDepth).astype(np.int32)
-        screenX += self.VIEWPORT_X_OFFSET
-        screenY += self.VIEWPORT_Y_OFFSET
+        safe_depth = np.where(valid, depth, 1.0)
+        screen_x = (self.VIEWPORT_WIDTH / 2 + x1 * self._scale / safe_depth).astype(np.int32)
+        screen_y = (self.VIEWPORT_HEIGHT / 2 + y2 * self._scale / safe_depth).astype(np.int32)
+        screen_x += self.VIEWPORT_X_OFFSET
+        screen_y += self.VIEWPORT_Y_OFFSET
 
-        return screenX, screenY, valid
+        return screen_x, screen_y, valid
 
-    def setScene(
+    def set_scene(
         self,
-        tileHeights: np.ndarray,
-        bridgeFlags: np.ndarray,
-        baseX: int,
-        baseY: int,
-        sizeX: int,
-        sizeY: int,
+        tile_heights: np.ndarray,
+        bridge_flags: np.ndarray,
+        base_x: int,
+        base_y: int,
+        size_x: int,
+        size_y: int,
     ):
         """Set scene data on WorldView load."""
-        self.tileHeights = tileHeights.astype(np.int32)
-        self.bridgeFlags = bridgeFlags.astype(np.bool_)
-        self.baseX = baseX
-        self.baseY = baseY
-        self.sizeX = sizeX
-        self.sizeY = sizeY
+        self.tile_heights = tile_heights.astype(np.int32)
+        self.bridge_flags = bridge_flags.astype(np.bool_)
+        self.base_x = base_x
+        self.base_y = base_y
+        self.size_x = size_x
+        self.size_y = size_y
 
-    def setEntityConfig(self, config: EntityConfig | None):
+    def set_entity_config(self, config: EntityConfig | None):
         """Set WorldEntity config. None for top-level world."""
-        self.entityConfig = config
+        self.entity_config = config
         if config:
-            self._centerX = config.centerX
-            self._centerY = config.centerY
+            self._center_x = config.center_x
+            self._center_y = config.center_y
         else:
-            self._centerX = self._centerY = 0
+            self._center_x = self._center_y = 0
 
-    def worldTileToCanvas(self, worldX: int, worldY: int, plane: int) -> Point | None:
+    def world_tile_to_canvas(self, world_x: int, world_y: int, plane: int) -> Point | None:
         """Project a world tile center to screen. Returns None if off-scene or behind camera."""
         grid = self.tiles
         if grid is None or grid.plane != plane:
             return None
 
-        sceneX = worldX - self.baseX
-        sceneY = worldY - self.baseY
-        if not (0 <= sceneX < self.sizeX and 0 <= sceneY < self.sizeY):
+        scene_x = world_x - self.base_x
+        scene_y = world_y - self.base_y
+        if not (0 <= scene_x < self.size_x and 0 <= scene_y < self.size_y):
             return None
 
-        tileIdx = sceneX * self.sizeY + sceneY
-        if not grid.tileValid[tileIdx]:
+        tile_idx = scene_x * self.size_y + scene_y
+        if not grid.tile_valid[tile_idx]:
             return None
 
-        centerX, centerY = grid.getTileCenters()
-        return Point(int(centerX[tileIdx]), int(centerY[tileIdx]))
+        center_x, center_y = grid.get_tile_centers()
+        return Point(int(center_x[tile_idx]), int(center_y[tile_idx]))
 
 
 # Module-level instance

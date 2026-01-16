@@ -11,7 +11,7 @@ class Point:
     x: int
     y: int
 
-    def distanceTo(self, other: "Point") -> float:
+    def distance_to(self, other: "Point") -> float:
         """Calculate Euclidean distance to another point."""
         dx = self.x - other.x
         dy = self.y - other.y
@@ -34,7 +34,7 @@ class Point:
         mouse = getClient().input.mouse
         mouse.moveTo(self.x, self.y)
 
-    def rightClick(self) -> None:
+    def right_click(self) -> None:
         """Right-click at this point."""
         self.click(button="right")
 
@@ -42,13 +42,13 @@ class Point:
         return f"Point({self.x}, {self.y})"
 
     def debug(
-        self, argbColor: int = 0xFFFF0000, size: int = 5, thickness: int = 2, tag: str | None = None
+        self, argb_color: int = 0xFFFF0000, size: int = 5, thickness: int = 2, tag: str | None = None
     ) -> None:
         """Draw this point as a crosshair overlay on RuneLite."""
         from escape.input.drawing import drawing
 
-        drawing.addLine(self.x - size, self.y, self.x + size, self.y, argbColor, thickness, tag)
-        drawing.addLine(self.x, self.y - size, self.x, self.y + size, argbColor, thickness, tag)
+        drawing.addLine(self.x - size, self.y, self.x + size, self.y, argb_color, thickness, tag)
+        drawing.addLine(self.x, self.y - size, self.x, self.y + size, argb_color, thickness, tag)
 
 
 @dataclass
@@ -59,7 +59,7 @@ class Point3D:
     y: int
     z: int
 
-    def distanceTo(self, other: "Point3D") -> float:
+    def distance_to(self, other: "Point3D") -> float:
         """Calculate 3D Euclidean distance to another point."""
         dx = self.x - other.x
         dy = self.y - other.y

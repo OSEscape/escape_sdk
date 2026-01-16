@@ -13,15 +13,15 @@ if TYPE_CHECKING:
 class Circle:
     """Represents a circle with integer center coordinates and float radius."""
 
-    centerX: int
-    centerY: int
+    center_x: int
+    center_y: int
     radius: float
 
     def center(self) -> "Point":
         """Get the center point of the circle."""
         from escape.types.point import Point
 
-        return Point(self.centerX, self.centerY)
+        return Point(self.center_x, self.center_y)
 
     def area(self) -> float:
         """Get the area of the circle."""
@@ -29,11 +29,11 @@ class Circle:
 
     def contains(self, point: "Point") -> bool:
         """Check if a point is within this circle."""
-        dx = point.x - self.centerX
-        dy = point.y - self.centerY
+        dx = point.x - self.center_x
+        dy = point.y - self.center_y
         return math.sqrt(dx * dx + dy * dy) <= self.radius
 
-    def randomPoint(self) -> "Point":
+    def random_point(self) -> "Point":
         """Generate a uniformly random point within this circle."""
         from escape.types.point import Point
 
@@ -41,14 +41,14 @@ class Circle:
         r = self.radius * math.sqrt(random.random())
         theta = random.uniform(0, 2 * math.pi)
 
-        x = self.centerX + int(r * math.cos(theta))
-        y = self.centerY + int(r * math.sin(theta))
+        x = self.center_x + int(r * math.cos(theta))
+        y = self.center_y + int(r * math.sin(theta))
 
         return Point(x, y)
 
     def click(self, button: str = "left", randomize: bool = True) -> None:
         """Click within this circle."""
-        point = self.randomPoint() if randomize else self.center()
+        point = self.random_point() if randomize else self.center()
         point.click(button=button)
 
     def hover(self, randomize: bool = True) -> bool:
@@ -59,21 +59,21 @@ class Circle:
         current = Point(*getClient().input.mouse.position)
         if self.contains(current):
             return True
-        point = self.randomPoint() if randomize else self.center()
+        point = self.random_point() if randomize else self.center()
         point.hover()
         return True
 
-    def rightClick(self, randomize: bool = True) -> None:
+    def right_click(self, randomize: bool = True) -> None:
         """Right-click within this circle."""
         self.click(button="right", randomize=randomize)
 
     def __repr__(self) -> str:
-        return f"Circle(center=({self.centerX}, {self.centerY}), radius={self.radius})"
+        return f"Circle(center=({self.center_x}, {self.center_y}), radius={self.radius})"
 
     def debug(
-        self, argbColor: int = 0xFFFF0000, filled: bool = False, tag: str | None = None
+        self, argb_color: int = 0xFFFF0000, filled: bool = False, tag: str | None = None
     ) -> None:
         """Draw this circle as an overlay on RuneLite."""
         from escape.input.drawing import drawing
 
-        drawing.addCircle(self.centerX, self.centerY, int(self.radius), argbColor, filled, tag)
+        drawing.addCircle(self.center_x, self.center_y, int(self.radius), argb_color, filled, tag)

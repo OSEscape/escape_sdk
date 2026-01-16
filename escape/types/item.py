@@ -19,7 +19,7 @@ class Item:
     noted: bool
 
     @classmethod
-    def fromDict(cls, data: Dict[str, Any]) -> "Item":
+    def from_dict(cls, data: Dict[str, Any]) -> "Item":
         """Convert dict from Java to Item instance."""
         return cls(
             id=data.get("id", -1),
@@ -28,7 +28,7 @@ class Item:
             noted=data.get("noted", False),
         )
 
-    def toDict(self) -> Dict[str, Any]:
+    def to_dict(self) -> Dict[str, Any]:
         """Convert Item back to dict format."""
         return {"id": self.id, "name": self.name, "stack": self.quantity, "noted": self.noted}
 

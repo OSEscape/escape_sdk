@@ -28,11 +28,11 @@ class Menu:
         """Actual initialization, runs once."""
         pass  # No initialization needed
 
-    def isOpen(self) -> bool:
+    def is_open(self) -> bool:
         """Check if the right-click context menu is currently open."""
         return client.cache.getMenuOpenState().get("menu_open", False)
 
-    def _getOptions(self, strip_colors: bool = True) -> Tuple[List[str], List[str]]:
+    def _get_options(self, strip_colors: bool = True) -> Tuple[List[str], List[str]]:
         data = deepcopy(client.cache.getMenuOptions())
         types = data["types"]
         options = data["options"]
@@ -55,10 +55,10 @@ class Menu:
 
         return formatted_options, types
 
-    def _getMenuInfo(self) -> dict:
+    def _get_menu_info(self) -> dict:
         return client.cache.getMenuOpenState()
 
-    def waitMenuClickEvent(self, max_age: float = 0.2, timeout: float = 0.5) -> bool:
+    def wait_menu_click_event(self, max_age: float = 0.2, timeout: float = 0.5) -> bool:
         """Wait for a menu option click event to be registered."""
         current_state = client.cache.getMenuClickedState()
         timestamp = current_state.get("_timestamp", 0)
@@ -66,49 +66,49 @@ class Menu:
         if (time.time() - timestamp) < max_age and not client.cache.isMenuOptionClickedConsumed():
             return True
 
-        def checkEvent(ts) -> bool:
+        def check_event(ts) -> bool:
             state = client.cache.getMenuClickedState()
             event_time = state.get("_timestamp", 0)
             return (event_time - ts) > 0
 
-        return timing.waitUntil(lambda: checkEvent(timestamp), timeout=timeout, poll_interval=0.001)
+        return timing.waitUntil(lambda: check_event(timestamp), timeout=timeout, poll_interval=0.001)
 
-    def waitHasType(self, option_type: str, timeout: float = 0.5) -> bool:
+    def wait_has_type(self, option_type: str, timeout: float = 0.5) -> bool:
         """Wait until menu contains an option of the specified type."""
 
-        def checkType() -> bool:
-            return self.hasType(option_type)
+        def check_type() -> bool:
+            return self.has_type(option_type)
 
-        return timing.waitUntil(checkType, timeout=timeout, poll_interval=0.001)
+        return timing.waitUntil(check_type, timeout=timeout, poll_interval=0.001)
 
-    def waitHasOption(self, option: str, timeout: float = 0.5) -> bool:
+    def wait_has_option(self, option: str, timeout: float = 0.5) -> bool:
         """Wait until menu contains the specified option text."""
 
-        def checkOption() -> bool:
-            return self.hasOption(option)
+        def check_option() -> bool:
+            return self.has_option(option)
 
-        return timing.waitUntil(checkOption, timeout=timeout, poll_interval=0.001)
+        return timing.waitUntil(check_option, timeout=timeout, poll_interval=0.001)
 
     def open(self, timeout: float = 0.5) -> bool:
         """Open the context menu by right-clicking at current mouse position."""
-        if self.isOpen():
+        if self.is_open():
             return True  # Already open
 
         # Right-click at current position
-        client.input.mouse.rightClick()
+        client.input.mouse.right_click()
 
         # Wait for menu to open
-        return timing.waitUntil(self.isOpen, timeout=timeout, poll_interval=0.001)
+        return timing.waitUntil(self.is_open, timeout=timeout, poll_interval=0.001)
 
     def close(self, use_cancel: bool = True, timeout: float = 1.0) -> bool:
         """Close the context menu by clicking Cancel or moving mouse away."""
         import random
 
         # Check if menu is open
-        if not self.isOpen():
+        if not self.is_open():
             return True  # Already closed
 
-        state = self._getMenuInfo()
+        state = self._get_menu_info()
         # Get menu state from cache
         scrollable = state.get("scrollable", False)
         menu_x = state.get("menuX", 0)
@@ -122,7 +122,7 @@ class Menu:
 
         if use_cancel and not scrollable:
             # Click Cancel option
-            options = self.getOptions()
+            options = self.get_options()
             cancel_index = None
 
             for i, option in enumerate(options):
@@ -131,7 +131,7 @@ class Menu:
                     break
 
             if cancel_index is not None:
-                box = self.getOptionBox(cancel_index)
+                box = self.get_option_box(cancel_index)
                 if box:
                     box.click()
             else:
@@ -165,57 +165,57 @@ class Menu:
                 target_y = random.randint(menu_y1, menu_y2)
 
             # Move mouse to target position
-            client.input.mouse.moveTo(target_x, target_y, safe=False)
+            client.input.mouse.move_to(target_x, target_y, safe=False)
 
-            return timing.waitUntil(lambda: not self.isOpen(), timeout=timeout, poll_interval=0.001)
+            return timing.waitUntil(lambda: not self.is_open(), timeout=timeout, poll_interval=0.001)
 
-    def getOptions(self, strip_colors: bool = True) -> List[str]:
+    def get_options(self, strip_colors: bool = True) -> List[str]:
         """Get all menu options as formatted strings in display order."""
-        menu_options, _ = self._getOptions(strip_colors=strip_colors)
+        menu_options, _ = self._get_options(strip_colors=strip_colors)
 
         return menu_options
 
-    def getTypes(self) -> List[str]:
+    def get_types(self) -> List[str]:
         """Get all menu option types in display order."""
-        _, menu_types = self._getOptions(strip_colors=True)
+        _, menu_types = self._get_options(strip_colors=True)
 
         return menu_types
 
-    def getLeftClickOption(self, strip_colors: bool = True) -> str | None:
+    def get_left_click_option(self, strip_colors: bool = True) -> str | None:
         """Get the default menu option (accessible with left-click)."""
-        options = self.getOptions(strip_colors=strip_colors)
+        options = self.get_options(strip_colors=strip_colors)
         if not options:
             return None
 
         return options[0]
 
-    def getLeftClickType(self) -> str | None:
+    def get_left_click_type(self) -> str | None:
         """Get the action type of the default menu option."""
-        types = self.getTypes()
+        types = self.get_types()
         if not types:
             return None
 
         return types[0]
 
-    def hasOption(self, option_text: str, strip_colors: bool = True) -> bool:
+    def has_option(self, option_text: str, strip_colors: bool = True) -> bool:
         """Check if a menu option exists (partial matching, case-insensitive)."""
-        options = self.getOptions(strip_colors=strip_colors)
+        options = self.get_options(strip_colors=strip_colors)
         option_text_lower = option_text.lower()
 
         return any(option_text_lower in option.lower() for option in options)
 
-    def hasType(self, option_type: str) -> bool:
+    def has_type(self, option_type: str) -> bool:
         """Check if a menu option of a specific type exists."""
-        types = self.getTypes()
+        types = self.get_types()
         option_type_lower = option_type.lower()
         return any(option_type_lower in t.lower() for t in types)
 
-    def getOptionBox(self, option_index: int) -> Box | None:
+    def get_option_box(self, option_index: int) -> Box | None:
         """Get the clickable box for a specific menu option by index."""
-        if not self.isOpen():
+        if not self.is_open():
             return None
 
-        state = self._getMenuInfo()
+        state = self._get_menu_info()
 
         # Get menu position and dimensions
         menu_x = state.get("menuX", 0)
@@ -233,99 +233,99 @@ class Menu:
 
         return Box(option_x1, option_y1, option_x2, option_y2)
 
-    def hoverOption(self, option_text: str) -> bool:
+    def hover_option(self, option_text: str) -> bool:
         """Hover over a menu option by matching text. Opens menu if needed."""
         # Ensure menu is open
         if not self.open():
             return False
 
-        options = self.getOptions()
+        options = self.get_options()
         option_text_lower = option_text.lower()
 
         for i, option in enumerate(options):
             if option_text_lower in option.lower():
-                box = self.getOptionBox(i)
+                box = self.get_option_box(i)
                 if box:
                     box.hover()
                     return True
 
         return False
 
-    def hoverOptionIndex(self, option_index: int) -> bool:
+    def hover_option_index(self, option_index: int) -> bool:
         """Hover over a menu option by its index. Opens menu if needed."""
         # Ensure menu is open
         if not self.open():
             return False
 
-        box = self.getOptionBox(option_index)
+        box = self.get_option_box(option_index)
         if box:
             box.hover()
             return True
         return False
 
-    def lastOptionClicked(self) -> str:
+    def last_option_clicked(self) -> str:
         latest_click = client.cache.getMenuClickedState()
         option = latest_click.get("menu_option", "")
         target = latest_click.get("menu_target", "")
         full_option = f"{option} {target}".strip()
         return stripColorTags(full_option)
 
-    def waitOptionClicked(
+    def wait_option_clicked(
         self, option_text: str, max_age: float = 0.2, timeout: float = 0.5
     ) -> bool:
-        if not self.waitMenuClickEvent(max_age=max_age, timeout=timeout):
+        if not self.wait_menu_click_event(max_age=max_age, timeout=timeout):
             return False
 
         client.cache.consumeMenuClickedState()
 
-        return option_text.lower() in self.lastOptionClicked().lower()
+        return option_text.lower() in self.last_option_clicked().lower()
 
-    def waitMenuClosed(self, timeout: float = 0.5) -> bool:
+    def wait_menu_closed(self, timeout: float = 0.5) -> bool:
         """Wait until the menu is closed."""
-        return timing.waitUntil(lambda: not self.isOpen(), timeout=timeout, poll_interval=0.001)
+        return timing.waitUntil(lambda: not self.is_open(), timeout=timeout, poll_interval=0.001)
 
-    def clickOption(self, option_text: str) -> bool:
+    def click_option(self, option_text: str) -> bool:
         """Click a menu option. Left-clicks if default, otherwise opens menu."""
-        if self.isOpen():
-            self.hoverOption(option_text)
-            client.input.mouse.leftClick()
-            return self.waitOptionClicked(option_text) and self.waitMenuClosed()
+        if self.is_open():
+            self.hover_option(option_text)
+            client.input.mouse.left_click()
+            return self.wait_option_clicked(option_text) and self.wait_menu_closed()
 
-        left_click_option = self.getLeftClickOption()
+        left_click_option = self.get_left_click_option()
         if left_click_option is None:
             return False
 
         if option_text.lower() in left_click_option.lower():
             # It's the default! Just left-click at current position
-            client.input.mouse.leftClick()
-            return self.waitOptionClicked(option_text)
+            client.input.mouse.left_click()
+            return self.wait_option_clicked(option_text)
 
-        if not self.hasOption(option_text):
+        if not self.has_option(option_text):
             return False
 
         self.open()
-        self.hoverOption(option_text)
-        client.input.mouse.leftClick()
-        return self.waitOptionClicked(option_text) and self.waitMenuClosed()
+        self.hover_option(option_text)
+        client.input.mouse.left_click()
+        return self.wait_option_clicked(option_text) and self.wait_menu_closed()
 
-    def clickOptionIndex(self, option_index: int) -> bool:
+    def click_option_index(self, option_index: int) -> bool:
         """Click a menu option by its index. Opens menu if needed."""
         # Ensure menu is open
         if not self.open():
             return False
 
-        box = self.getOptionBox(option_index)
+        box = self.get_option_box(option_index)
         if box:
             box.click()
             return True
         return False
 
-    def clickOptionType(self, option_type: str) -> bool:
+    def click_option_type(self, option_type: str) -> bool:
         """Click a menu option by its type. Opens menu if needed."""
-        options, types = self._getOptions(strip_colors=True)
+        options, types = self._get_options(strip_colors=True)
         for i, t in enumerate(types):
             if option_type.lower() in t.lower():
-                return self.clickOption(options[i])
+                return self.click_option(options[i])
         return False
 
 

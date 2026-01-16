@@ -61,12 +61,12 @@ class ProxyGenerator:
         self.inheritance = self.api_data.get("inheritance", {})  # Load inheritance data
 
         # Build class to methods mapping
-        self.class_methods = self._buildClassMethodsMapping()
+        self.class_methods = self._build_class_methods_mapping()
 
         # Add AWT classes that RuneLite uses
-        self._addAwtClasses()
+        self._add_awt_classes()
 
-    def _addAwtClasses(self):
+    def _add_awt_classes(self):
         """Add AWT and geometry classes to class_methods mapping with empty method lists."""
         geometry_classes = [
             "java.awt.Point",
@@ -82,7 +82,7 @@ class ProxyGenerator:
             if class_name not in self.class_methods:
                 self.class_methods[class_name] = []
 
-    def _buildClassMethodsMapping(self) -> Dict[str, List[Tuple[str, str, str, str, str, str]]]:
+    def _build_class_methods_mapping(self) -> Dict[str, List[Tuple[str, str, str, str, str, str]]]:
         """Build mapping of class names to their method tuples."""
         class_methods = {}
 
@@ -97,14 +97,14 @@ class ProxyGenerator:
                     declaring_class_jni = sig_info[0]
 
                     # Extract return type from signature (JNI type)
-                    jni_return_type = self._extractReturnType(signature)
+                    jni_return_type = self._extract_return_type(signature)
 
                     # Extract full Java class path from signature for bridge communication
-                    full_java_class = self._extractFullClassFromSignature(signature)
+                    full_java_class = self._extract_full_class_from_signature(signature)
 
                     # Use generic type if available, otherwise use JNI-derived type
                     python_return_type = (
-                        self._convertGenericToPythonType(generic_type)
+                        self._convert_generic_to_python_type(generic_type)
                         if generic_type
                         else jni_return_type
                     )
@@ -125,7 +125,7 @@ class ProxyGenerator:
 
         return class_methods
 
-    def _convertGenericToPythonType(self, generic_type: str) -> str:
+    def _convert_generic_to_python_type(self, generic_type: str) -> str:
         """Convert Java generic type to Python type hint."""
         if not generic_type:
             return "Any"
@@ -210,14 +210,14 @@ class ProxyGenerator:
         # No generics or arrays - return as-is
         return generic_type
 
-    def _extractReturnType(self, signature: str) -> str:
+    def _extract_return_type(self, signature: str) -> str:
         """Extract return type from a JNI signature."""
         if ")" in signature:
             return_part = signature.split(")")[1]
-            return self._jniToPythonType(return_part)
+            return self._jni_to_python_type(return_part)
         return "Any"
 
-    def _extractFullClassFromSignature(self, signature: str) -> str:
+    def _extract_full_class_from_signature(self, signature: str) -> str:
         """Extract full Java class path from JNI signature return type."""
         if ")" not in signature:
             return None
@@ -233,7 +233,7 @@ class ProxyGenerator:
         # Primitive or void - no class
         return None
 
-    def _jniToPythonType(self, jni_type: str) -> str:
+    def _jni_to_python_type(self, jni_type: str) -> str:
         """Convert JNI type descriptor to Python type hint."""
         if jni_type == "V":
             return "None"
@@ -254,11 +254,11 @@ class ProxyGenerator:
                 return f"'{simple_name}Proxy'"
             return "Any"
         elif jni_type.startswith("["):
-            element_type = self._jniToPythonType(jni_type[1:])
+            element_type = self._jni_to_python_type(jni_type[1:])
             return f"List[{element_type}]"
         return "Any"
 
-    def _extractParameters(self, signature: str) -> List[Tuple[str, str]]:
+    def _extract_parameters(self, signature: str) -> List[Tuple[str, str]]:
         """Extract parameter types from a JNI signature."""
         if "(" not in signature or ")" not in signature:
             return []
@@ -276,7 +276,7 @@ class ProxyGenerator:
             if params_part[i] == "L":
                 # Object type - find the semicolon
                 end = params_part.index(";", i)
-                param_type = self._jniToPythonType(params_part[i : end + 1])
+                param_type = self._jni_to_python_type(params_part[i : end + 1])
                 param_name = f"arg{param_count}"
 
                 # Special handling for enums
@@ -293,21 +293,21 @@ class ProxyGenerator:
                 j = i + 1
                 if params_part[j] == "L":
                     end = params_part.index(";", j)
-                    param_type = self._jniToPythonType(params_part[i : end + 1])
+                    param_type = self._jni_to_python_type(params_part[i : end + 1])
                     i = end + 1
                 else:
-                    param_type = self._jniToPythonType(params_part[i : j + 1])
+                    param_type = self._jni_to_python_type(params_part[i : j + 1])
                     i = j + 1
                 params.append((f"arg{param_count}", param_type))
             else:
                 # Primitive type
-                param_type = self._jniToPythonType(params_part[i])
+                param_type = self._jni_to_python_type(params_part[i])
                 params.append((f"arg{param_count}", param_type))
                 i += 1
 
         return params
 
-    def _getAllMethodsIncludingInherited(
+    def _get_all_methods_including_inherited(
         self, class_name: str
     ) -> List[Tuple[str, str, str, str, str, str]]:
         """Get all methods for a class including inherited methods from parents."""
@@ -341,7 +341,7 @@ class ProxyGenerator:
                         break
 
                 if parent_full_name:
-                    parent_methods = self._getAllMethodsIncludingInherited(parent_full_name)
+                    parent_methods = self._get_all_methods_including_inherited(parent_full_name)
                     for method_tuple in parent_methods:
                         method_name = method_tuple[0]
                         signature = method_tuple[1]
@@ -352,7 +352,7 @@ class ProxyGenerator:
 
         return all_methods
 
-    def _generateProxyClass(
+    def _generate_proxy_class(
         self, class_name: str, methods: List[Tuple[str, str, str, str, str, str]]
     ) -> str:
         """Generate a proxy class for a RuneLite API class."""
@@ -405,8 +405,8 @@ class ProxyGenerator:
                 signature, return_type, generic_type, full_java_class, declaring_class = signatures[
                     0
                 ]
-                params = self._extractParameters(signature)
-                code += self._generateMethod(
+                params = self._extract_parameters(signature)
+                code += self._generate_method(
                     method_name,
                     signature,
                     return_type,
@@ -418,7 +418,7 @@ class ProxyGenerator:
             else:
                 int_sig = None
                 enum_sig = None
-                enumType = None
+                enum_type = None
 
                 for sig, ret_type, gen_type, full_cls, decl_cls in signatures:
                     if sig == "(I)" + sig.split(")")[1]:
@@ -426,20 +426,20 @@ class ProxyGenerator:
                     elif "InventoryID" in sig or "Skill" in sig or "Prayer" in sig:
                         enum_sig = (sig, ret_type, gen_type, full_cls, decl_cls)
                         if "InventoryID" in sig:
-                            enumType = "InventoryID"
+                            enum_type = "InventoryID"
                         elif "Skill" in sig:
-                            enumType = "Skill"
+                            enum_type = "Skill"
                         elif "Prayer" in sig:
-                            enumType = "Prayer"
+                            enum_type = "Prayer"
 
-                if int_sig and enum_sig and enumType:
-                    code += self._generateIntEnumMethod(method_name, int_sig, enum_sig, enumType)
+                if int_sig and enum_sig and enum_type:
+                    code += self._generate_int_enum_method(method_name, int_sig, enum_sig, enum_type)
                 else:
-                    code += self._generateOverloadedMethod(method_name, signatures, class_name)
+                    code += self._generate_overloaded_method(method_name, signatures, class_name)
 
         return code
 
-    def _generateOverloadedMethod(
+    def _generate_overloaded_method(
         self, method_name: str, signatures: List[Tuple[str, str, str, str, str]], class_name: str
     ) -> str:
         """Generate a method that handles multiple overloads with runtime dispatch."""
@@ -492,7 +492,7 @@ class ProxyGenerator:
 
         by_param_count = {}
         for sig, ret_type, gen_type, full_cls, decl_cls in signatures:
-            params = self._extractParameters(sig)
+            params = self._extract_parameters(sig)
             param_count = len(params)
             if param_count not in by_param_count:
                 by_param_count[param_count] = []
@@ -500,8 +500,8 @@ class ProxyGenerator:
                 (sig, ret_type, gen_type, full_cls, decl_cls, params)
             )
 
-        for i, (param_count, sigs) in enumerate(sorted(by_param_count.items())):
-            if_keyword = "if" if i == 0 else "elif"
+        for idx, (param_count, sigs) in enumerate(sorted(by_param_count.items())):
+            if_keyword = "if" if idx == 0 else "elif"
             sig, ret_type, gen_type, full_cls, decl_cls, params = sigs[0]
             code += f"""        {if_keyword} arg_count == {param_count}:
             signature = "{sig}"
@@ -531,7 +531,7 @@ class ProxyGenerator:
 
         return code
 
-    def _generateIntEnumMethod(
+    def _generate_int_enum_method(
         self,
         method_name: str,
         int_sig: Tuple[str, str, str, str, str],
@@ -616,7 +616,7 @@ class ProxyGenerator:
 
         return code
 
-    def _generateMethod(
+    def _generate_method(
         self,
         method_name: str,
         signature: str,
@@ -693,7 +693,7 @@ class ProxyGenerator:
 
         return code
 
-    def generateAllProxies(self) -> str:
+    def generate_all_proxies(self) -> str:
         """Generate all proxy classes and return the complete Python code."""
         code = '''"""
 Auto-generated proxy classes for RuneLite API Query Builder.
@@ -760,7 +760,7 @@ class ConstructorProxy:
 
 '''
 
-        def getDependencies(class_name: str) -> List[str]:
+        def get_dependencies(class_name: str) -> List[str]:
             """Get parent classes that need to be generated first."""
             deps = []
             simple_name = class_name.split(".")[-1]
@@ -782,7 +782,7 @@ class ConstructorProxy:
             made_progress = False
             for class_name in remaining_classes[:]:
                 simple_name = class_name.split(".")[-1]
-                deps = getDependencies(class_name)
+                deps = get_dependencies(class_name)
 
                 if all(dep in generated_set for dep in deps):
                     sorted_classes.append(class_name)
@@ -797,14 +797,14 @@ class ConstructorProxy:
         generated_classes = set()
 
         for class_name in sorted_classes:
-            methods = self._getAllMethodsIncludingInherited(class_name)
+            methods = self._get_all_methods_including_inherited(class_name)
             simple_name = class_name.split(".")[-1]
 
             if simple_name in generated_classes:
                 continue
 
             generated_classes.add(simple_name)
-            class_code = self._generateProxyClass(class_name, methods)
+            class_code = self._generate_proxy_class(class_name, methods)
             code += class_code + "\n\n"
 
         code += '''
@@ -857,9 +857,9 @@ def get_proxy_class(class_name: str) -> type:
 
         return code
 
-    def saveProxies(self, output_path: str):
+    def save_proxies(self, output_path: str):
         """Generate and save proxy classes to the specified file."""
-        code = self.generateAllProxies()
+        code = self.generate_all_proxies()
 
         with open(output_path, "w") as f:
             f.write(code)
@@ -867,7 +867,7 @@ def get_proxy_class(class_name: str) -> type:
         logger.success(f"Generated {len(self.class_methods)} proxy classes")
         logger.info(f"Saved to: {output_path}")
 
-    def generateConstants(self) -> str:
+    def generate_constants(self) -> str:
         """Generate constant classes for ItemID, AnimationID, ObjectID, etc."""
         constants = self.api_data.get("constants", {})
 
@@ -960,7 +960,7 @@ def get_proxy_class(class_name: str) -> type:
 
         return "\n".join(code)
 
-    def _generateAndSaveConstantFile(
+    def _generate_and_save_constant_file(
         self, full_class_name: str, simple_name: str, output_path: Path
     ) -> bool:
         """Generate and save a single constant class file."""
@@ -1000,7 +1000,7 @@ def get_proxy_class(class_name: str) -> type:
 
         return True
 
-    def _generateVarbitConstants(self) -> str:
+    def _generate_varbit_constants(self) -> str:
         """Generate VarClientInt and VarClientStr constants."""
         constants = self.api_data.get("constants", {})
         code = []
@@ -1034,7 +1034,7 @@ def get_proxy_class(class_name: str) -> type:
 
         return "\n".join(code) if found_any else None
 
-    def _generateOtherConstants(self) -> str:
+    def _generate_other_constants(self) -> str:
         """Generate NullItemID, NullObjectID, and NullNpcID constants."""
         constants = self.api_data.get("constants", {})
         code = []
@@ -1072,7 +1072,7 @@ def get_proxy_class(class_name: str) -> type:
 
         return "\n".join(code) if found_any else None
 
-    def _generateItemIdConstants(self) -> str:
+    def _generate_item_id_constants(self) -> str:
         """Generate ItemID constants with nested Noted and Placeholder classes."""
         item_ids = self.api_data.get("constants", {}).get("net.runelite.api.gameval.ItemID")
 
@@ -1113,7 +1113,7 @@ def get_proxy_class(class_name: str) -> type:
 
         return "\n".join(code)
 
-    def _generateInterfaceIdConstants(self) -> str:
+    def _generate_interface_id_constants(self) -> str:
         """Generate InterfaceID constants with nested widget classes."""
         interface_ids = self.api_data.get("interface_ids", {})
         if not interface_ids:
@@ -1145,7 +1145,7 @@ def get_proxy_class(class_name: str) -> type:
 
         return "\n".join(code)
 
-    def _generateSpriteIdConstants(self) -> str | None:
+    def _generate_sprite_id_constants(self) -> str | None:
         """Generate SpriteID constants with indexed and named sprites."""
         sprite_ids = self.api_data.get("sprite_ids", {})
         if not sprite_ids:
@@ -1194,7 +1194,7 @@ def get_proxy_class(class_name: str) -> type:
 
         return "\n".join(code)
 
-    def _generateConstantsInit(self, files_created: list) -> str:
+    def _generate_constants_init(self, files_created: list) -> str:
         """Generate __init__.py that imports all constant classes."""
         code = []
         code.append('"""RuneLite API Constants Package."""')
@@ -1229,7 +1229,7 @@ def get_proxy_class(class_name: str) -> type:
 
         return "\n".join(code)
 
-    def _generateConstantsWrapper(self) -> str:
+    def _generate_constants_wrapper(self) -> str:
         """Generate wrapper file that re-exports all constants."""
         code = []
         code.append('"""RuneLite API Constants Wrapper."""')
@@ -1249,7 +1249,7 @@ def get_proxy_class(class_name: str) -> type:
 
         return "\n".join(code)
 
-    def saveConstants(self, output_path: str):
+    def save_constants(self, output_path: str):
         """Generate and save constants to separate files in a constants/ subdirectory."""
         logger.info("\n Generating constants files")
 
@@ -1258,59 +1258,59 @@ def get_proxy_class(class_name: str) -> type:
 
         files_created = []
 
-        item_id_code = self._generateItemIdConstants()
+        item_id_code = self._generate_item_id_constants()
         if item_id_code:
             with open(output_dir / "item_id.py", "w") as f:
                 f.write(item_id_code)
             files_created.append("ItemID")
-        elif self._generateAndSaveConstantFile(
+        elif self._generate_and_save_constant_file(
             "net.runelite.api.ItemID", "ItemID", output_dir / "item_id.py"
         ):
             files_created.append("ItemID")
 
-        if self._generateAndSaveConstantFile(
+        if self._generate_and_save_constant_file(
             "net.runelite.api.ObjectID", "ObjectID", output_dir / "object_id.py"
         ):
             files_created.append("ObjectID")
 
-        if self._generateAndSaveConstantFile(
+        if self._generate_and_save_constant_file(
             "net.runelite.api.NpcID", "NpcID", output_dir / "npc_id.py"
         ):
             files_created.append("NpcID")
 
-        if self._generateAndSaveConstantFile(
+        if self._generate_and_save_constant_file(
             "net.runelite.api.AnimationID", "AnimationID", output_dir / "animation_id.py"
         ):
             files_created.append("AnimationID")
 
-        varclient_code = self._generateVarbitConstants()
+        varclient_code = self._generate_varbit_constants()
         if varclient_code:
             with open(output_dir / "varclient.py", "w") as f:
                 f.write(varclient_code)
             files_created.append("VarClient")
 
-        if self._generateAndSaveConstantFile(
+        if self._generate_and_save_constant_file(
             "VarClientID", "VarClientID", output_dir / "varclient_id.py"
         ):
             files_created.append("VarClientID")
 
-        interface_code = self._generateInterfaceIdConstants()
+        interface_code = self._generate_interface_id_constants()
         if interface_code:
             with open(output_dir / "interface_id.py", "w") as f:
                 f.write(interface_code)
             files_created.append("InterfaceID")
 
-        sprite_code = self._generateSpriteIdConstants()
+        sprite_code = self._generate_sprite_id_constants()
         if sprite_code:
             with open(output_dir / "sprite_id.py", "w") as f:
                 f.write(sprite_code)
             files_created.append("SpriteID")
 
-        init_code = self._generateConstantsInit(files_created)
+        init_code = self._generate_constants_init(files_created)
         with open(output_dir / "__init__.py", "w") as f:
             f.write(init_code)
 
-        wrapper_code = self._generateConstantsWrapper()
+        wrapper_code = self._generate_constants_wrapper()
         with open(output_path, "w") as f:
             f.write(wrapper_code)
 
@@ -1322,10 +1322,10 @@ def get_proxy_class(class_name: str) -> type:
 
 def main():
     """Generate constants from API data."""
-    from ..cache_manager import getCacheManager
+    from ..cache_manager import get_cache_manager
 
-    cache_manager = getCacheManager()
-    api_data_path = cache_manager.getDataPath("api") / "runelite_api_data.json"
+    cache_manager = get_cache_manager()
+    api_data_path = cache_manager.get_data_path("api") / "runelite_api_data.json"
 
     generated_dir = cache_manager.generated_dir
     constants_output_path = generated_dir / "constants.py"
@@ -1333,7 +1333,7 @@ def main():
     generated_dir.mkdir(parents=True, exist_ok=True)
 
     generator = ProxyGenerator(str(api_data_path))
-    generator.saveConstants(str(constants_output_path))
+    generator.save_constants(str(constants_output_path))
 
     constants = generator.api_data.get("constants", {})
     total_constants = sum(len(v) for v in constants.values())

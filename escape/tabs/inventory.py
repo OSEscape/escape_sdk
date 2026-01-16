@@ -57,18 +57,18 @@ class Inventory(GameTabs, ItemContainer):
         self._items = cached.items
         return self._items
 
-    def getSlotBox(self, slot_index: int) -> Box:
+    def get_slot_box(self, slot_index: int) -> Box:
         """Get the Box area for a specific inventory slot."""
         return self.slots[slot_index]
 
-    def hoverSlot(self, slot_index: int) -> bool:
+    def hover_slot(self, slot_index: int) -> bool:
         """Hover over a specific inventory slot (0-27)."""
         if 0 <= slot_index < 28:
             self.slots[slot_index].hover()
             return True
         return False
 
-    def hoverItem(self, identifier: ItemIdentifier) -> bool:
+    def hover_item(self, identifier: ItemIdentifier) -> bool:
         """Hover over an item by ID or name."""
         from escape.client import client
 
@@ -77,16 +77,16 @@ class Inventory(GameTabs, ItemContainer):
             return False
 
         # Hover the first found slot
-        if self.hoverSlot(found_slots[0]):
+        if self.hover_slot(found_slots[0]):
             return client.interactions.menu.waitHasOption("Examine")
 
-    def clickSlot(
+    def click_slot(
         self, slot_index: int, option: str | None = None, type: str | None = None
     ) -> bool:
         """Click a specific inventory slot, optionally selecting a menu option."""
         from escape.client import client
 
-        if not self.hoverSlot(slot_index):
+        if not self.hover_slot(slot_index):
             return False
 
         if option:
@@ -97,7 +97,7 @@ class Inventory(GameTabs, ItemContainer):
         client.input.mouse.leftClick()
         return True
 
-    def clickItem(
+    def click_item(
         self,
         identifier: ItemIdentifier,
         option: str | None = None,
@@ -108,16 +108,16 @@ class Inventory(GameTabs, ItemContainer):
         if slot is None:
             return False
 
-        return self.clickSlot(slot, option=option, type=type)
+        return self.click_slot(slot, option=option, type=type)
 
-    def isShiftDropEnabled(self) -> bool:
+    def is_shift_drop_enabled(self) -> bool:
         """Check if shift-click drop is enabled in game settings."""
         from escape._internal.resources import varps
 
         varbit_value = varps.getVarbitByName("DESKTOP_SHIFTCLICKDROP_ENABLED")
         return varbit_value == 1
 
-    def waitDropOption(self, timeout: float = 0.5) -> bool:
+    def wait_drop_option(self, timeout: float = 0.5) -> bool:
         """Wait until 'Drop' option appears in menu."""
         import time
 
@@ -132,7 +132,7 @@ class Inventory(GameTabs, ItemContainer):
 
         return False
 
-    def dropItem(self, identifier: ItemIdentifier, force_shift: bool = False) -> int:
+    def drop_item(self, identifier: ItemIdentifier, force_shift: bool = False) -> int:
         """Drop all occurrences of an item. Returns count dropped."""
         # Find all slots containing this item
         slots = self.findItemSlots(identifier)
@@ -140,9 +140,9 @@ class Inventory(GameTabs, ItemContainer):
             return 0
 
         # Use drop_slots for the actual dropping logic
-        return self.dropSlots(slots, force_shift=force_shift)
+        return self.drop_slots(slots, force_shift=force_shift)
 
-    def dropItems(self, identifiers: List[ItemIdentifier], force_shift: bool = False) -> int:
+    def drop_items(self, identifiers: List[ItemIdentifier], force_shift: bool = False) -> int:
         """Drop all occurrences of multiple items. Returns total count dropped."""
         # Collect all slots to drop (all occurrences of all items)
         all_slots = []
@@ -154,9 +154,9 @@ class Inventory(GameTabs, ItemContainer):
             return 0
 
         # Use drop_slots for the actual dropping logic
-        return self.dropSlots(all_slots, force_shift=force_shift)
+        return self.drop_slots(all_slots, force_shift=force_shift)
 
-    def dropSlots(self, slot_indices: List[int], force_shift: bool = False) -> int:
+    def drop_slots(self, slot_indices: List[int], force_shift: bool = False) -> int:
         """Drop items from specific slot indices. Returns count dropped."""
         from time import sleep
 
@@ -166,7 +166,7 @@ class Inventory(GameTabs, ItemContainer):
             return 0
 
         # Check if shift-drop is enabled or forced
-        use_shift_drop = force_shift or self.isShiftDropEnabled()
+        use_shift_drop = force_shift or self.is_shift_drop_enabled()
 
         dropped_count = 0
         keyboard = client.input.keyboard
@@ -178,9 +178,9 @@ class Inventory(GameTabs, ItemContainer):
 
         try:
             for slot_index in slot_indices:
-                self.hoverSlot(slot_index)
+                self.hover_slot(slot_index)
 
-                if not self.waitDropOption():
+                if not self.wait_drop_option():
                     continue
 
                 if client.interactions.menu.clickOption("Drop"):
@@ -192,7 +192,7 @@ class Inventory(GameTabs, ItemContainer):
 
         return dropped_count
 
-    def selectSlot(self, slot_index: int) -> bool:
+    def select_slot(self, slot_index: int) -> bool:
         """Select a slot for 'Use item on...' actions."""
         import escape.utilities.timing as timing
         from escape.client import client
@@ -201,14 +201,14 @@ class Inventory(GameTabs, ItemContainer):
             return False
 
         # Click the item to select it
-        if not self.hoverSlot(slot_index):
+        if not self.hover_slot(slot_index):
             return False
         if not client.interactions.menu.waitHasType("WIDGET_TARGET"):
             return False
         if client.interactions.menu.clickOptionType("WIDGET_TARGET"):
-            return timing.waitUntil(self.isItemSelected, 1, 0.01)
+            return timing.waitUntil(self.is_item_selected, 1, 0.01)
 
-    def isItemSelected(self) -> bool:
+    def is_item_selected(self) -> bool:
         """Check if an item is currently selected."""
         from escape.client import client
 
@@ -216,7 +216,7 @@ class Inventory(GameTabs, ItemContainer):
         id = widget.get("selected_widget_id", -1)
         return id == client.InterfaceID.Inventory.ITEMS
 
-    def getSelectedItemSlot(self) -> int:
+    def get_selected_item_slot(self) -> int:
         """Get the slot index of the currently selected item, or -1 if none."""
         from escape.client import client
 
@@ -224,43 +224,43 @@ class Inventory(GameTabs, ItemContainer):
         selected_index = widget.get("index", -1)
         return selected_index
 
-    def unselectItem(self) -> bool:
+    def unselect_item(self) -> bool:
         """Unselect the currently selected item."""
         from escape.client import client
 
-        if not self.isItemSelected():
+        if not self.is_item_selected():
             return True
 
         # Click outside the inventory to unselect
         client.interactions.menu.clickOptionType("CANCEL")
 
-    def selectItem(self, identifier: ItemIdentifier) -> bool:
+    def select_item(self, identifier: ItemIdentifier) -> bool:
         """Select an item by ID or name for 'Use item on...' actions."""
         # Find the slot to click
         target_slot = self.findItemSlot(identifier)
 
         if target_slot is not None:
-            return self.selectSlot(target_slot)
+            return self.select_slot(target_slot)
         return False
 
-    def useSlotOnSlot(
+    def use_slot_on_slot(
         self,
         slot_1: int,
         slot_2: int,
     ) -> bool:
         """Use one inventory slot on another."""
-        if self.selectSlot(slot_1):
-            return self.clickSlot(slot_2, type="WIDGET_TARGET_ON_WIDGET")
+        if self.select_slot(slot_1):
+            return self.click_slot(slot_2, type="WIDGET_TARGET_ON_WIDGET")
 
         return False
 
-    def useItemOnItem(self, item_1: ItemIdentifier, item_2: ItemIdentifier) -> bool:
+    def use_item_on_item(self, item_1: ItemIdentifier, item_2: ItemIdentifier) -> bool:
         """Use first item on second item."""
         slot_1 = self.findItemSlot(item_1)
         slot_2 = self.findItemSlot(item_2)
 
         if slot_1 is not None and slot_2 is not None:
-            return self.useSlotOnSlot(slot_1, slot_2)
+            return self.use_slot_on_slot(slot_1, slot_2)
 
         return False
 

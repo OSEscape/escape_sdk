@@ -47,14 +47,14 @@ class RuneLite:
         self._event_thread: threading.Thread | None = None
 
         # Do initial window detection
-        self._initializeDisplay()
-        self.detectWindow()
+        self._initialize_display()
+        self.detect_window()
 
         # Start event listener if window found
         if self._window_id:
-            self._startEventListener()
+            self._start_event_listener()
 
-    def _initializeDisplay(self) -> bool:
+    def _initialize_display(self) -> bool:
         """Initialize X11 display connection."""
         try:
             self._display = display.Display()
@@ -63,23 +63,23 @@ class RuneLite:
             self._display = None
             return False
 
-    def _startEventListener(self) -> None:
+    def _start_event_listener(self) -> None:
         """Start the background event listener thread."""
         if self._event_thread is not None and self._event_thread.is_alive():
             return
 
         self._stop_event.clear()
-        self._event_thread = threading.Thread(target=self._eventLoop, daemon=True)
+        self._event_thread = threading.Thread(target=self._event_loop, daemon=True)
         self._event_thread.start()
 
-    def _stopEventListener(self) -> None:
+    def _stop_event_listener(self) -> None:
         """Stop the background event listener thread."""
         self._stop_event.set()
         if self._event_thread is not None:
             self._event_thread.join(timeout=1.0)
             self._event_thread = None
 
-    def _eventLoop(self) -> None:
+    def _event_loop(self) -> None:
         """Background thread listening for X11 window events."""
         try:
             # Create separate display connection for event thread
@@ -108,7 +108,7 @@ class RuneLite:
                 # Check for pending events with timeout
                 if event_display.pending_events() > 0:
                     evt = event_display.next_event()
-                    self._handleEvent(evt, event_display)
+                    self._handle_event(evt, event_display)
                 else:
                     # Small sleep to avoid busy-waiting
                     time.sleep(0.01)
@@ -120,7 +120,7 @@ class RuneLite:
             with self._lock:
                 self._state_valid = False
 
-    def _handleEvent(self, evt: Any, event_display: display.Display) -> None:
+    def _handle_event(self, evt: Any, event_display: display.Display) -> None:
         """Handle an X11 event and update internal state."""
         with self._lock:
             # ConfigureNotify: window moved or resized
@@ -164,9 +164,9 @@ class RuneLite:
                 if hasattr(evt, "atom"):
                     atom_name = event_display.get_atom_name(evt.atom)
                     if atom_name == "_NET_ACTIVE_WINDOW":
-                        self._updateActiveState(event_display)
+                        self._update_active_state(event_display)
 
-    def _updateActiveState(self, event_display: display.Display) -> None:
+    def _update_active_state(self, event_display: display.Display) -> None:
         """Update active window state from _NET_ACTIVE_WINDOW property."""
         try:
             root = event_display.screen().root
@@ -179,7 +179,7 @@ class RuneLite:
         except Exception:
             pass
 
-    def detectWindow(self) -> bool:
+    def detect_window(self) -> bool:
         """Detect RuneLite window and get its position/size."""
         try:
             # Use wmctrl to find the exact RuneLite window
@@ -244,10 +244,10 @@ class RuneLite:
                             self._state_valid = True
 
                         # Check active state
-                        self._checkActiveState()
+                        self._check_active_state()
 
                         # Start event listener if not running
-                        self._startEventListener()
+                        self._start_event_listener()
 
                         return True
 
@@ -258,7 +258,7 @@ class RuneLite:
         except Exception:
             return False
 
-    def _checkActiveState(self) -> None:
+    def _check_active_state(self) -> None:
         """Check if RuneLite window is currently active."""
         if self._display is None or self._window_id is None:
             return
@@ -275,10 +275,10 @@ class RuneLite:
         except Exception:
             pass
 
-    def activateWindow(self) -> bool:
+    def activate_window(self) -> bool:
         """Activate and bring RuneLite window to foreground."""
         if self._window_id is None:
-            if not self.detectWindow():
+            if not self.detect_window():
                 return False
 
         try:
@@ -303,24 +303,24 @@ class RuneLite:
                 self._is_active = True
 
             # Re-detect position (may have changed)
-            self.detectWindow()
+            self.detect_window()
 
             return True
 
         except Exception:
             return False
 
-    def isWindowMinimized(self) -> bool:
+    def is_window_minimized(self) -> bool:
         """Check if window is minimized."""
         with self._lock:
             return self._is_minimized
 
-    def isWindowActive(self) -> bool:
+    def is_window_active(self) -> bool:
         """Check if the window is currently active."""
         with self._lock:
             return self._is_active
 
-    def ensureWindowReady(self) -> bool:
+    def ensure_window_ready(self) -> bool:
         """Ensure window is detected, not minimized, and activated."""
         with self._lock:
             if not self._state_valid:
@@ -331,19 +331,19 @@ class RuneLite:
 
         # Detect if needed
         if not self._state_valid:
-            if not self.detectWindow():
+            if not self.detect_window():
                 return False
 
         # Activate if minimized or not active
         if self._is_minimized or not self._is_active:
-            return self.activateWindow()
+            return self.activate_window()
 
         return True
 
-    def refreshWindowPosition(self, force: bool = False, max_age: float = 10.0) -> bool:
+    def refresh_window_position(self, force: bool = False, max_age: float = 10.0) -> bool:
         """Refresh the window position if needed."""
         if force:
-            return self.detectWindow()
+            return self.detect_window()
 
         with self._lock:
             if not self._state_valid:
@@ -357,28 +357,28 @@ class RuneLite:
                 return True
 
         # Need to ensure window is ready
-        return self.ensureWindowReady()
+        return self.ensure_window_ready()
 
-    def _autoRefresh(self) -> None:
+    def _auto_refresh(self) -> None:
         """Auto-refresh window position if enabled."""
         if self.auto_refresh:
-            self.refreshWindowPosition()
+            self.refresh_window_position()
 
-    def getWindowOffset(self) -> Tuple[int, int] | None:
+    def get_window_offset(self) -> Tuple[int, int] | None:
         """Get current window offset (x, y)."""
-        self._autoRefresh()
+        self._auto_refresh()
         with self._lock:
             return self._window_offset
 
-    def getWindowSize(self) -> Tuple[int, int] | None:
+    def get_window_size(self) -> Tuple[int, int] | None:
         """Get current window size (width, height)."""
-        self._autoRefresh()
+        self._auto_refresh()
         with self._lock:
             return self._window_size
 
-    def getGameBounds(self) -> Tuple[int, int, int, int] | None:
+    def get_game_bounds(self) -> Tuple[int, int, int, int] | None:
         """Get game window bounds (x, y, width, height)."""
-        self._autoRefresh()
+        self._auto_refresh()
 
         with self._lock:
             if self._window_offset and self._window_size:
@@ -390,19 +390,19 @@ class RuneLite:
                 )
         return None
 
-    def setMinimized(self, minimized: bool) -> None:
+    def set_minimized(self, minimized: bool) -> None:
         """Manually set the minimized state."""
         with self._lock:
             self._is_minimized = minimized
 
-    def setActive(self, active: bool) -> None:
+    def set_active(self, active: bool) -> None:
         """Manually set the active state."""
         with self._lock:
             self._is_active = active
 
     def __del__(self):
         """Clean up resources on destruction."""
-        self._stopEventListener()
+        self._stop_event_listener()
         if self._display:
             with contextlib.suppress(Exception):
                 self._display.close()

@@ -11,21 +11,21 @@ import escape.globals as globals
 from escape._internal.logger import logger
 
 
-def currentTime() -> float:
+def current_time() -> float:
     """Get the current time in seconds since the epoch."""
     return time.time()
 
 
-def currentTick() -> int:
+def current_tick() -> int:
     """Get the current tick count from the game client."""
     client = globals.getClient()
     return client.cache.tick
 
 
-def waitTicks(ticks: int):
+def wait_ticks(ticks: int):
     """Wait for a specified number of game ticks."""
-    start_tick = currentTick()
-    while currentTick() - start_tick < ticks:
+    start_tick = current_tick()
+    while current_tick() - start_tick < ticks:
         time.sleep(0.01)
 
 
@@ -38,7 +38,7 @@ def sleep(min_seconds: float, max_seconds: float | None = None):
         time.sleep(duration)
 
 
-def waitUntil(
+def wait_until(
     condition: Callable[[], bool], timeout: float = 10.0, poll_interval: float = 0.1
 ) -> bool:
     """Wait until a condition becomes true or timeout occurs."""
@@ -78,7 +78,7 @@ def retry(
     return None
 
 
-def measureTime(func: Callable[[], Any]) -> Tuple[Any, float]:
+def measure_time(func: Callable[[], Any]) -> Tuple[Any, float]:
     """Measure execution time of a function."""
     start = time.time()
     result = func()

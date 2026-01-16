@@ -20,7 +20,7 @@ class PackedPosition:
         self._packed = (x & 0x7FFF) | ((y & 0x7FFF) << 15) | ((plane & 0x3) << 30)
 
     @classmethod
-    def fromPacked(cls, packed: int) -> "PackedPosition":
+    def from_packed(cls, packed: int) -> "PackedPosition":
         """Create from a packed integer."""
         pos = cls.__new__(cls)
         pos._packed = packed
@@ -50,18 +50,18 @@ class PackedPosition:
         """Unpack to (x, y, plane) tuple."""
         return (self.x, self.y, self.plane)
 
-    def distanceTo(self, other: "PackedPosition") -> int:
+    def distance_to(self, other: "PackedPosition") -> int:
         """Calculate Chebyshev distance to another position."""
         dx = abs(self.x - other.x)
         dy = abs(self.y - other.y)
         return max(dx, dy)
 
-    def isNearby(self, other: "PackedPosition", radius: int, same_plane: bool = True) -> bool:
+    def is_nearby(self, other: "PackedPosition", radius: int, same_plane: bool = True) -> bool:
         """Check if position is within radius of another."""
         if same_plane and self.plane != other.plane:
             return False
 
-        return self.distanceTo(other) <= radius
+        return self.distance_to(other) <= radius
 
     def __eq__(self, other) -> bool:
         if isinstance(other, PackedPosition):
@@ -78,21 +78,21 @@ class PackedPosition:
         return f"({self.x}, {self.y}, {self.plane})"
 
 
-def packPosition(x: int, y: int, plane: int) -> int:
+def pack_position(x: int, y: int, plane: int) -> int:
     """Pack (x, y, plane) into a 32-bit unsigned integer."""
     return (x & 0x7FFF) | ((y & 0x7FFF) << 15) | ((plane & 0x3) << 30)
 
 
-def packPositionSigned(x: int, y: int, plane: int) -> int:
+def pack_position_signed(x: int, y: int, plane: int) -> int:
     """Pack (x, y, plane) into a 32-bit signed integer for SQLite compatibility."""
-    packed = packPosition(x, y, plane)
+    packed = pack_position(x, y, plane)
     # Convert to signed 32-bit
     if packed >= 2**31:
         return packed - 2**32
     return packed
 
 
-def unpackPosition(packed: int) -> Tuple[int, int, int]:
+def unpack_position(packed: int) -> Tuple[int, int, int]:
     """Unpack a 32-bit integer into (x, y, plane)."""
     # Convert signed to unsigned for bit operations
     if packed < 0:

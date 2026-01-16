@@ -38,7 +38,7 @@ IMPORT_REPLACEMENTS = {
 }
 
 
-def fixImportsInFile(filepath: Path) -> Tuple[int, List[str]]:
+def fix_imports_in_file(filepath: Path) -> Tuple[int, List[str]]:
     """
     Fix imports in a single Python file.
 
@@ -91,7 +91,7 @@ def main():
     total_changes = 0
 
     for filepath in sorted(python_files):
-        num_changes, changes = fixImportsInFile(filepath)
+        num_changes, changes = fix_imports_in_file(filepath)
 
         if num_changes > 0:
             total_files_changed += 1

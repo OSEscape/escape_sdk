@@ -19,7 +19,7 @@ class Polygon:
         if len(self.vertices) < 3:
             raise ValueError("Polygon must have at least 3 vertices")
 
-    def fromArray(self, data: List[List[int]]) -> None:
+    def from_array(self, data: List[List[int]]) -> None:
         """Populate Polygon from array of [x, y] coordinate pairs."""
         from escape.types.point import Point
 
@@ -75,7 +75,7 @@ class Polygon:
             area -= self.vertices[j].x * self.vertices[i].y
         return abs(area) / 2.0
 
-    def randomPoint(self) -> "Point":
+    def random_point(self) -> "Point":
         """Generate a random point within this polygon using rejection sampling."""
         min_x, min_y, max_x, max_y = self.bounds()
 
@@ -95,7 +95,7 @@ class Polygon:
 
     def click(self, button: str = "left", randomize: bool = True) -> None:
         """Click within this polygon."""
-        point = self.randomPoint() if randomize else self.center()
+        point = self.random_point() if randomize else self.center()
         point.click(button=button)
 
     def hover(self, randomize: bool = True) -> bool:
@@ -106,11 +106,11 @@ class Polygon:
         current = Point(*getClient().input.mouse.position)
         if self.contains(current):
             return True
-        point = self.randomPoint() if randomize else self.center()
+        point = self.random_point() if randomize else self.center()
         point.hover()
         return True
 
-    def rightClick(self, randomize: bool = True) -> None:
+    def right_click(self, randomize: bool = True) -> None:
         """Right-click within this polygon."""
         self.click(button="right", randomize=randomize)
 
@@ -118,11 +118,11 @@ class Polygon:
         return f"Polygon({len(self.vertices)} vertices, area={self.area():.2f})"
 
     def debug(
-        self, argbColor: int = 0xFFFF0000, filled: bool = False, tag: str | None = None
+        self, argb_color: int = 0xFFFF0000, filled: bool = False, tag: str | None = None
     ) -> None:
         """Draw this polygon as an overlay on RuneLite."""
         from escape.input.drawing import drawing
 
-        xPoints = [v.x for v in self.vertices]
-        yPoints = [v.y for v in self.vertices]
-        drawing.addPolygon(xPoints, yPoints, argbColor, filled, tag)
+        x_points = [v.x for v in self.vertices]
+        y_points = [v.y for v in self.vertices]
+        drawing.addPolygon(x_points, y_points, argb_color, filled, tag)

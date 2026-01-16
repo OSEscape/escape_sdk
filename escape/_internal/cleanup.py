@@ -12,7 +12,7 @@ _registered_apis = []
 _cleanup_registered = False
 
 
-def registerApiForCleanup(api) -> None:
+def register_api_for_cleanup(api) -> None:
     """Register a RuneLiteAPI instance for automatic cleanup on exit."""
     global _cleanup_registered
 
@@ -21,11 +21,11 @@ def registerApiForCleanup(api) -> None:
 
     # Register atexit handler on first registration
     if not _cleanup_registered:
-        atexit.register(_cleanupAll)
+        atexit.register(_cleanup_all)
         _cleanup_registered = True
 
 
-def _cleanupAll():
+def _cleanup_all():
     """Internal cleanup handler called by atexit."""
     if not _registered_apis:
         return
@@ -38,7 +38,7 @@ def _cleanupAll():
     logger.info("Cleanup complete")
 
 
-def withCleanup(func: Callable) -> Callable:
+def with_cleanup(func: Callable) -> Callable:
     """Decorator that ensures cleanup runs even on exception."""
 
     @functools.wraps(func)
@@ -47,22 +47,22 @@ def withCleanup(func: Callable) -> Callable:
             return func(*args, **kwargs)
         finally:
             # Ensure cleanup runs even on exception
-            _cleanupAll()
+            _cleanup_all()
 
     return wrapper
 
 
-def ensureCleanupOnSignal():
+def ensure_cleanup_on_signal():
     """Register signal handlers to ensure cleanup on SIGINT and SIGTERM."""
     import signal
 
-    def signalHandler(signum, frame):
+    def signal_handler(signum, frame):
         logger.warning(f"\n Received signal {signum}, cleaning up")
-        _cleanupAll()
+        _cleanup_all()
         sys.exit(0)
 
-    signal.signal(signal.SIGINT, signalHandler)
-    signal.signal(signal.SIGTERM, signalHandler)
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
     logger.success("Cleanup registered for SIGINT and SIGTERM")
 
 

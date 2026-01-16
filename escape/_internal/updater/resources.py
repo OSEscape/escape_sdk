@@ -17,7 +17,7 @@ class ResourceUpdater:
     Manages automatic updates for game resources (varps, objects, etc.)
     """
 
-    def shouldUpdate(self) -> Tuple[bool, str]:
+    def should_update(self) -> Tuple[bool, str]:
         """
         Check if game data needs update.
 
@@ -25,21 +25,21 @@ class ResourceUpdater:
             Tuple of (should_update, reason)
         """
         from escape._internal.cache_manager import (
-            _needsUpdate,
-            getCacheManager,
+            _needs_update,
+            get_cache_manager,
         )
 
         try:
-            cache_manager = getCacheManager()
-            cache_dir = cache_manager.getDataPath("game_data")
+            cache_manager = get_cache_manager()
+            cache_dir = cache_manager.get_data_path("game_data")
 
-            if _needsUpdate(cache_dir):
+            if _needs_update(cache_dir):
                 return True, "Game data update available"
             return False, "Game data up to date"
         except Exception as e:
             return True, f"Game data check failed: {e}"
 
-    def updateAll(self, force: bool = False) -> bool:
+    def update_all(self, force: bool = False) -> bool:
         """
         Update all game data atomically.
 
@@ -58,7 +58,7 @@ class ResourceUpdater:
 
         # Check if update needed BEFORE downloading (unless forced)
         if not force:
-            needs_update, reason = self.shouldUpdate()
+            needs_update, reason = self.should_update()
             if not needs_update:
                 logger.success(f"{reason}")
                 print("=" * 80)
@@ -70,12 +70,12 @@ class ResourceUpdater:
         try:
             from escape._internal.cache_manager import (
                 BASE_URL,
-                _downloadFile,
-                getCacheManager,
+                _download_file,
+                get_cache_manager,
             )
 
-            cache_manager = getCacheManager()
-            cache_dir = cache_manager.getDataPath("game_data")
+            cache_manager = get_cache_manager()
+            cache_dir = cache_manager.get_data_path("game_data")
             cache_dir.mkdir(parents=True, exist_ok=True)
 
             # Force download by deleting existing files
@@ -100,7 +100,7 @@ class ResourceUpdater:
                 dest = cache_dir / local_name
                 decompress = remote_name.endswith(".gz")
 
-                if not _downloadFile(url, dest, decompress_gz=decompress):
+                if not _download_file(url, dest, decompress_gz=decompress):
                     logger.error(f"\n Failed to download {local_name}")
                     print("\n" + "=" * 80)
                     logger.error("Update failed")
@@ -128,7 +128,7 @@ class ResourceUpdater:
         logger.info("Game Data Status")
         print("=" * 80)
 
-        needs_update, reason = self.shouldUpdate()
+        needs_update, reason = self.should_update()
         if needs_update:
             logger.warning(f"\n {reason}")
         else:
@@ -172,7 +172,7 @@ Examples:
     if args.status:
         updater.status()
     else:
-        success = updater.updateAll(force=args.force)
+        success = updater.update_all(force=args.force)
         exit(0 if success else 1)
 
 

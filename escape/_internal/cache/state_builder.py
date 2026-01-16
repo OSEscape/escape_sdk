@@ -10,7 +10,7 @@ import escape.utilities.timing as timing
 from escape._internal.events.channels import LATEST_STATE_CHANNELS
 from escape._internal.logger import logger
 from escape._internal.resources import varps as varps_resource
-from escape.globals import getApi
+from escape.globals import get_api
 from escape.types import Item, ItemContainer
 
 # Skill names constant - defined here to avoid circular import with tabs.skills
@@ -78,7 +78,7 @@ class StateBuilder:
         self.itemcontainers[94] = ItemContainer(94, 14)  # Equipment
         self.itemcontainers[95] = ItemContainer(95, -1)  # Bank
 
-    def addEvent(self, channel: str, event: Dict[str, Any]) -> None:
+    def add_event(self, channel: str, event: Dict[str, Any]) -> None:
         """Process incoming event and update state."""
         if channel in LATEST_STATE_CHANNELS:
             # Latest-state: just overwrite
@@ -87,24 +87,24 @@ class StateBuilder:
 
             # Handle projection-related events immediately
             if channel == "world_view_loaded":
-                self._processWorldViewLoaded(event)
+                self._process_world_view_loaded(event)
             elif channel in ("camera_changed", "world_entity"):
-                self._processCameraChanged()
+                self._process_camera_changed()
         else:
             # Ring buffer: store history + update derived state
             self.recent_events[channel].append(event)
-            self._processEvent(channel, event)
+            self._process_event(channel, event)
 
-    def _processEvent(self, channel: str, event: Dict[str, Any]) -> None:
+    def _process_event(self, channel: str, event: Dict[str, Any]) -> None:
         """Update derived state from ring buffer event."""
         if channel == "varbit_changed":
-            self._processVarbitChanged(event)
+            self._process_varbit_changed(event)
         elif channel in ["var_client_int_changed", "var_client_str_changed"]:
-            self._processVarcChanged(event)
+            self._process_varc_changed(event)
         elif channel == "item_container_changed":
-            self._processItemContainerChanged(event)
+            self._process_item_container_changed(event)
         elif channel == "stat_changed":
-            self._processStatChanged(event)
+            self._process_stat_changed(event)
         elif channel == "animation_changed":
             actor_name = event.get("actor_name")
             animation_id = event.get("animation_id")
@@ -124,7 +124,7 @@ class StateBuilder:
         elif channel == "item_despawned":
             pass  # Could implement item despawn tracking if needed
 
-    def _editVarp(self, varp_id: int, new_value: int) -> None:
+    def _edit_varp(self, varp_id: int, new_value: int) -> None:
         """Set a varp to a new value."""
         # Ensure varps list is large enough
         if varp_id >= len(self.varps):
@@ -133,16 +133,16 @@ class StateBuilder:
 
         self.varps[varp_id] = new_value
 
-    def _editVarc(self, varc_id: int, new_value: Any) -> None:
+    def _edit_varc(self, varc_id: int, new_value: Any) -> None:
         """Set a varc to a new value."""
         if (len(self.varcs) == 0) and (not self.varcs_initialized):
-            self.initVarcs()
+            self.init_varcs()
         self.varcs[varc_id] = new_value
 
-    def _editVarbit(self, varbit_id: int, varp_id: int, new_value: int) -> None:
+    def _edit_varbit(self, varbit_id: int, varp_id: int, new_value: int) -> None:
         """Update a varbit value by modifying specific bits in its parent varp."""
         # Get varbit metadata from resources (direct import to avoid race condition)
-        varbit_info = varps_resource.getVarbitInfo(varbit_id)
+        varbit_info = varps_resource.get_varbit_info(varbit_id)
 
         if not varbit_info:
             return
@@ -153,7 +153,7 @@ class StateBuilder:
 
         # Ensure varps list is large enough
         if varp_id >= len(self.varps) and not self.varps_initialized:
-            self.initVarps()
+            self.init_varps()
             if varp_id >= len(self.varps):
                 return  # Invalid varp_id
 
@@ -175,7 +175,7 @@ class StateBuilder:
         # Update the varp
         self.varps[varp_id] = new_varp
 
-    def _processVarbitChanged(self, event: Dict[str, Any]) -> None:
+    def _process_varbit_changed(self, event: Dict[str, Any]) -> None:
         """Update varbit/varp state from event."""
         varbit_id = event.get("varbit_id")
         varp_id = event.get("varp_id")
@@ -186,12 +186,12 @@ class StateBuilder:
 
         # Special case: varbit_id == -1 means update full varp
         if varbit_id == -1 or varbit_id is None:
-            self._editVarp(varp_id, value)
+            self._edit_varp(varp_id, value)
         else:
             # Update varbit (with bit manipulation)
-            self._editVarbit(varbit_id, varp_id, value)
+            self._edit_varbit(varbit_id, varp_id, value)
 
-    def _processVarcChanged(self, event: Dict[str, Any]) -> None:
+    def _process_varc_changed(self, event: Dict[str, Any]) -> None:
         """Update varc state from event."""
         varc_id = event.get("varc_id")
         value = event.get("value")
@@ -199,9 +199,9 @@ class StateBuilder:
         if varc_id is None:
             return  # Invalid event
 
-        self._editVarc(varc_id, value)
+        self._edit_varc(varc_id, value)
 
-    def _processItemContainerChanged(self, event: Dict[str, Any]) -> None:
+    def _process_item_container_changed(self, event: Dict[str, Any]) -> None:
         """Update inventory/equipment/bank from event."""
         container_id = event.get("container_id")
         items_list = event.get("items", [])
@@ -218,7 +218,7 @@ class StateBuilder:
 
         self.itemcontainers[container_id].fromArray(items_list)
 
-    def _processStatChanged(self, event: Dict[str, Any]) -> None:
+    def _process_stat_changed(self, event: Dict[str, Any]) -> None:
         """Update skill levels/XP from stat_changed event."""
         skill_name = event.get("skill")
         if not skill_name:
@@ -231,8 +231,8 @@ class StateBuilder:
             "boosted_level": event.get("boosted_level", event.get("level", 1)),
         }
 
-    def initVarps(self) -> None:
-        api = getApi()
+    def init_varps(self) -> None:
+        api = get_api()
         q = api.query()
         v = q.client.getServerVarps()
         results = q.execute({"varps": v})
@@ -241,8 +241,8 @@ class StateBuilder:
             self.varps = varps
             self.varps_initialized = True
 
-    def initVarcs(self) -> None:
-        api = getApi()
+    def init_varcs(self) -> None:
+        api = get_api()
         q = api.query()
         v = q.client.getVarcMap()
         results = q.execute({"varcs": v})
@@ -251,8 +251,8 @@ class StateBuilder:
             self.varcs = varcs
             self.varcs_initialized = True
 
-    def initSkills(self) -> None:
-        api = getApi()
+    def init_skills(self) -> None:
+        api = get_api()
         q = api.query()
         levels = q.client.getRealSkillLevels()
         xps = q.client.getSkillExperiences()
@@ -270,12 +270,12 @@ class StateBuilder:
                     "boosted_level": boosteddata[index],
                 }
 
-    def initGroundItems(self) -> None:
+    def init_ground_items(self) -> None:
         """Initialize ground items via query."""
-        api = getApi()
+        api = get_api()
 
         try:
-            api.invokeCustomMethod(
+            api.invoke_custom_method(
                 target="EventBusListener",
                 method="rebuildGroundItems",
                 signature="()V",
@@ -286,75 +286,75 @@ class StateBuilder:
             logger.error(f"Rebuild grounditems failed: {e}")
             return
 
-    def _processCameraChanged(self) -> None:
+    def _process_camera_changed(self) -> None:
         """Invalidate tile projection cache when camera changes."""
         from escape.world.projection import projection
 
         projection.invalidate()
 
-    def _processWorldViewLoaded(self, event: Dict[str, Any]) -> None:
+    def _process_world_view_loaded(self, event: Dict[str, Any]) -> None:
         """Configure Projection when world_view_loaded event is received."""
         from escape.world.projection import EntityConfig, projection
 
         # Extract scene data
-        sizeX = event.get("size_x", 104)
-        sizeY = event.get("size_y", 104)
+        size_x = event.get("size_x", 104)
+        size_y = event.get("size_y", 104)
 
-        # Convert flat tile_heights list to [4, sizeX, sizeY] array
-        tileHeightsList = event.get("tile_heights", [])
-        if tileHeightsList:
-            expectedTileSize = 4 * sizeX * sizeY
-            if len(tileHeightsList) == expectedTileSize:
-                tileHeights = np.array(tileHeightsList, dtype=np.int32).reshape(4, sizeX, sizeY)
+        # Convert flat tile_heights list to [4, size_x, size_y] array
+        tile_heights_list = event.get("tile_heights", [])
+        if tile_heights_list:
+            expected_tile_size = 4 * size_x * size_y
+            if len(tile_heights_list) == expected_tile_size:
+                tile_heights = np.array(tile_heights_list, dtype=np.int32).reshape(4, size_x, size_y)
             else:
                 # Handle size mismatch - pad or truncate
-                arr = np.zeros(expectedTileSize, dtype=np.int32)
-                arr[: min(len(tileHeightsList), expectedTileSize)] = tileHeightsList[
-                    :expectedTileSize
+                arr = np.zeros(expected_tile_size, dtype=np.int32)
+                arr[: min(len(tile_heights_list), expected_tile_size)] = tile_heights_list[
+                    :expected_tile_size
                 ]
-                tileHeights = arr.reshape(4, sizeX, sizeY)
+                tile_heights = arr.reshape(4, size_x, size_y)
         else:
             # Fallback to zeros if no data
-            tileHeights = np.zeros((4, sizeX, sizeY), dtype=np.int32)
+            tile_heights = np.zeros((4, size_x, size_y), dtype=np.int32)
 
-        # Convert flat bridge_flags list to [sizeX, sizeY] array
-        # Note: bridge_flags may be (sizeX-1)*(sizeY-1) or other sizes
-        bridgeFlagsList = event.get("bridge_flags", [])
-        bridgeFlags = np.zeros((sizeX, sizeY), dtype=np.bool_)
-        if bridgeFlagsList:
-            flagLen = len(bridgeFlagsList)
+        # Convert flat bridge_flags list to [size_x, size_y] array
+        # Note: bridge_flags may be (size_x-1)*(size_y-1) or other sizes
+        bridge_flags_list = event.get("bridge_flags", [])
+        bridge_flags = np.zeros((size_x, size_y), dtype=np.bool_)
+        if bridge_flags_list:
+            flag_len = len(bridge_flags_list)
             # Try to infer the correct dimensions
-            if flagLen == sizeX * sizeY:
-                bridgeFlags = np.array(bridgeFlagsList, dtype=np.bool_).reshape(sizeX, sizeY)
-            elif flagLen == (sizeX - 1) * (sizeY - 1):
+            if flag_len == size_x * size_y:
+                bridge_flags = np.array(bridge_flags_list, dtype=np.bool_).reshape(size_x, size_y)
+            elif flag_len == (size_x - 1) * (size_y - 1):
                 # Bridge flags may be for interior tiles only
-                inner = np.array(bridgeFlagsList, dtype=np.bool_).reshape(sizeX - 1, sizeY - 1)
-                bridgeFlags[:-1, :-1] = inner
+                inner = np.array(bridge_flags_list, dtype=np.bool_).reshape(size_x - 1, size_y - 1)
+                bridge_flags[:-1, :-1] = inner
             else:
                 # Best effort: reshape to square if possible, otherwise fill what we can
-                side = int(np.sqrt(flagLen))
-                if side * side == flagLen and side <= sizeX and side <= sizeY:
-                    inner = np.array(bridgeFlagsList, dtype=np.bool_).reshape(side, side)
-                    bridgeFlags[:side, :side] = inner
+                side = int(np.sqrt(flag_len))
+                if side * side == flag_len and side <= size_x and side <= size_y:
+                    inner = np.array(bridge_flags_list, dtype=np.bool_).reshape(side, side)
+                    bridge_flags[:side, :side] = inner
 
-        baseX = event.get("base_x", 0)
-        baseY = event.get("base_y", 0)
+        base_x = event.get("base_x", 0)
+        base_y = event.get("base_y", 0)
 
         # Set scene data on projection and invalidate cache
-        projection.setScene(tileHeights, bridgeFlags, baseX, baseY, sizeX, sizeY)
+        projection.setScene(tile_heights, bridge_flags, base_x, base_y, size_x, size_y)
         projection.invalidate()
 
         # Handle entity config (for WorldEntity instances)
         # When on top-level, bounds are all 0, which means identity transform
-        boundsX = event.get("boundsX", 0)
-        boundsY = event.get("boundsY", 0)
-        boundsWidth = event.get("boundsWidth", 0)
-        boundsHeight = event.get("boundsHeight", 0)
+        bounds_x = event.get("boundsX", 0)
+        bounds_y = event.get("boundsY", 0)
+        bounds_width = event.get("boundsWidth", 0)
+        bounds_height = event.get("boundsHeight", 0)
 
         # Only set entity config if we have non-zero bounds (inside a WorldEntity)
-        if boundsWidth > 0 or boundsHeight > 0:
+        if bounds_width > 0 or bounds_height > 0:
             config = EntityConfig(
-                boundsX=boundsX, boundsY=boundsY, boundsWidth=boundsWidth, boundsHeight=boundsHeight
+                boundsX=bounds_x, boundsY=bounds_y, boundsWidth=bounds_width, boundsHeight=bounds_height
             )
             projection.setEntityConfig(config)
         else:

@@ -63,7 +63,7 @@ class FairyRingInterface:
 
         self.cached_info = {}
 
-    def _rotationToLetter(self, rotation_y: int, index: int) -> str:
+    def _rotation_to_letter(self, rotation_y: int, index: int) -> str:
         letters = self.letter_strings[index]
         if rotation_y == 0:
             return letters[0]
@@ -75,18 +75,18 @@ class FairyRingInterface:
             return letters[3]
         return "Z"
 
-    def _getAllInfo(self) -> list[dict]:
+    def _get_all_info(self) -> list[dict]:
         return Widget.getBatch(self.buttons)
 
-    def getCurrentCode(self) -> str:
+    def get_current_code(self) -> str:
         info = self.cached_info
         code = ""
         for i in range(3):
             rotation_y = info[i].get("rotationY", -1)
-            code += self._rotationToLetter(rotation_y, i)
+            code += self._rotation_to_letter(rotation_y, i)
         return code
 
-    def _fromLetterToLetter(self, letter: str, target: str) -> int:
+    def _from_letter_to_letter(self, letter: str, target: str) -> int:
         """
         Find most efficient way to go from letter to letter target.
 
@@ -106,12 +106,12 @@ class FairyRingInterface:
 
         return clockwise_steps if clockwise_steps <= anticlockwise_steps else -anticlockwise_steps
 
-    def _checkIndexToTarget(self, index: int, target: str) -> bool:
-        self.cached_info = self._getAllInfo()
-        current_code = self.getCurrentCode()
+    def _check_index_to_target(self, index: int, target: str) -> bool:
+        self.cached_info = self._get_all_info()
+        current_code = self.get_current_code()
         return current_code[index] == target
 
-    def _nextLetter(self, letter: str, clockwise: bool, index: int) -> str:
+    def _next_letter(self, letter: str, clockwise: bool, index: int) -> str:
         letters = self.letter_strings[index]
         current_index = letters.index(letter)
         if clockwise:
@@ -120,9 +120,9 @@ class FairyRingInterface:
             next_index = (current_index + 1) % 4
         return letters[next_index]
 
-    def _rotateToSequence(self, target_code: str) -> bool:
+    def _rotate_to_sequence(self, target_code: str) -> bool:
         all_info = self.cached_info
-        current_code = self.getCurrentCode()
+        current_code = self.get_current_code()
         logger.info(f"Current code: {current_code}, Target code: {target_code}")
         if "Z" in current_code:
             logger.error("Error: Invalid current code detected")
@@ -131,32 +131,32 @@ class FairyRingInterface:
         for i in range(3):
             current_letter = current_code[i]
             target_letter = target_code[i]
-            steps = self._fromLetterToLetter(current_letter, target_letter)
+            steps = self._from_letter_to_letter(current_letter, target_letter)
             for _ in range(abs(steps)):
-                current_letter = self.getCurrentCode()[i]
+                current_letter = self.get_current_code()[i]
                 if steps > 0:
                     button = all_info[i + 3].get(
                         "bounds", [0, 0, 0, 0]
                     )  # Clockwise buttons are at index 3,4,5
-                    next_letter = self._nextLetter(current_letter, True, i)
+                    next_letter = self._next_letter(current_letter, True, i)
                 else:
                     button = all_info[i + 6].get(
                         "bounds", [0, 0, 0, 0]
                     )  # Anti-clockwise buttons are at index 6,7,8
-                    next_letter = self._nextLetter(current_letter, False, i)
+                    next_letter = self._next_letter(current_letter, False, i)
                 box = Box.fromRect(*button)
                 s = "Rotate clockwise" if steps > 0 else "Rotate counter-clockwise"
                 if box.clickOption(s):
-                    waitUntil(lambda: self._checkIndexToTarget(i, next_letter), timeout=5)
+                    waitUntil(lambda: self._check_index_to_target(i, next_letter), timeout=5)
                 else:
                     return False
-        self.cached_info = self._getAllInfo()
-        return self.getCurrentCode() == target_code
+        self.cached_info = self._get_all_info()
+        return self.get_current_code() == target_code
 
     def interact(self, target_code: str) -> bool:
         """Dial a fairy ring code and confirm teleport."""
-        self.cached_info = self._getAllInfo()
-        if self._rotateToSequence(target_code):
+        self.cached_info = self._get_all_info()
+        if self._rotate_to_sequence(target_code):
             dest_button_bounds = self.cached_info[9].get("bounds", [0, 0, 0, 0])
             box = Box.fromRect(*dest_button_bounds)
             box.clickOption("Confirm")

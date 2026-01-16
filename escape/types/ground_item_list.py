@@ -21,7 +21,7 @@ class GroundItemList:
         """Filter items by custom predicate."""
         return GroundItemList([item for item in self._items if predicate(item)])
 
-    def filterByItem(self, identifier: ItemIdentifier) -> "GroundItemList":
+    def filter_by_item(self, identifier: ItemIdentifier) -> "GroundItemList":
         """Filter by item ID or name."""
         if isinstance(identifier, int):
             return GroundItemList([item for item in self._items if item.id == identifier])
@@ -29,41 +29,41 @@ class GroundItemList:
             [item for item in self._items if identifier.lower() in item.name.lower()]
         )
 
-    def filterByOwnership(self, ownership: int) -> "GroundItemList":
+    def filter_by_ownership(self, ownership: int) -> "GroundItemList":
         """Filter by ownership type."""
         return GroundItemList([item for item in self._items if item.ownership == ownership])
 
-    def filterYours(self) -> "GroundItemList":
+    def filter_yours(self) -> "GroundItemList":
         """Filter to only your items (ownership 1 or 3)."""
-        return GroundItemList([item for item in self._items if item.isYours])
+        return GroundItemList([item for item in self._items if item.is_yours])
 
-    def filterLootable(self) -> "GroundItemList":
+    def filter_lootable(self) -> "GroundItemList":
         """Filter to only lootable items (yours or public)."""
-        return GroundItemList([item for item in self._items if item.canLoot])
+        return GroundItemList([item for item in self._items if item.can_loot])
 
-    def filterByPosition(self, x: int, y: int, plane: int) -> "GroundItemList":
+    def filter_by_position(self, x: int, y: int, plane: int) -> "GroundItemList":
         """Filter to items at specific position."""
         target = PackedPosition(x, y, plane)
         return GroundItemList([item for item in self._items if item.position == target])
 
-    def filterNearby(self, x: int, y: int, plane: int, radius: int) -> "GroundItemList":
+    def filter_nearby(self, x: int, y: int, plane: int, radius: int) -> "GroundItemList":
         """Filter to items within radius of position."""
         center = PackedPosition(x, y, plane)
         return GroundItemList(
             [
                 item
                 for item in self._items
-                if item.position.isNearby(center, radius, same_plane=True)
+                if item.position.is_nearby(center, radius, same_plane=True)
             ]
         )
 
-    def sortByDistance(self, x: int, y: int, plane: int) -> "GroundItemList":
+    def sort_by_distance(self, x: int, y: int, plane: int) -> "GroundItemList":
         """Sort items by distance from position (closest first)."""
         center = PackedPosition(x, y, plane)
-        sorted_items = sorted(self._items, key=lambda item: item.position.distanceTo(center))
+        sorted_items = sorted(self._items, key=lambda item: item.position.distance_to(center))
         return GroundItemList(sorted_items)
 
-    def sortByQuantity(self, reverse: bool = True) -> "GroundItemList":
+    def sort_by_quantity(self, reverse: bool = True) -> "GroundItemList":
         """Sort items by quantity."""
         sorted_items = sorted(self._items, key=lambda item: item.quantity, reverse=reverse)
         return GroundItemList(sorted_items)
@@ -76,7 +76,7 @@ class GroundItemList:
         """Get last item in list."""
         return self._items[-1] if self._items else None
 
-    def isEmpty(self) -> bool:
+    def is_empty(self) -> bool:
         """Check if list is empty."""
         return len(self._items) == 0
 
@@ -84,7 +84,7 @@ class GroundItemList:
         """Get number of items in list."""
         return len(self._items)
 
-    def toList(self) -> List[GroundItem]:
+    def to_list(self) -> List[GroundItem]:
         """Convert to regular Python list."""
         return self._items.copy()
 

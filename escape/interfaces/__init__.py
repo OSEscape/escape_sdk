@@ -10,7 +10,7 @@ from escape.types.widget import Widget, WidgetFields
 _interface_id_to_name: dict[int, str] | None = None
 
 
-def _getInterfaceIdToNameMap() -> dict[int, str]:
+def _get_interface_id_to_name_map() -> dict[int, str]:
     """Build and cache a reverse lookup map from interface group ID to name."""
     global _interface_id_to_name
 
@@ -40,9 +40,9 @@ def _getInterfaceIdToNameMap() -> dict[int, str]:
     return _interface_id_to_name
 
 
-def getInterfaceName(group_id: int) -> str | None:
+def get_interface_name(group_id: int) -> str | None:
     """Get the interface name for a group ID."""
-    return _getInterfaceIdToNameMap().get(group_id)
+    return _get_interface_id_to_name_map().get(group_id)
 
 
 class ScrollInterface(GeneralInterface):
@@ -86,14 +86,14 @@ class GliderInterface(GeneralInterface):
             "Ookookolly Undri",
         ]
 
-    def getWidgetInfo(self) -> dict:
+    def get_widget_info(self) -> dict:
         res = Widget.getBatch(self.buttons)
 
         for i in range(len(res)):
             res[i]["text"] = self.names[i]
         return res
 
-    def isRightOption(self, widget_info, option_text=""):
+    def is_right_option(self, widget_info, option_text=""):
         b = widget_info.get("bounds", "")
         text = widget_info.get("text", "")
         if option_text:
@@ -163,15 +163,15 @@ class Interfaces:
         """Fairy ring interface."""
         return fairy_ring
 
-    def getOpenInterfaces(self) -> list[int]:
+    def get_open_interfaces(self) -> list[int]:
         """Get a list of currently open interface IDs."""
         return list(client.cache.getOpenWidgets())
 
-    def getOpenInterfaceNames(self) -> list[str]:
+    def get_open_interface_names(self) -> list[str]:
         """Get a list of currently open interface names."""
         names = []
-        for group_id in self.getOpenInterfaces():
-            name = getInterfaceName(group_id)
+        for group_id in self.get_open_interfaces():
+            name = get_interface_name(group_id)
             if name:
                 names.append(name)
             else:
@@ -183,4 +183,4 @@ class Interfaces:
 interfaces = Interfaces()
 
 
-__all__ = ["Interfaces", "interfaces", "Bank", "bank", "getInterfaceName"]
+__all__ = ["Interfaces", "interfaces", "Bank", "bank", "get_interface_name"]

@@ -41,15 +41,15 @@ class Mouse:
     def position(self) -> Tuple[int, int]:
         """Get current mouse position relative to game window."""
         screen_x, screen_y = pag.position()
-        offset = self.runelite.getWindowOffset()
+        offset = self.runelite.get_window_offset()
         return (screen_x - offset[0], screen_y - offset[1])
 
-    def _validateCoordinates(self, x: int, y: int, safe: bool) -> None:
+    def _validate_coordinates(self, x: int, y: int, safe: bool) -> None:
         """Validate that coordinates are within game window bounds."""
         if not safe:
             return  # Skip validation
 
-        bounds = self.runelite.getGameBounds()
+        bounds = self.runelite.get_game_bounds()
         if not bounds:
             raise ValueError("Could not get game window bounds")
 
@@ -63,25 +63,25 @@ class Mouse:
                 f"Use safe=False to allow out-of-bounds coordinates."
             )
 
-    def _moveTo(self, x: int, y: int, safe: bool = True) -> None:
+    def _move_to(self, x: int, y: int, safe: bool = True) -> None:
         """Core movement function - ONLY access point to pyautogui.moveTo()."""
         # Ensure window is ready
-        self.runelite.refreshWindowPosition()
+        self.runelite.refresh_window_position()
         # temp override for performance testing
 
         time.perf_counter()
         pag.moveTo(
-            x + self.runelite.getWindowOffset()[0],
-            y + self.runelite.getWindowOffset()[1],
+            x + self.runelite.get_window_offset()[0],
+            y + self.runelite.get_window_offset()[1],
             _pause=False,
         )
         time.sleep(0.001)  # slight delay to ensure move completes
         return
         # Validate coordinates
-        self._validateCoordinates(x, y, safe)
+        self._validate_coordinates(x, y, safe)
 
         # Convert to absolute screen coordinates
-        offset = self.runelite.getWindowOffset()
+        offset = self.runelite.get_window_offset()
         if not offset:
             raise RuntimeError("Could not get window offset")
 
@@ -132,10 +132,10 @@ class Mouse:
         # Final move to exact target (no jitter)
         pag.moveTo(abs_x, abs_y, duration=0, _pause=False)
 
-    def _clickButton(self, button: str) -> None:
+    def _click_button(self, button: str) -> None:
         """Core click function - ONLY access point to pyautogui.click()."""
         # Ensure window is ready (respects 10s cache)
-        self.runelite.refreshWindowPosition()
+        self.runelite.refresh_window_position()
 
         # Perform click
         pag.click(button=button, _pause=False, tween=None)
@@ -143,7 +143,7 @@ class Mouse:
     def _hold(self, button: str) -> None:
         """Core hold function - ONLY access point to pyautogui.mouseDown()."""
         # Ensure window is ready (respects 10s cache)
-        self.runelite.refreshWindowPosition()
+        self.runelite.refresh_window_position()
 
         # Hold button down
         pag.mouseDown(button=button, _pause=False)
@@ -151,7 +151,7 @@ class Mouse:
     def _release(self, button: str) -> None:
         """Core release function - ONLY access point to pyautogui.mouseUp()."""
         # Ensure window is ready (respects 10s cache)
-        self.runelite.refreshWindowPosition()
+        self.runelite.refresh_window_position()
 
         # Release button
         pag.mouseUp(button=button, _pause=False)
@@ -159,54 +159,54 @@ class Mouse:
     def _scroll(self, clicks: int) -> None:
         """Core scroll function - ONLY access point to pyautogui.scroll()."""
         # Ensure window is ready (respects 10s cache)
-        self.runelite.refreshWindowPosition()
+        self.runelite.refresh_window_position()
 
         # Perform scroll
         pag.scroll(clicks, _pause=False)
 
     def click(self, button: str = "left") -> None:
-        self._clickButton(button)
+        self._click_button(button)
 
-    def moveTo(self, x: int, y: int, safe: bool = True) -> None:
+    def move_to(self, x: int, y: int, safe: bool = True) -> None:
         """Move mouse to target position with human-like movement."""
-        self._moveTo(x, y, safe=safe)
+        self._move_to(x, y, safe=safe)
 
-    def leftClick(self, x: int | None = None, y: int | None = None, safe: bool = True) -> None:
+    def left_click(self, x: int | None = None, y: int | None = None, safe: bool = True) -> None:
         """Perform left click at current position or move to position and click."""
         import time
 
         time.perf_counter()
         if x is not None and y is not None:
-            self._moveTo(x, y, safe=safe)
-        self._clickButton("left")
+            self._move_to(x, y, safe=safe)
+        self._click_button("left")
         time.perf_counter()
 
-    def rightClick(self, x: int | None = None, y: int | None = None, safe: bool = True) -> None:
+    def right_click(self, x: int | None = None, y: int | None = None, safe: bool = True) -> None:
         """Perform right click at current position or move to position and click."""
         if x is not None and y is not None:
-            self._moveTo(x, y, safe=safe)
+            self._move_to(x, y, safe=safe)
 
-        self._clickButton("right")
+        self._click_button("right")
 
-    def holdLeft(self, x: int | None = None, y: int | None = None, safe: bool = True) -> None:
+    def hold_left(self, x: int | None = None, y: int | None = None, safe: bool = True) -> None:
         """Hold left mouse button at current position or move to position and hold."""
         if x is not None and y is not None:
-            self._moveTo(x, y, safe=safe)
+            self._move_to(x, y, safe=safe)
 
         self._hold("left")
 
-    def holdRight(self, x: int | None = None, y: int | None = None, safe: bool = True) -> None:
+    def hold_right(self, x: int | None = None, y: int | None = None, safe: bool = True) -> None:
         """Hold right mouse button at current position or move to position and hold."""
         if x is not None and y is not None:
-            self._moveTo(x, y, safe=safe)
+            self._move_to(x, y, safe=safe)
 
         self._hold("right")
 
-    def releaseLeft(self) -> None:
+    def release_left(self) -> None:
         """Release left mouse button."""
         self._release("left")
 
-    def releaseRight(self) -> None:
+    def release_right(self) -> None:
         """Release right mouse button."""
         self._release("right")
 

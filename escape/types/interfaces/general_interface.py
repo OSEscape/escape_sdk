@@ -30,24 +30,24 @@ class GeneralInterface:
         for id in button_ids:
             w = (
                 Widget(id)
-                .enable(WidgetFields.getBounds)
+                .enable(WidgetFields.get_bounds)
                 .enable(
-                    WidgetFields.getActions if use_actions else WidgetFields.getText,
+                    WidgetFields.get_actions if use_actions else WidgetFields.get_text,
                 )
             )
             self.buttons.append(w)
 
-    def getWidgetInfo(self) -> list:
+    def get_widget_info(self) -> list:
         return (
-            Widget.getBatchChildren(self.buttons)
+            Widget.get_batch_children(self.buttons)
             if self.get_children
-            else Widget.getBatch(self.buttons)
+            else Widget.get_batch(self.buttons)
         )
 
-    def isOpen(self) -> bool:
+    def is_open(self) -> bool:
         return self.group in client.interfaces.getOpenInterfaces()
 
-    def isRightOption(self, w: dict, text: str = "") -> bool:
+    def is_right_option(self, w: dict, text: str = "") -> bool:
         if self.use_actions:
             actions = w.get("actions", []) or []
             if not text:
@@ -56,46 +56,46 @@ class GeneralInterface:
         t = w.get("text", "")
         return (text in t if text else bool(t)) and self.wrong_text not in t
 
-    def _getScrollbox(self) -> Box | None:
+    def _get_scrollbox(self) -> Box | None:
         if not self.scrollbox:
             return None
-        b = Widget(self.scrollbox).enable(WidgetFields.getBounds).get().get("bounds", [0, 0, 0, 0])
-        return Box.fromRect(*b) if b[2] > 0 and b[3] > 0 else None
+        b = Widget(self.scrollbox).enable(WidgetFields.get_bounds).get().get("bounds", [0, 0, 0, 0])
+        return Box.from_rect(*b) if b[2] > 0 and b[3] > 0 else None
 
     def _scroll(self, sb: Box, up: bool = False) -> None:
         sb.hover()
         client.input.mouse.scroll(up=up, count=1)
         timing.sleep(0.1)
 
-    def _findWidget(self, text: str, idx: int) -> dict | None:
+    def _find_widget(self, text: str, idx: int) -> dict | None:
         """Find widget by index or text."""
-        info = self.getWidgetInfo()
+        info = self.get_widget_info()
         if 0 <= idx < len(info):
             w = info[idx]
-            return w if not text or self.isRightOption(w, text) else None
+            return w if not text or self.is_right_option(w, text) else None
         for w in info:
-            if self.isRightOption(w, text):
+            if self.is_right_option(w, text):
                 return w
         return None
 
-    def _makeVisible(self, text: str, idx: int, sb: Box | None) -> Box | None:
+    def _make_visible(self, text: str, idx: int, sb: Box | None) -> Box | None:
         """Find option and scroll until visible. Returns clickable Box or None."""
-        w = self._findWidget(text, idx)
+        w = self._find_widget(text, idx)
         if not w:
             return None
 
         for _ in range(self.max_scroll + 1):
             b = w.get("bounds", [0, 0, 0, 0])
             if b[2] > 0 and b[3] > 0:
-                box = Box.fromRect(*b)
+                box = Box.from_rect(*b)
                 if not sb or sb.contains(box):
                     return box
                 self._scroll(sb, up=box.y1 < sb.y1)
-            w = self._findWidget(text, idx)
+            w = self._find_widget(text, idx)
         return None
 
     def interact(self, option_text: str = "", index: int = -1) -> bool:
-        if not self.isOpen():
+        if not self.is_open():
             return False
-        box = self._makeVisible(option_text, index, self._getScrollbox())
-        return box.clickOption(self.menu_text or option_text) if box else False
+        box = self._make_visible(option_text, index, self._get_scrollbox())
+        return box.click_option(self.menu_text or option_text) if box else False

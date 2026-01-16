@@ -23,7 +23,7 @@ class GroundItems:
         self._cached_list: GroundItemList = GroundItemList([])
         self._cached_tick: int = -1
 
-    def getAllItems(self) -> GroundItemList:
+    def get_all_items(self) -> GroundItemList:
         """Get all ground items from cache."""
         from escape.client import client
 
@@ -49,4 +49,4 @@ class GroundItems:
 
 
 # Module-level instance
-groundItems = GroundItems()
+ground_items = GroundItems()

@@ -6,21 +6,21 @@ if TYPE_CHECKING:
     from escape._internal.cache.event_cache import EventCache
 
 
-def getClient():
+def get_client():
     """Get the Client instance (deprecated)."""
     from escape.client import client
 
     return client
 
 
-def getApi():
+def get_api():
     """Get the RuneLiteAPI instance."""
     from escape._internal.api import RuneLiteAPI
 
     return RuneLiteAPI()
 
 
-def getEventCache() -> "EventCache":
+def get_event_cache() -> "EventCache":
     """Get the EventCache instance from the Client."""
     from escape.client import client
 
@@ -29,7 +29,7 @@ def getEventCache() -> "EventCache":
 
 # Convenience exports
 __all__ = [
-    "getApi",
-    "getClient",
-    "getEventCache",
+    "get_api",
+    "get_client",
+    "get_event_cache",
 ]

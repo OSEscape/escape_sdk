@@ -4,13 +4,13 @@ import sqlite3
 from typing import Any, Dict, List, Tuple
 
 from escape._internal.logger import logger
-from escape.types.packed_position import packPositionSigned, unpackPosition
+from escape.types.packed_position import pack_position_signed, unpack_position
 
 # Module-level database connection (loaded by cache_manager at init)
 _db_connection: sqlite3.Connection | None = None
 
 
-def getById(object_id: int) -> Dict[str, Any] | None:
+def get_by_id(object_id: int) -> Dict[str, Any] | None:
     """Get object definition by ID."""
     if _db_connection is None:
         logger.error("Objects database not loaded")
@@ -34,7 +34,7 @@ def getById(object_id: int) -> Dict[str, Any] | None:
     return None
 
 
-def getByName(name: str, exact: bool = False) -> List[Dict[str, Any]]:
+def get_by_name(name: str, exact: bool = False) -> List[Dict[str, Any]]:
     """Search for objects by name."""
     if _db_connection is None:
         logger.error("Objects database not loaded")
@@ -65,7 +65,7 @@ def getByName(name: str, exact: bool = False) -> List[Dict[str, Any]]:
     return [{"id": row[0], "name": row[1]} for row in cursor.fetchall()]
 
 
-def getLocations(object_id: int) -> List[Tuple[int, int, int]]:
+def get_locations(object_id: int) -> List[Tuple[int, int, int]]:
     """Get all spawn locations for an object ID."""
     if _db_connection is None:
         logger.error("Objects database not loaded")
@@ -77,13 +77,13 @@ def getLocations(object_id: int) -> List[Tuple[int, int, int]]:
     locations = []
     for row in cursor.fetchall():
         packed_pos = row[0]
-        x, y, plane = unpackPosition(packed_pos)
+        x, y, plane = unpack_position(packed_pos)
         locations.append((x, y, plane))
 
     return locations
 
 
-def getNearby(x: int, y: int, plane: int = 0, radius: int = 10) -> List[Dict[str, Any]]:
+def get_nearby(x: int, y: int, plane: int = 0, radius: int = 10) -> List[Dict[str, Any]]:
     """Get all objects near a coordinate."""
     if _db_connection is None:
         logger.error("Objects database not loaded")
@@ -101,8 +101,8 @@ def getNearby(x: int, y: int, plane: int = 0, radius: int = 10) -> List[Dict[str
     # IMPORTANT: Use signed packing for SQLite compatibility (planes 2-3 become negative)
     ranges = []
     for curr_x in range(min_x, max_x + 1):
-        min_packed = packPositionSigned(curr_x, min_y, plane)
-        max_packed = packPositionSigned(curr_x, max_y, plane)
+        min_packed = pack_position_signed(curr_x, min_y, plane)
+        max_packed = pack_position_signed(curr_x, max_y, plane)
         ranges.append((min_packed, max_packed))
 
     # Build SQL query with OR'd BETWEEN clauses for precise filtering
@@ -126,7 +126,7 @@ def getNearby(x: int, y: int, plane: int = 0, radius: int = 10) -> List[Dict[str
     results = []
     for row in cursor.fetchall():
         packed_pos = row[0]
-        obj_x, obj_y, obj_plane = unpackPosition(packed_pos)
+        obj_x, obj_y, obj_plane = unpack_position(packed_pos)
 
         # Calculate distance (all results should be within radius)
         dx = abs(obj_x - x)
@@ -149,7 +149,7 @@ def getNearby(x: int, y: int, plane: int = 0, radius: int = 10) -> List[Dict[str
     return results
 
 
-def searchByAction(action: str) -> List[Dict[str, Any]]:
+def search_by_action(action: str) -> List[Dict[str, Any]]:
     """Find all objects with a specific action."""
     if _db_connection is None:
         logger.error("Objects database not loaded")
@@ -198,7 +198,7 @@ def searchByAction(action: str) -> List[Dict[str, Any]]:
     return results
 
 
-def countObjects() -> int:
+def count_objects() -> int:
     """Get total number of unique objects in database."""
     if _db_connection is None:
         logger.error("Objects database not loaded")
@@ -209,7 +209,7 @@ def countObjects() -> int:
     return cursor.fetchone()[0]
 
 
-def countLocations() -> int:
+def count_locations() -> int:
     """Get total number of object spawn locations in database."""
     if _db_connection is None:
         logger.error("Objects database not loaded")
@@ -220,7 +220,7 @@ def countLocations() -> int:
     return cursor.fetchone()[0]
 
 
-def executeQuery(query: str, params: tuple = ()) -> List[Dict[str, Any]]:
+def execute_query(query: str, params: tuple = ()) -> List[Dict[str, Any]]:
     """Execute a custom SQL query on the objects database."""
     if _db_connection is None:
         logger.error("Objects database not loaded")

@@ -11,7 +11,7 @@ from escape._internal.cache_manager import ensureGeneratedInPath, ensureResource
 from escape._internal.logger import logger
 
 
-def _ensureGeneratedSymlink() -> None:
+def _ensure_generated_symlink() -> None:
     """
     Ensure the escape/generated symlink points to ~/.cache/escape/generated.
 
@@ -59,7 +59,7 @@ def _ensureGeneratedSymlink() -> None:
 
 # Ensure symlink is active before importing generated modules
 ensureGeneratedInPath()
-_ensureGeneratedSymlink()
+_ensure_generated_symlink()
 
 # Check for game resource updates
 if not ensureResourcesLoaded():
@@ -133,7 +133,7 @@ class Client:
 
         logger.success("Client ready")
 
-    def waitForWarmup(self, timeout: float = 5.0) -> bool:
+    def wait_for_warmup(self, timeout: float = 5.0) -> bool:
         """Wait for event cache warmup to complete."""
         if self._event_consumer is None:
             return True
@@ -160,7 +160,7 @@ class Client:
             self._connected = False
             logger.success("Client disconnected")
 
-    def isConnected(self) -> bool:
+    def is_connected(self) -> bool:
         """
         Check if client is connected.
 
@@ -179,7 +179,7 @@ class Client:
         return self._event_cache
 
     @property
-    def ItemID(self) -> type["ItemID"]:
+    def item_id(self) -> type["ItemID"]:
         """Access ItemID constants."""
         try:
             from .generated.constants import ItemID
@@ -191,7 +191,7 @@ class Client:
             return ItemID
 
     @property
-    def ObjectID(self) -> type["ObjectID"]:
+    def object_id(self) -> type["ObjectID"]:
         """Access ObjectID constants."""
         try:
             from .generated.constants import ObjectID
@@ -203,7 +203,7 @@ class Client:
             return ObjectID
 
     @property
-    def NpcID(self) -> type["NpcID"]:
+    def npc_id(self) -> type["NpcID"]:
         """Access NpcID constants."""
         try:
             from .generated.constants import NpcID
@@ -215,7 +215,7 @@ class Client:
             return NpcID
 
     @property
-    def AnimationID(self) -> type["AnimationID"]:
+    def animation_id(self) -> type["AnimationID"]:
         """Access AnimationID constants."""
         try:
             from .generated.constants import AnimationID
@@ -227,7 +227,7 @@ class Client:
             return AnimationID
 
     @property
-    def InterfaceID(self) -> type["InterfaceID"]:
+    def interface_id(self) -> type["InterfaceID"]:
         """Access InterfaceID constants."""
         try:
             from .generated.constants import InterfaceID
@@ -239,7 +239,7 @@ class Client:
             return InterfaceID
 
     @property
-    def VarClientID(self) -> type["VarClientID"]:
+    def var_client_id(self) -> type["VarClientID"]:
         """Access VarClientID constants."""
         try:
             from .generated.constants import VarClientID
@@ -251,7 +251,7 @@ class Client:
             return VarClientID
 
     @property
-    def SpriteID(self) -> type["SpriteID"]:
+    def sprite_id(self) -> type["SpriteID"]:
         """Access SpriteID constants."""
         try:
             from .generated.constants import SpriteID

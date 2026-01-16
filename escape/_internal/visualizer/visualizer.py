@@ -8,7 +8,7 @@ from escape.types.point import Point
 from escape.types.polygon import Polygon
 from escape.types.quad import Quad
 
-from .capture import captureRuneLite
+from .capture import capture_runelite
 from .window import DebugWindow
 
 # Type alias for color - RGB tuple or color name
@@ -30,11 +30,11 @@ class Visualizer:
         """Actual initialization, runs once."""
         self._image: Image.Image | None = None
         self._draw: ImageDraw.ImageDraw | None = None
-        self._debugWindow = DebugWindow()
+        self._debug_window = DebugWindow()
 
     def capture(self) -> bool:
         """Capture screenshot of RuneLite window."""
-        image = captureRuneLite()
+        image = capture_runelite()
         if image is None:
             return False
 
@@ -42,11 +42,11 @@ class Visualizer:
         self._draw = ImageDraw.Draw(self._image)
         return True
 
-    def getImage(self) -> Image.Image | None:
+    def get_image(self) -> Image.Image | None:
         """Get the current captured image."""
         return self._image
 
-    def setImage(self, image: Image.Image) -> None:
+    def set_image(self, image: Image.Image) -> None:
         """Set custom image for testing or external sources."""
         self._image = image
 
@@ -55,18 +55,18 @@ class Visualizer:
         if self._image is None:
             return False
 
-        self._debugWindow.render(self._image)
+        self._debug_window.render(self._image)
         return True
 
     def close(self) -> None:
         """Close the debug window."""
-        self._debugWindow.close()
+        self._debug_window.close()
 
-    def isWindowOpen(self) -> bool:
+    def is_window_open(self) -> bool:
         """Check if debug window is currently open."""
-        return self._debugWindow.isOpen()
+        return self._debug_window.is_open()
 
-    def drawBox(
+    def draw_box(
         self,
         box: Box,
         color: Color = "red",
@@ -80,7 +80,7 @@ class Visualizer:
             [box.x1, box.y1, box.x2, box.y2], outline=color, width=width, fill=fill
         )
 
-    def drawCircle(
+    def draw_circle(
         self,
         circle: Circle,
         color: Color = "red",
@@ -96,7 +96,7 @@ class Visualizer:
         y2 = circle.centerY + circle.radius
         self._draw.ellipse([x1, y1, x2, y2], outline=color, width=width, fill=fill)
 
-    def drawPolygon(
+    def draw_polygon(
         self,
         polygon: Polygon,
         color: Color = "red",
@@ -109,7 +109,7 @@ class Visualizer:
         points = [(v.x, v.y) for v in polygon.vertices]
         self._draw.polygon(points, outline=color, width=width, fill=fill)
 
-    def drawQuad(
+    def draw_quad(
         self,
         quad: Quad,
         color: Color = "red",
@@ -127,7 +127,7 @@ class Visualizer:
         ]
         self._draw.polygon(points, outline=color, width=width, fill=fill)
 
-    def drawPoint(
+    def draw_point(
         self,
         point: Point,
         color: Color = "red",
@@ -139,7 +139,7 @@ class Visualizer:
         self._draw.line([(point.x - size, point.y), (point.x + size, point.y)], fill=color, width=2)
         self._draw.line([(point.x, point.y - size), (point.x, point.y + size)], fill=color, width=2)
 
-    def drawLine(
+    def draw_line(
         self,
         p1: Point,
         p2: Point,
@@ -151,7 +151,7 @@ class Visualizer:
             return
         self._draw.line([(p1.x, p1.y), (p2.x, p2.y)], fill=color, width=width)
 
-    def drawText(
+    def draw_text(
         self,
         point: Point,
         text: str,

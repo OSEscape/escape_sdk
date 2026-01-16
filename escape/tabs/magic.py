@@ -26,7 +26,7 @@ class Magic(GameTabs):
         """Actual initialization, runs once."""
         GameTabs.__init__(self)
 
-        magicOnClasses = [
+        magic_on_classes = [
             client.SpriteID.Magicon,
             client.SpriteID._2XStandardSpellsOn,
             client.SpriteID.Magicon2,
@@ -37,7 +37,7 @@ class Magic(GameTabs):
             client.SpriteID._2XNecroSpellsOn,
         ]
 
-        magicOffClasses = [
+        magic_off_classes = [
             client.SpriteID.Magicoff,
             client.SpriteID._2XStandardSpellsOff,
             client.SpriteID.Magicoff2,
@@ -49,10 +49,10 @@ class Magic(GameTabs):
         ]
 
         self.on_sprites = {
-            v for cls in magicOnClasses for v in vars(cls).values() if isinstance(v, int)
+            v for cls in magic_on_classes for v in vars(cls).values() if isinstance(v, int)
         }
         self.off_sprites = {
-            v for cls in magicOffClasses for v in vars(cls).values() if isinstance(v, int)
+            v for cls in magic_off_classes for v in vars(cls).values() if isinstance(v, int)
         }
 
         self.spells = client.InterfaceID.MagicSpellbook
@@ -67,7 +67,7 @@ class Magic(GameTabs):
             w.enable(WidgetFields.getSpriteId)
             self._allSpellWidgets.append(w)
 
-    def _getInfo(self, spell: int):
+    def _get_info(self, spell: int):
         """Get spell info widget by spell ID."""
         w = Widget(spell)
         w.enable(WidgetFields.getBounds)
@@ -75,16 +75,16 @@ class Magic(GameTabs):
         w.enable(WidgetFields.getSpriteId)
         return w.get()
 
-    def _getAllVisibleSprites(self):
+    def _get_all_visible_sprites(self):
         """Get all visible spell sprites."""
         res = Widget.getBatch(self._allSpellWidgets)
         return [w["spriteId"] for w in res]
 
-    def getCastableSpellIds(self):
-        vis = self._getAllVisibleSprites()
+    def get_castable_spell_ids(self):
+        vis = self._get_all_visible_sprites()
         return set(vis).intersection(self.on_sprites)
 
-    def _canCastSpell(self, spriteId: int) -> bool:
+    def _can_cast_spell(self, sprite_id: int) -> bool:
         """Check if a spell can be cast by its widget ID.
 
         Args:
@@ -92,18 +92,18 @@ class Magic(GameTabs):
         Returns:
             bool: True if the spell can be cast, False otherwise.
         """
-        return spriteId in self.getCastableSpellIds()
+        return sprite_id in self.get_castable_spell_ids()
 
-    def castSpell(self, spell: int, option: str = "Cast") -> bool:
+    def cast_spell(self, spell: int, option: str = "Cast") -> bool:
         """Cast a spell by its widget ID."""
         from time import time
 
         if not self.open():
             return False
         t = time()
-        w = self._getInfo(spell)
+        w = self._get_info(spell)
         logger.info(f"part 1 took {time() - t:.4f}s")
-        if self._canCastSpell(w["spriteId"]) and not w["isHidden"]:
+        if self._can_cast_spell(w["spriteId"]) and not w["isHidden"]:
             bounds = w["bounds"]
             box = Box(bounds[0], bounds[1], bounds[0] + bounds[2], bounds[1] + bounds[3])
             print(box)

@@ -9,27 +9,27 @@ _varps_data: Dict[int, Dict[str, Any]] | None = None
 _varbits_data: Dict[int, Dict[str, Any]] | None = None
 
 
-def _getVarpValue(varp_id: int) -> int | None:
+def _get_varp_value(varp_id: int) -> int | None:
     """Get the current value of a varp from the event cache."""
     try:
-        from escape.globals import getClient
+        from escape.globals import get_client
 
-        client = getClient()
+        client = get_client()
         if hasattr(client, "event_cache"):
-            return client.event_cache.getVarp(varp_id)
+            return client.event_cache.get_varp(varp_id)
         return None
     except Exception:
         return None
 
 
-def extractBits(value: int, start_bit: int, end_bit: int) -> int:
+def extract_bits(value: int, start_bit: int, end_bit: int) -> int:
     """Extract bits from a varp value."""
     num_bits = end_bit - start_bit + 1
     mask = (1 << num_bits) - 1
     return (value >> start_bit) & mask
 
 
-def getVarbitInfo(varbit_id: int) -> Dict[str, Any] | None:
+def get_varbit_info(varbit_id: int) -> Dict[str, Any] | None:
     """Get metadata about a varbit (which varp it belongs to, bit positions)."""
     if not _varbits_data:
         return None
@@ -46,7 +46,7 @@ def getVarbitInfo(varbit_id: int) -> Dict[str, Any] | None:
     }
 
 
-def getVarpByName(name: str) -> int | None:
+def get_varp_by_name(name: str) -> int | None:
     """Get a varp value by name."""
     if not _varps_data:
         logger.error("Varps data not loaded")
@@ -55,18 +55,18 @@ def getVarpByName(name: str) -> int | None:
     # Search for varp by name
     for varp_id, varp_info in _varps_data.items():
         if isinstance(varp_info, dict) and varp_info.get("name") == name:
-            return _getVarpValue(int(varp_id))
+            return _get_varp_value(int(varp_id))
 
     logger.error(f"Varp '{name}' not found")
     return None
 
 
-def getVarpByIndex(varp_id: int) -> int | None:
+def get_varp_by_index(varp_id: int) -> int | None:
     """Get a varp value by its index."""
-    return _getVarpValue(varp_id)
+    return _get_varp_value(varp_id)
 
 
-def getVarbitByIndex(varbit_id: int) -> int | None:
+def get_varbit_by_index(varbit_id: int) -> int | None:
     """Get a varbit value by its index."""
     if not _varbits_data:
         logger.error("Varbits data not loaded")
@@ -84,7 +84,7 @@ def getVarbitByIndex(varbit_id: int) -> int | None:
         logger.error(f"Varbit {varbit_id} has no varp mapping")
         return None
 
-    varp_value = _getVarpValue(varp_id)
+    varp_value = _get_varp_value(varp_id)
     if varp_value is None:
         return None
 
@@ -92,10 +92,10 @@ def getVarbitByIndex(varbit_id: int) -> int | None:
     start_bit = varbit_info.get("lsb", 0)
     end_bit = varbit_info.get("msb", 31)
 
-    return extractBits(varp_value, start_bit, end_bit)
+    return extract_bits(varp_value, start_bit, end_bit)
 
 
-def getVarbitByName(name: str) -> int | None:
+def get_varbit_by_name(name: str) -> int | None:
     """Get a varbit value by name."""
     if not _varbits_data:
         logger.error("Varbits data not loaded")
@@ -104,13 +104,13 @@ def getVarbitByName(name: str) -> int | None:
     # Search for varbit by name
     for varbit_id, varbit_info in _varbits_data.items():
         if isinstance(varbit_info, dict) and varbit_info.get("name") == name:
-            return getVarbitByIndex(int(varbit_id))
+            return get_varbit_by_index(int(varbit_id))
 
     logger.error(f"Varbit '{name}' not found")
     return None
 
 
-def listVarps(filter_name: str | None = None) -> Dict[int, Dict[str, Any]]:
+def list_varps(filter_name: str | None = None) -> Dict[int, Dict[str, Any]]:
     """List all available varps, optionally filtered by name."""
     if not _varps_data:
         return {}
@@ -125,7 +125,7 @@ def listVarps(filter_name: str | None = None) -> Dict[int, Dict[str, Any]]:
     return {int(k): v for k, v in _varps_data.items()}
 
 
-def listVarbits(filter_name: str | None = None) -> Dict[int, Dict[str, Any]]:
+def list_varbits(filter_name: str | None = None) -> Dict[int, Dict[str, Any]]:
     """List all available varbits, optionally filtered by name."""
     if not _varbits_data:
         return {}
@@ -140,13 +140,13 @@ def listVarbits(filter_name: str | None = None) -> Dict[int, Dict[str, Any]]:
     return {int(k): v for k, v in _varbits_data.items()}
 
 
-def getVarcValue(varc_id: int) -> Any | None:
+def get_varc_value(varc_id: int) -> Any | None:
     """Get the current value of a varc from the event cache."""
     try:
-        from escape.globals import getClient
+        from escape.globals import get_client
 
-        client = getClient()
-        return client.cache.getVarc(varc_id)
+        client = get_client()
+        return client.cache.get_varc(varc_id)
     except Exception:
         return None
 
@@ -155,7 +155,7 @@ def getVarcValue(varc_id: int) -> Any | None:
 _varc_id_to_name: Dict[int, str] | None = None
 
 
-def _buildVarcCache() -> Dict[int, str]:
+def _build_varc_cache() -> Dict[int, str]:
     """Build varc id->name cache using fast __dict__ access."""
     global _varc_id_to_name
 
@@ -176,6 +176,6 @@ def _buildVarcCache() -> Dict[int, str]:
     return _varc_id_to_name
 
 
-def getVarcName(varc_id: int) -> str | None:
+def get_varc_name(varc_id: int) -> str | None:
     """Get the name of a varc by its ID."""
-    return _buildVarcCache().get(varc_id)
+    return _build_varc_cache().get(varc_id)

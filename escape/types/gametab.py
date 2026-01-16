@@ -60,7 +60,7 @@ class GameTabs:
         # Swap index 8 and 9 because the game is weird
         self.tab_box_array[8], self.tab_box_array[9] = self.tab_box_array[9], self.tab_box_array[8]
 
-    def isOpen(self) -> bool:
+    def is_open(self) -> bool:
         """Check if this specific game tab is currently open."""
         from escape.client import client
 
@@ -83,11 +83,11 @@ class GameTabs:
         if self.TAB_TYPE is None:
             raise NotImplementedError("Subclass must set TAB_TYPE class attribute")
 
-        if self.isOpen():
+        if self.is_open():
             return True  # Already open
 
         # Click on the tab's area (which automatically hovers first)
         tab_area = self.tab_box_array[self.TAB_TYPE.value]
         tab_area.click()
 
-        return waitUntil(self.isOpen, timeout=0.1, poll_interval=0.001)
+        return waitUntil(self.is_open, timeout=0.1, poll_interval=0.001)

@@ -1,6 +1,6 @@
 """Game viewport entities - NPCs, objects, players, items visible in 3D world."""
 
-from escape.world.ground_items import GroundItems, groundItems
+from escape.world.ground_items import GroundItems, ground_items
 from escape.world.projection import (
     CameraState,
     EntityConfig,
@@ -23,9 +23,9 @@ class World:
         return cls._instance
 
     @property
-    def groundItems(self) -> GroundItems:
+    def ground_items(self) -> GroundItems:
         """Ground items on visible tiles."""
-        return groundItems
+        return ground_items
 
     @property
     def projection(self) -> Projection:
@@ -46,7 +46,7 @@ __all__ = [
     "World",
     "world",
     "GroundItems",
-    "groundItems",
+    "ground_items",
     "Projection",
     "TileGrid",
     "projection",

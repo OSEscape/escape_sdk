@@ -21,7 +21,7 @@ class Pathfinder:
         """Actual initialization, runs once."""
         pass
 
-    def getPath(
+    def get_path(
         self,
         destination_x: int,
         destination_y: int,
@@ -46,7 +46,7 @@ class Pathfinder:
 
         return Path.fromDict(result)
 
-    def getPathFromPosition(
+    def get_path_from_position(
         self,
         start_x: int,
         start_y: int,
@@ -59,9 +59,9 @@ class Pathfinder:
         """Calculate path from specific start position to destination."""
         # For now, use the simpler method
         # TODO: Extend Java bridge to support custom start positions
-        return self.getPath(destination_x, destination_y, destination_plane, use_transport)
+        return self.get_path(destination_x, destination_y, destination_plane, use_transport)
 
-    def canReach(
+    def can_reach(
         self,
         destination_x: int,
         destination_y: int,
@@ -69,7 +69,7 @@ class Pathfinder:
         use_transport: bool = True,
     ) -> bool:
         """Check if destination is reachable."""
-        path = self.getPath(destination_x, destination_y, destination_plane, use_transport)
+        path = self.get_path(destination_x, destination_y, destination_plane, use_transport)
         return path is not None and not path.isEmpty()
 
 

@@ -17,7 +17,7 @@ def client():
 
 
 @pytest.fixture
-def connectedClient(client):
+def connected_client(client):
     """
     Provide a connected Client instance.
 

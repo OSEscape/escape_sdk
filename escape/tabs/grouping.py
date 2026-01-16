@@ -63,7 +63,7 @@ class Grouping(GameTabs):
             menu_text="Teleport",
         )
 
-    def getOpenSubTab(self) -> str | None:
+    def get_open_sub_tab(self) -> str | None:
         """Get the currently open sub-tab within the grouping tab.
 
         Returns:
@@ -79,7 +79,7 @@ class Grouping(GameTabs):
                 return self.sub_tab_names[i]
         return None
 
-    def openSubTab(self, sub_tab: str) -> bool:
+    def open_sub_tab(self, sub_tab: str) -> bool:
         """Open a specific sub-tab within the grouping tab.
 
         Args:
@@ -92,20 +92,20 @@ class Grouping(GameTabs):
 
         for name in self.sub_tab_names:
             if sub_tab.lower() in name.lower():
-                if self.getOpenSubTab() == name:
+                if self.get_open_sub_tab() == name:
                     return True
                 else:
                     if self.sub_tabs.interact(sub_tab):
-                        return waitUntil(lambda: self.getOpenSubTab() == name, timeout=3.0)
+                        return waitUntil(lambda: self.get_open_sub_tab() == name, timeout=3.0)
         return False
 
-    def getSelectedGame(self) -> str | None:
+    def get_selected_game(self) -> str | None:
         """Get the currently selected game from the grouping dropdown.
 
         Returns:
             str | None: The name of the selected game, or None if not found.
         """
-        if not self.open() and not self.openSubTab("Grouping"):
+        if not self.open() and not self.open_sub_tab("Grouping"):
             return None
 
         info = self.dropdown_button.getWidgetInfo()
@@ -114,15 +114,15 @@ class Grouping(GameTabs):
         text = info[0].get("text", "")
         return text if text else None
 
-    def isGameSelected(self, game_name: str) -> bool:
-        selected_game = self.getSelectedGame()
+    def is_game_selected(self, game_name: str) -> bool:
+        selected_game = self.get_selected_game()
         return selected_game is not None and game_name.lower() in selected_game.lower()
 
-    def dropdownFullyLoaded(self) -> bool:
+    def dropdown_fully_loaded(self) -> bool:
         info = self.dropdown_selector.getWidgetInfo()
         return len(info) > 0 and info[-1].get("bounds")[0] >= 0
 
-    def selectGame(self, game_name: str) -> bool:
+    def select_game(self, game_name: str) -> bool:
         """Select a game from the grouping dropdown.
 
         Args:
@@ -130,35 +130,35 @@ class Grouping(GameTabs):
         Returns:
             bool: True if the game was selected successfully, False otherwise.
         """
-        if not self.open() or not self.openSubTab("Group"):
+        if not self.open() or not self.open_sub_tab("Group"):
             return False
 
-        current_game = self.getSelectedGame()
+        current_game = self.get_selected_game()
         if current_game and game_name.lower() in current_game.lower():
             return True  # Already selected
 
         if len(self.dropdown_selector.getWidgetInfo()) == 0:
             if not self.dropdown_button.interact("") or not waitUntil(
-                self.dropdownFullyLoaded, timeout=3.0
+                self.dropdown_fully_loaded, timeout=3.0
             ):
                 return False
         if self.dropdown_selector.interact(game_name):
-            return waitUntil(lambda: self.isGameSelected(game_name), timeout=3.0)
+            return waitUntil(lambda: self.is_game_selected(game_name), timeout=3.0)
 
         return False
 
-    def clickTeleport(self) -> bool:
+    def click_teleport(self) -> bool:
         """Click the teleport button in the grouping tab.
 
         Returns:
             bool: True if the teleport action was successful, False otherwise.
         """
-        if not self.open() or not self.openSubTab("Group"):
+        if not self.open() or not self.open_sub_tab("Group"):
             return False
 
         return bool(self.teleport_button.interact("Teleport"))
 
-    def teleportToMinigame(self, game_name: str) -> bool:
+    def teleport_to_minigame(self, game_name: str) -> bool:
         """Teleport to a specific minigame via the grouping tab.
 
         Args:
@@ -166,10 +166,10 @@ class Grouping(GameTabs):
         Returns:
             bool: True if the teleport action was successful, False otherwise.
         """
-        if not self.selectGame(game_name):
+        if not self.select_game(game_name):
             return False
 
-        return self.clickTeleport()
+        return self.click_teleport()
 
 
 # Module-level instance

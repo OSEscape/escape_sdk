@@ -32,13 +32,13 @@ class Drawing:
             declaring_class="Drawing",
         )
 
-    def addBox(
+    def add_box(
         self,
         x: int,
         y: int,
         width: int,
         height: int,
-        argbColor: int,
+        argb_color: int,
         filled: bool,
         tag: str | None = None,
     ) -> None:
@@ -47,21 +47,21 @@ class Drawing:
             self._invoke(
                 "addBox",
                 "(IIIIIZ)V",
-                [x, y, width, height, argbColor, filled],
+                [x, y, width, height, argb_color, filled],
             )
         else:
             self._invoke(
                 "addBox",
                 "(IIIIIZLjava/lang/String;)V",
-                [x, y, width, height, argbColor, filled, tag],
+                [x, y, width, height, argb_color, filled, tag],
             )
 
-    def addCircle(
+    def add_circle(
         self,
         x: int,
         y: int,
         radius: int,
-        argbColor: int,
+        argb_color: int,
         filled: bool,
         tag: str | None = None,
     ) -> None:
@@ -70,22 +70,22 @@ class Drawing:
             self._invoke(
                 "addCircle",
                 "(IIIIZ)V",
-                [x, y, radius, argbColor, filled],
+                [x, y, radius, argb_color, filled],
             )
         else:
             self._invoke(
                 "addCircle",
                 "(IIIIZLjava/lang/String;)V",
-                [x, y, radius, argbColor, filled, tag],
+                [x, y, radius, argb_color, filled, tag],
             )
 
-    def addLine(
+    def add_line(
         self,
         x1: int,
         y1: int,
         x2: int,
         y2: int,
-        argbColor: int,
+        argb_color: int,
         thickness: int,
         tag: str | None = None,
     ) -> None:
@@ -94,20 +94,20 @@ class Drawing:
             self._invoke(
                 "addLine",
                 "(IIIIII)V",
-                [x1, y1, x2, y2, argbColor, thickness],
+                [x1, y1, x2, y2, argb_color, thickness],
             )
         else:
             self._invoke(
                 "addLine",
                 "(IIIIIILjava/lang/String;)V",
-                [x1, y1, x2, y2, argbColor, thickness, tag],
+                [x1, y1, x2, y2, argb_color, thickness, tag],
             )
 
-    def addPolygon(
+    def add_polygon(
         self,
-        xPoints: list[int],
-        yPoints: list[int],
-        argbColor: int,
+        x_points: list[int],
+        y_points: list[int],
+        argb_color: int,
         filled: bool,
         tag: str | None = None,
     ) -> None:
@@ -116,43 +116,43 @@ class Drawing:
             self._invoke(
                 "addPolygon",
                 "([I[IIZ)V",
-                [xPoints, yPoints, argbColor, filled],
+                [x_points, y_points, argb_color, filled],
             )
         else:
             self._invoke(
                 "addPolygon",
                 "([I[IIZLjava/lang/String;)V",
-                [xPoints, yPoints, argbColor, filled, tag],
+                [x_points, y_points, argb_color, filled, tag],
             )
 
-    def addText(
+    def add_text(
         self,
         text: str,
         x: int,
         y: int,
-        argbColor: int,
-        fontSize: int = 0,
+        argb_color: int,
+        font_size: int = 0,
         tag: str | None = None,
     ) -> None:
         """Draw text at screen coordinates."""
-        if tag is None and fontSize == 0:
+        if tag is None and font_size == 0:
             self._invoke(
                 "addText",
                 "(Ljava/lang/String;III)V",
-                [text, x, y, argbColor],
+                [text, x, y, argb_color],
             )
         else:
             self._invoke(
                 "addText",
                 "(Ljava/lang/String;IIIILjava/lang/String;)V",
-                [text, x, y, argbColor, fontSize, tag],
+                [text, x, y, argb_color, font_size, tag],
             )
 
-    def addImage(
+    def add_image(
         self,
-        argbPixels: list[int],
-        imgWidth: int,
-        imgHeight: int,
+        argb_pixels: list[int],
+        img_width: int,
+        img_height: int,
         x: int,
         y: int,
         tag: str | None = None,
@@ -162,16 +162,16 @@ class Drawing:
             self._invoke(
                 "addImage",
                 "([IIIII)V",
-                [argbPixels, imgWidth, imgHeight, x, y],
+                [argb_pixels, img_width, img_height, x, y],
             )
         else:
             self._invoke(
                 "addImage",
                 "([IIIIILjava/lang/String;)V",
-                [argbPixels, imgWidth, imgHeight, x, y, tag],
+                [argb_pixels, img_width, img_height, x, y, tag],
             )
 
-    def addImageFromPath(
+    def add_image_from_path(
         self,
         path: str,
         x: int,
@@ -191,22 +191,22 @@ class Drawing:
         )
 
         # Convert to signed 32-bit integers (Java expects signed ints)
-        argbSigned = argb.astype(np.int32)
+        argb_signed = argb.astype(np.int32)
 
         width, height = img.size
-        pixelList = argbSigned.flatten().tolist()
+        pixel_list = argb_signed.flatten().tolist()
 
-        self.addImage(pixelList, width, height, x, y, tag)
+        self.add_image(pixel_list, width, height, x, y, tag)
 
     def clear(self) -> None:
         """Clear all drawings."""
         self._invoke("clear", "()V", [])
 
-    def clearTag(self, tag: str) -> None:
+    def clear_tag(self, tag: str) -> None:
         """Clear only drawings with a specific tag."""
         self._invoke("clearTag", "(Ljava/lang/String;)V", [tag])
 
-    def getCount(self) -> int:
+    def get_count(self) -> int:
         """Get the number of active draw commands."""
         result = self._invoke("getCount", "()I", [])
         if result and "value" in result:

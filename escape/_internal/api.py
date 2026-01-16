@@ -18,11 +18,11 @@ from .batch import Batch
 
 # Import enum support
 try:
-    from .enums import EnumValue, generateAllEnumClasses
+    from .enums import EnumValue, generate_all_enum_classes
 except ImportError:
     logger.warning("runelite_enums module not found - enum support disabled")
     EnumValue = None
-    generateAllEnumClasses = None
+    generate_all_enum_classes = None
 
 
 
@@ -58,14 +58,14 @@ class RuneLiteAPI:
         # Always use the JSON file with perfect type conversion data
         if api_data_file is None:
             # Look for data file in cache directory
-            from .cache_manager import getCacheManager
+            from .cache_manager import get_cache_manager
 
-            cache_manager = getCacheManager()
-            api_data_file = cache_manager.getDataPath("api") / "runelite_api_data.json"
+            cache_manager = get_cache_manager()
+            api_data_file = cache_manager.get_data_path("api") / "runelite_api_data.json"
 
         # Check for updates if enabled
         if auto_update:
-            self._checkAndUpdate()
+            self._check_and_update()
 
         # Load scraped API data with perfect type conversion
         try:
@@ -96,8 +96,8 @@ class RuneLiteAPI:
                 logger.warning("No type conversion data found - regenerate with latest scraper")
 
             # Generate enum classes from API data
-            if generateAllEnumClasses:
-                self.enum_classes = generateAllEnumClasses(self.api_data)
+            if generate_all_enum_classes:
+                self.enum_classes = generate_all_enum_classes(self.api_data)
                 logger.success(f"Generated {len(self.enum_classes)} enum classes")
 
                 # Make enums accessible as attributes for convenience
@@ -119,15 +119,15 @@ class RuneLiteAPI:
             }
 
         # Load plugin API data (shortest-path plugin, etc.)
-        self._loadPluginData()
+        self._load_plugin_data()
 
-    def _loadPluginData(self):
+    def _load_plugin_data(self):
         """Load plugin API data from scraped plugin files."""
         try:
-            from .cache_manager import getCacheManager
+            from .cache_manager import get_cache_manager
 
-            cache_manager = getCacheManager()
-            plugin_data_file = cache_manager.getDataPath("api") / "shortestpath_api_data.json"
+            cache_manager = get_cache_manager()
+            plugin_data_file = cache_manager.get_data_path("api") / "shortestpath_api_data.json"
 
             if plugin_data_file.exists():
                 with open(plugin_data_file) as f:
@@ -143,7 +143,7 @@ class RuneLiteAPI:
             logger.warning(f"Failed to load plugin data: {e}")
             self.plugin_data = None
 
-    def _checkAndUpdate(self):
+    def _check_and_update(self):
         """Check for RuneLite API updates and regenerate if needed."""
         try:
             # Import auto_updater (absolute import to avoid issues)
@@ -152,7 +152,7 @@ class RuneLiteAPI:
             updater = RuneLiteAPIUpdater()
 
             # Check if update is needed
-            needs_update, reason = updater.shouldUpdate(force=False, max_age_days=7)
+            needs_update, reason = updater.should_update(force=False, max_age_days=7)
 
             if needs_update:
                 logger.info("RuneLite API Update")
@@ -208,7 +208,7 @@ class RuneLiteAPI:
             logger.error(f"Failed to connect: {e}")
             return False
 
-    def _parseSignatureParams(self, signature: str) -> List[str]:
+    def _parse_signature_params(self, signature: str) -> List[str]:
         """Parse JNI signature and extract all parameter types."""
         params_str = signature[signature.index("(") + 1 : signature.index(")")]
         if not params_str:
@@ -241,7 +241,7 @@ class RuneLiteAPI:
 
         return param_types
 
-    def _fixWidgetPath(self, signature: str) -> str:
+    def _fix_widget_path(self, signature: str) -> str:
         """Fix Widget class path in signature (should be in widgets package)."""
         if "Widget" not in signature:
             return signature
@@ -251,7 +251,7 @@ class RuneLiteAPI:
             .replace("[[Lnet/runelite/api/Widget;", "[[Lnet/runelite/api/widgets/Widget;")
         )
 
-    def _normalizeClassName(self, class_name: str) -> str:
+    def _normalize_class_name(self, class_name: str) -> str:
         """Normalize class name to full JNI path format."""
         # Convert dots to slashes
         normalized = class_name.replace(".", "/")
@@ -272,7 +272,7 @@ class RuneLiteAPI:
 
         return f"net/runelite/api/{normalized}"
 
-    def _findMethodInHierarchy(self, method_name: str, target_class: str, signatures: List) -> List:
+    def _find_method_in_hierarchy(self, method_name: str, target_class: str, signatures: List) -> List:
         """Find method signatures by walking up the inheritance tree."""
         # Extract simple class name for inheritance lookup
         simple_target = target_class.split("/")[-1]
@@ -316,14 +316,14 @@ class RuneLiteAPI:
 
         return []
 
-    def getMethodSignature(
+    def get_method_signature(
         self, method_name: str, args: List | None = None, target_class: str = "Client"
     ) -> str | None:
         """Get the correct JNI signature for a method based on arguments."""
-        info = self.getMethodInfo(method_name, args, target_class)
+        info = self.get_method_info(method_name, args, target_class)
         return info["signature"] if info else None
 
-    def getMethodInfo(
+    def get_method_info(
         self, method_name: str, args: List | None = None, target_class: str = "Client"
     ) -> dict | None:
         """Get signature, declaring_class, and return_type for a method."""
@@ -344,8 +344,8 @@ class RuneLiteAPI:
 
         # Filter by class if specified and not None/empty
         if target_class:
-            normalized_target = self._normalizeClassName(target_class)
-            filtered = self._findMethodInHierarchy(method_name, normalized_target, signatures)
+            normalized_target = self._normalize_class_name(target_class)
+            filtered = self._find_method_in_hierarchy(method_name, normalized_target, signatures)
 
             if filtered:
                 signatures = filtered
@@ -360,12 +360,12 @@ class RuneLiteAPI:
             for item in signatures:
                 cls, sig = item[0], item[1]
                 ret_type = item[2] if len(item) > 2 else None
-                score = self._scoreSignatureMatch(sig, args)
+                score = self._score_signature_match(sig, args)
 
                 if score > best_score:
                     best_score = score
                     best_match = {
-                        "signature": self._fixWidgetPath(sig),
+                        "signature": self._fix_widget_path(sig),
                         "declaring_class": cls,
                         "return_type": ret_type,
                     }
@@ -376,17 +376,17 @@ class RuneLiteAPI:
         if signatures:
             first = signatures[0]
             return {
-                "signature": self._fixWidgetPath(first[1]),
+                "signature": self._fix_widget_path(first[1]),
                 "declaring_class": first[0],
                 "return_type": first[2] if len(first) > 2 else None,
             }
 
         return None
 
-    def _scoreSignatureMatch(self, signature: str, args: List) -> int:
+    def _score_signature_match(self, signature: str, args: List) -> int:
         """Score how well arguments match a signature (-1 = no match)."""
         # Extract parameter types from signature (using consolidated parser)
-        param_types = self._parseSignatureParams(signature)
+        param_types = self._parse_signature_params(signature)
 
         # Check argument count
         if len(args) != len(param_types):
@@ -394,14 +394,14 @@ class RuneLiteAPI:
 
         score = 0
         for arg, param_type in zip(args, param_types, strict=False):
-            arg_score = self._scoreArgMatch(arg, param_type)
+            arg_score = self._score_arg_match(arg, param_type)
             if arg_score < 0:
                 return -1  # Invalid match
             score += arg_score
 
         return score
 
-    def _scoreArgMatch(self, arg: Any, param_type: str) -> int:
+    def _score_arg_match(self, arg: Any, param_type: str) -> int:
         """Score how well a single argument matches a parameter type."""
         # Special 'client' proxy
         if hasattr(arg, "ref_id") and arg.ref_id == "client":
@@ -450,7 +450,7 @@ class RuneLiteAPI:
         # No match
         return -1
 
-    def convertArgument(
+    def convert_argument(
         self, arg_value: Any, signature: str, arg_index: int = 0
     ) -> Tuple[str, str]:
         """Convert argument to (type, value) tuple using scraped type data."""
@@ -459,7 +459,7 @@ class RuneLiteAPI:
             return (arg_value._enum_name, str(arg_value._ordinal))
 
         # Extract the JNI type for this parameter from the signature (using consolidated parser)
-        param_types = self._parseSignatureParams(signature)
+        param_types = self._parse_signature_params(signature)
         if arg_index >= len(param_types):
             return ("int", str(arg_value))
 
@@ -470,12 +470,12 @@ class RuneLiteAPI:
             type_info = self.api_data["type_conversion"]["all_types"].get(jni_type)
 
             if type_info:
-                return self._convertByCategory(arg_value, jni_type, type_info)
+                return self._convert_by_category(arg_value, jni_type, type_info)
 
         # Fallback for when perfect data isn't available
-        return self._convertFallback(arg_value, jni_type)
+        return self._convert_fallback(arg_value, jni_type)
 
-    def _convertByCategory(self, arg_value: Any, jni_type: str, type_info: dict) -> Tuple[str, str]:
+    def _convert_by_category(self, arg_value: Any, jni_type: str, type_info: dict) -> Tuple[str, str]:
         """Convert argument based on type category from API data."""
         category = type_info["category"]
 
@@ -516,7 +516,7 @@ class RuneLiteAPI:
 
         return ("object", str(arg_value))
 
-    def _convertFallback(self, arg_value: Any, jni_type: str) -> Tuple[str, str]:
+    def _convert_fallback(self, arg_value: Any, jni_type: str) -> Tuple[str, str]:
         """Fallback conversion when type_conversion data isn't available."""
         if isinstance(arg_value, int):
             if jni_type == "I":
@@ -545,13 +545,13 @@ class RuneLiteAPI:
 
         return (bridge_type, str(arg_value))
 
-    def getStaticMethodSignature(
+    def get_static_method_signature(
         self, class_name: str, method_name: str, args: tuple
     ) -> str | None:
         """Get static method signature."""
-        return self.getMethodSignature(method_name, args, target_class=class_name.split(".")[-1])
+        return self.get_method_signature(method_name, args, target_class=class_name.split(".")[-1])
 
-    def getEnumValue(self, enum_name: str, ordinal: int) -> str | None:
+    def get_enum_value(self, enum_name: str, ordinal: int) -> str | None:
         """Get enum constant name from ordinal using perfect data"""
         if "type_conversion" in self.api_data:
             # Search for enum in all packages
@@ -561,7 +561,7 @@ class RuneLiteAPI:
                     return enum_info.get("ordinal_to_name", {}).get(ordinal)
         return None
 
-    def getEnumOrdinal(self, enum_name: str, value_name: str) -> int | None:
+    def get_enum_ordinal(self, enum_name: str, value_name: str) -> int | None:
         """Get enum ordinal from constant name using perfect data"""
         if "type_conversion" in self.api_data:
             # Search for enum in all packages
@@ -571,11 +571,11 @@ class RuneLiteAPI:
                     return enum_info.get("name_to_ordinal", {}).get(value_name.upper())
         return None
 
-    def getEnum(self, enum_name: str) -> Type | None:
+    def get_enum(self, enum_name: str) -> Type | None:
         """Get an enum class by name"""
         return self.enum_classes.get(enum_name)
 
-    def listEnums(self) -> List[str]:
+    def list_enums(self) -> List[str]:
         """List all available enum names"""
         return sorted(self.enum_classes.keys())
 
@@ -583,7 +583,7 @@ class RuneLiteAPI:
         """Create a query for API operations."""
         return Batch(self)
 
-    def _sendRequest(self, encoded_data: bytes) -> None:
+    def _send_request(self, encoded_data: bytes) -> None:
         """Send encoded request to bridge via shared memory."""
         # Wait for bridge to clear pending from previous request (max 10ms)
         wait_start = time.perf_counter()
@@ -608,7 +608,7 @@ class RuneLiteAPI:
         self.api_channel.seek(0)
         self.api_channel.write(struct.pack("<II", 1, 0))  # pending=1, ready=0
 
-    def _waitForResponse(self, timeout_ms: int = 10000) -> bytes | None:
+    def _wait_for_response(self, timeout_ms: int = 10000) -> bytes | None:
         """Wait for response from bridge with exponential backoff polling."""
         start_time = time.perf_counter()
         poll_count = 0
@@ -675,7 +675,7 @@ class RuneLiteAPI:
         logger.warning(f"TIMEOUT after {elapsed:.2f}ms (polls={poll_count}, pending={query_pending})")
         return None
 
-    def _decodeMsgpackResponse(self, data: bytes) -> Any:
+    def _decode_msgpack_response(self, data: bytes) -> Any:
         """Decode MessagePack response, handling magic header if present."""
         import msgpack
 
@@ -690,7 +690,7 @@ class RuneLiteAPI:
         # Data was already trimmed in _wait_for_response if it had a magic header
         return msgpack.unpackb(data, raw=False, strict_map_key=False)
 
-    def executeBatchQuery(self, operations: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def execute_batch_query(self, operations: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Execute a batch query using MessagePack v2 protocol."""
         if not self.api_channel or not self.result_buffer:
             raise RuntimeError("Not connected to bridge - call connect() first")
@@ -699,15 +699,15 @@ class RuneLiteAPI:
 
         # Encode and send request
         encoded = msgpack.packb(operations)
-        self._sendRequest(encoded)
+        self._send_request(encoded)
 
         # Wait for and decode response
-        data = self._waitForResponse(timeout_ms=2500)
+        data = self._wait_for_response(timeout_ms=2500)
         if not data:
             return {"error": "Timeout waiting for batch response", "success": False}
 
         try:
-            results = self._decodeMsgpackResponse(data)
+            results = self._decode_msgpack_response(data)
 
             # Handle error responses from bridge
             if isinstance(results, dict) and "error" in results:
@@ -730,7 +730,7 @@ class RuneLiteAPI:
         except Exception as e:
             return {"error": f"Failed to decode response: {e}", "success": False, "results": None}
 
-    def invokeCustomMethod(
+    def invoke_custom_method(
         self,
         target: str,
         method: str,
@@ -750,7 +750,7 @@ class RuneLiteAPI:
         if declaring_class:
             operation["declaring_class"] = declaring_class
 
-        response = self.executeBatchQuery([operation])
+        response = self.execute_batch_query([operation])
 
         if not response.get("success"):
             error = response.get("error", "Unknown error")

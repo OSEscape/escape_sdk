@@ -27,7 +27,7 @@ class Walker:
         """Actual initialization, runs once."""
         pass
 
-    def _getPlayerPosition(self) -> tuple[int, int, int] | None:
+    def _get_player_position(self) -> tuple[int, int, int] | None:
         """Get player world position (x, y, plane) from cache."""
         from escape.client import client
 
@@ -36,8 +36,8 @@ class Walker:
             return None
         return (pos.get("x", 0), pos.get("y", 0), pos.get("plane", 0))
 
-    def _getPlayerScenePosition(self) -> tuple[int, int] | None:
-        """Get player scene position (sceneX, sceneY) from cache."""
+    def _get_player_scene_position(self) -> tuple[int, int] | None:
+        """Get player scene position (scene_x, scene_y) from cache."""
         from escape.client import client
 
         pos = client.cache.scenePosition
@@ -45,7 +45,7 @@ class Walker:
             return None
         return (pos.get("sceneX", 0), pos.get("sceneY", 0))
 
-    def _getTargetScenePosition(self) -> tuple[int, int] | None:
+    def _get_target_scene_position(self) -> tuple[int, int] | None:
         """Get current walk target in scene coordinates."""
         from escape.client import client
 
@@ -53,140 +53,140 @@ class Walker:
         if target is None:
             return None
 
-        localX = target.get("x")
-        localY = target.get("y")
-        if localX is None or localY is None:
+        local_x = target.get("x")
+        local_y = target.get("y")
+        if local_x is None or local_y is None:
             return None
 
         # Convert local to scene coords (128 local units = 1 tile)
-        sceneX = localX // LOCAL_UNITS_PER_TILE
-        sceneY = localY // LOCAL_UNITS_PER_TILE
+        scene_x = local_x // LOCAL_UNITS_PER_TILE
+        scene_y = local_y // LOCAL_UNITS_PER_TILE
 
-        return (sceneX, sceneY)
+        return (scene_x, scene_y)
 
-    def _distanceToTarget(self) -> int | None:
+    def _distance_to_target(self) -> int | None:
         """Get Chebyshev distance from player to current walk target."""
-        playerPos = self._getPlayerScenePosition()
-        targetPos = self._getTargetScenePosition()
+        player_pos = self._get_player_scene_position()
+        target_pos = self._get_target_scene_position()
 
-        if playerPos is None or targetPos is None:
+        if player_pos is None or target_pos is None:
             return None
 
-        playerX, playerY = playerPos
-        targetX, targetY = targetPos
+        player_x, player_y = player_pos
+        target_x, target_y = target_pos
 
-        return max(abs(targetX - playerX), abs(targetY - playerY))
+        return max(abs(target_x - player_x), abs(target_y - player_y))
 
-    def hasTarget(self) -> bool:
+    def has_target(self) -> bool:
         """Check if player currently has a walk target."""
-        return self._getTargetScenePosition() is not None
+        return self._get_target_scene_position() is not None
 
-    def isNearTarget(self, threshold: int = 2) -> bool:
+    def is_near_target(self, threshold: int = 2) -> bool:
         """Check if player is near their current walk target (within threshold tiles)."""
-        dist = self._distanceToTarget()
+        dist = self._distance_to_target()
         if dist is None:
             return True  # No target = effectively "at" target
 
         return dist <= threshold
 
-    def shouldClickNewTile(self, threshold: int = 2) -> bool:
+    def should_click_new_tile(self, threshold: int = 2) -> bool:
         """Determine if we should click a new tile (idle or near target)."""
-        return self.isNearTarget(threshold=threshold)
+        return self.is_near_target(threshold=threshold)
 
-    def _findFirstObstacleIndex(self, path: "Path") -> int:
+    def _find_first_obstacle_index(self, path: "Path") -> int:
         """Find the index of the first obstacle on the path."""
         if not path.hasObstacles():
             return path.length()
 
         # Find the earliest obstacle origin
-        firstObstacleIdx = path.length()
+        first_obstacle_idx = path.length()
         for obstacle in path.obstacles:
             # Find where this obstacle's origin is on the path
             matches = np.where(path.packed == obstacle.origin.packed)[0]
             if len(matches) > 0:
                 idx = int(matches[0])
-                if idx < firstObstacleIdx:
-                    firstObstacleIdx = idx
+                if idx < first_obstacle_idx:
+                    first_obstacle_idx = idx
 
-        return firstObstacleIdx
+        return first_obstacle_idx
 
-    def _selectWalkTile(
+    def _select_walk_tile(
         self,
         path: "Path",
-        visibleIndices: np.ndarray,
-        playerX: int,
-        playerY: int,
-        maxIndex: int,
+        visible_indices: np.ndarray,
+        player_x: int,
+        player_y: int,
+        max_index: int,
     ) -> int | None:
         """Select the optimal tile to click for walking (visible, clickable, far enough)."""
         from escape.world.scene import scene
 
         # Filter to tiles before obstacle
-        validIndices = visibleIndices[visibleIndices < maxIndex]
+        valid_indices = visible_indices[visible_indices < max_index]
 
-        if len(validIndices) == 0:
+        if len(valid_indices) == 0:
             return None
 
         # Filter by Chebyshev distance <= 19 (same as Java isTileClickable)
-        worldX = path.worldX[validIndices]
-        worldY = path.worldY[validIndices]
-        dist = np.maximum(np.abs(worldX - playerX), np.abs(worldY - playerY))
-        withinRange = dist <= 19
-        validIndices = validIndices[withinRange]
+        world_x = path.worldX[valid_indices]
+        world_y = path.worldY[valid_indices]
+        dist = np.maximum(np.abs(world_x - player_x), np.abs(world_y - player_y))
+        within_range = dist <= 19
+        valid_indices = valid_indices[within_range]
 
-        if len(validIndices) == 0:
+        if len(valid_indices) == 0:
             return None
 
         # Get tile grid for viewport bounds
-        grid = scene._getTileGrid()
+        grid = scene._get_tile_grid()
         if grid is None:
             return None
 
         # Filter to tiles whose quad is FULLY inside viewport (all 4 corners)
-        clickableIndices = []
-        for idx in validIndices:
+        clickable_indices = []
+        for idx in valid_indices:
             quad = path.getQuad(int(idx))
             if quad is not None:
                 # Check all 4 vertices are inside viewport
-                allInside = all(
-                    grid.viewMinX <= p.x <= grid.viewMaxX and grid.viewMinY <= p.y <= grid.viewMaxY
+                all_inside = all(
+                    grid.view_min_x <= p.x <= grid.view_max_x and grid.view_min_y <= p.y <= grid.view_max_y
                     for p in quad.vertices
                 )
-                if allInside:
-                    clickableIndices.append(int(idx))
+                if all_inside:
+                    clickable_indices.append(int(idx))
 
-        if len(clickableIndices) == 0:
+        if len(clickable_indices) == 0:
             return None
 
-        clickableIndices = np.array(clickableIndices)
+        clickable_indices = np.array(clickable_indices)
 
         # Get world coordinates for clickable tiles
-        worldX = path.worldX[clickableIndices]
-        worldY = path.worldY[clickableIndices]
+        world_x = path.worldX[clickable_indices]
+        world_y = path.worldY[clickable_indices]
 
         # Calculate distance from player (Chebyshev)
-        dist = np.maximum(np.abs(worldX - playerX), np.abs(worldY - playerY))
+        dist = np.maximum(np.abs(world_x - player_x), np.abs(world_y - player_y))
 
         # Filter out tiles too close (< 3 tiles away)
-        farEnough = dist >= 3
-        if not farEnough.any():
+        far_enough = dist >= 3
+        if not far_enough.any():
             # If all tiles are close, just pick the furthest
-            bestLocal = int(np.argmax(dist))
-            return int(clickableIndices[bestLocal])
+            best_local = int(np.argmax(dist))
+            return int(clickable_indices[best_local])
 
         # Among far enough tiles, pick the one furthest along the path
-        # (which is the highest index in clickableIndices)
-        farMask = np.array(farEnough)
-        farIndices = clickableIndices[farMask]
-        return int(farIndices[-1])  # Last one is furthest along path
+        # (which is the highest index in clickable_indices)
+        far_mask = np.array(far_enough)
+        far_indices = clickable_indices[far_mask]
+        return int(far_indices[-1])  # Last one is furthest along path
 
-    def clickTile(self, worldX: int, worldY: int) -> bool:
+    def click_tile(self, world_x: int, world_y: int) -> bool:
         """Click a specific world tile to walk to it."""
         from escape.client import client
         from escape.world.scene import scene
 
         # Get the quad for this tile
-        quad = scene.getTileQuad(worldX, worldY)
+        quad = scene.get_tile_quad(world_x, world_y)
         if quad is None:
             return False
 
@@ -200,63 +200,63 @@ class Walker:
         # Click the walk action
         return client.interactions.menu.clickOptionType("WALK")
 
-    def walkTo(
+    def walk_to(
         self,
-        destX: int,
-        destY: int,
-        destPlane: int = 0,
+        dest_x: int,
+        dest_y: int,
+        dest_plane: int = 0,
         margin: int = 50,
-        nearTargetThreshold: int = 2,
+        near_target_threshold: int = 2,
     ) -> bool:
         """Walk towards destination by clicking a tile along the path."""
         from escape.navigation.pathfinder import pathfinder
 
         # Get player position
-        playerPos = self._getPlayerPosition()
-        if playerPos is None:
+        player_pos = self._get_player_position()
+        if player_pos is None:
             return False
 
-        playerX, playerY, playerPlane = playerPos
+        player_x, player_y, player_plane = player_pos
 
         # Check if already at destination
-        if playerX == destX and playerY == destY and playerPlane == destPlane:
+        if player_x == dest_x and player_y == dest_y and player_plane == dest_plane:
             return True  # Already there
 
         # Check if we should click a new tile or wait
-        if not self.shouldClickNewTile(threshold=nearTargetThreshold):
+        if not self.should_click_new_tile(threshold=near_target_threshold):
             # Still walking to current target, no need to click
             return True  # Return True because we're making progress
 
         # Get path to destination
-        path = pathfinder.getPath(destX, destY, destPlane)
+        path = pathfinder.get_path(dest_x, dest_y, dest_plane)
         if path is None or path.isEmpty():
             return False
 
         # Find first obstacle (we'll walk up to it)
-        obstacleIdx = self._findFirstObstacleIndex(path)
+        obstacle_idx = self._find_first_obstacle_index(path)
 
         # Get visible path tiles (with margin to avoid edge clicks)
-        visibleIndices = path.getVisibleIndices(margin=margin)
+        visible_indices = path.getVisibleIndices(margin=margin)
 
-        if len(visibleIndices) == 0:
+        if len(visible_indices) == 0:
             # No visible path tiles - might need to turn camera or wait
             return False
 
         # Select optimal tile to click
-        targetIdx = self._selectWalkTile(path, visibleIndices, playerX, playerY, obstacleIdx)
+        target_idx = self._select_walk_tile(path, visible_indices, player_x, player_y, obstacle_idx)
 
-        if targetIdx is None:
+        if target_idx is None:
             return False
 
         # Get the quad for this tile
-        quad = path.getQuad(targetIdx)
+        quad = path.getQuad(target_idx)
         if quad is None:
             return False
 
         # Click the tile
-        return self._clickWalkQuad(quad)
+        return self._click_walk_quad(quad)
 
-    def _clickWalkQuad(self, quad: "Quad") -> bool:
+    def _click_walk_quad(self, quad: "Quad") -> bool:
         """Hover over quad and click with WALK action."""
         from escape.client import client
 
@@ -270,18 +270,18 @@ class Walker:
         # Click the walk action
         return client.interactions.menu.clickOptionType("WALK")
 
-    def isMoving(self) -> bool:
+    def is_moving(self) -> bool:
         """Check if player is currently moving (has a walk target)."""
-        return self.hasTarget()
+        return self.has_target()
 
-    def distanceToDestination(self, destX: int, destY: int) -> int:
+    def distance_to_destination(self, dest_x: int, dest_y: int) -> int:
         """Get Chebyshev distance from player to destination (-1 if unknown)."""
-        playerPos = self._getPlayerPosition()
-        if playerPos is None:
+        player_pos = self._get_player_position()
+        if player_pos is None:
             return -1
 
-        playerX, playerY, _ = playerPos
-        return max(abs(destX - playerX), abs(destY - playerY))
+        player_x, player_y, _ = player_pos
+        return max(abs(dest_x - player_x), abs(dest_y - player_y))
 
 
 # Module-level instance

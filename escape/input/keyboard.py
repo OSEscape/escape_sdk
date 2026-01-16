@@ -35,28 +35,28 @@ class Keyboard:
         self.runelite = runelite
         self.speed = speed
 
-    def _ensureFocus(self) -> None:
+    def _ensure_focus(self) -> None:
         """Ensure RuneLite window is ready for input."""
-        self.runelite.refreshWindowPosition()
+        self.runelite.refresh_window_position()
 
     def _press(self, key: str) -> None:
         """Core press function - ONLY access point to pyautogui.press()."""
-        self._ensureFocus()
+        self._ensure_focus()
         pag.press(key, _pause=False)
 
-    def _keyDown(self, key: str) -> None:
+    def _key_down(self, key: str) -> None:
         """Core key down function - ONLY access point to pyautogui.keyDown()."""
-        self._ensureFocus()
+        self._ensure_focus()
         pag.keyDown(key, _pause=False)
 
-    def _keyUp(self, key: str) -> None:
+    def _key_up(self, key: str) -> None:
         """Core key up function - ONLY access point to pyautogui.keyUp()."""
-        self._ensureFocus()
+        self._ensure_focus()
         pag.keyUp(key, _pause=False)
 
-    def _typeChar(self, char: str) -> None:
+    def _type_char(self, char: str) -> None:
         """Core type function - ONLY access point to pyautogui.write() for single char."""
-        self._ensureFocus()
+        self._ensure_focus()
         pag.write(char, interval=0, _pause=False)
 
     def type(self, text: str, humanize: bool = True) -> None:
@@ -64,13 +64,13 @@ class Keyboard:
         if not text:
             return
 
-        self._ensureFocus()
+        self._ensure_focus()
 
         # Base delay: ~50ms per keystroke at speed=1.0
         base_delay = 0.05 / self.speed
 
         for char in text:
-            self._typeChar(char)
+            self._type_char(char)
 
             if humanize:
                 # Random delay with variation (±40%)
@@ -91,56 +91,56 @@ class Keyboard:
 
     def hold(self, key: str) -> None:
         """Hold a key down (must call release() to let go)."""
-        self._keyDown(key)
+        self._key_down(key)
 
     def release(self, key: str) -> None:
         """Release a held key."""
-        self._keyUp(key)
+        self._key_up(key)
 
         # Small delay after release (human-like)
         time.sleep(random.uniform(0.02, 0.05))
 
     def hotkey(self, *keys: str) -> None:
         """Press a key combination (hotkey)."""
-        self._ensureFocus()
+        self._ensure_focus()
 
         # Press keys in order
         for key in keys:
-            self._keyDown(key)
+            self._key_down(key)
             time.sleep(random.uniform(0.01, 0.03))
 
         # Release in reverse order
         for key in reversed(keys):
-            self._keyUp(key)
+            self._key_up(key)
             time.sleep(random.uniform(0.01, 0.03))
 
         # Small delay after hotkey (human-like)
         time.sleep(random.uniform(0.03, 0.08))
 
-    def pressEnter(self) -> None:
+    def press_enter(self) -> None:
         """Press Enter key."""
         self.press("enter")
 
-    def pressEscape(self) -> None:
+    def press_escape(self) -> None:
         """Press Escape key."""
         self.press("escape")
 
-    def pressSpace(self) -> None:
+    def press_space(self) -> None:
         """Press Space key."""
         self.press("space")
 
-    def pressTab(self) -> None:
+    def press_tab(self) -> None:
         """Press Tab key."""
         self.press("tab")
 
-    def pressFKey(self, num: int) -> None:
+    def press_f_key(self, num: int) -> None:
         """Press a function key (F1-F12)."""
         if not 1 <= num <= 12:
             raise ValueError(f"Function key must be between 1 and 12, got {num}")
 
         self.press(f"f{num}")
 
-    def pressNumber(self, num: int) -> None:
+    def press_number(self, num: int) -> None:
         """Press a number key (0-9)."""
         if not 0 <= num <= 9:
             raise ValueError(f"Number must be between 0 and 9, got {num}")

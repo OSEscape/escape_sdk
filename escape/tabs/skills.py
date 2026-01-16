@@ -52,7 +52,7 @@ class Skills(GameTabs):
         GameTabs.__init__(self)
         self._last_total_xp: int | None = None
 
-    def _getSkillData(self, skill_name: str) -> Dict[str, int]:
+    def _get_skill_data(self, skill_name: str) -> Dict[str, int]:
         """Get skill data from cache."""
         from escape.client import client
 
@@ -64,35 +64,35 @@ class Skills(GameTabs):
         # Default fallback
         return {"level": 1, "xp": 0, "boosted_level": 1}
 
-    def getLevel(self, skill_name: str) -> int:
+    def get_level(self, skill_name: str) -> int:
         """Get current boosted level for a skill."""
-        return self._getSkillData(skill_name)["boosted_level"]
+        return self._get_skill_data(skill_name)["boosted_level"]
 
-    def getRealLevel(self, skill_name: str) -> int:
+    def get_real_level(self, skill_name: str) -> int:
         """Get real (unboosted) level for a skill."""
-        return self._getSkillData(skill_name)["level"]
+        return self._get_skill_data(skill_name)["level"]
 
-    def getExperience(self, skill_name: str) -> int:
+    def get_experience(self, skill_name: str) -> int:
         """Get experience for a skill."""
-        return self._getSkillData(skill_name)["xp"]
+        return self._get_skill_data(skill_name)["xp"]
 
-    def getTotalLevel(self) -> int:
+    def get_total_level(self) -> int:
         """Get total level across all skills."""
         from escape.client import client
 
         skills_data = client.cache.getAllSkills()
         return sum(data["level"] for data in skills_data.values())
 
-    def getTotalExperience(self) -> int:
+    def get_total_experience(self) -> int:
         """Get total experience across all skills."""
         from escape.client import client
 
         skills_data = client.cache.getAllSkills()
         return sum(data["xp"] for data in skills_data.values())
 
-    def gainedXp(self) -> bool:
+    def gained_xp(self) -> bool:
         """Check if XP was gained since last check."""
-        current_xp = self.getTotalExperience()
+        current_xp = self.get_total_experience()
 
         # Initialize on first call
         if self._last_total_xp is None:
@@ -106,22 +106,22 @@ class Skills(GameTabs):
 
         return False
 
-    def waitXp(self, timeout: float = 5.0) -> bool:
+    def wait_xp(self, timeout: float = 5.0) -> bool:
         """Wait for XP gain with timeout."""
         import time
 
         # Initialize baseline
         if self._last_total_xp is None:
-            self._last_total_xp = self.getTotalExperience()
+            self._last_total_xp = self.get_total_experience()
 
         # Check if already gained
-        if self.gainedXp():
+        if self.gained_xp():
             return True
 
         # Wait for XP gain
         start_time = time.time()
         while time.time() - start_time < timeout:
-            if self.gainedXp():
+            if self.gained_xp():
                 return True
             time.sleep(0.05)
 

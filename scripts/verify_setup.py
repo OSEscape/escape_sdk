@@ -15,7 +15,7 @@ from pathlib import Path
 from escape._internal.logger import logger
 
 
-def checkPackageStructure() -> bool:
+def check_package_structure() -> bool:
     """Verify the package directory structure exists."""
     logger.info("Checking package structure")
 
@@ -47,7 +47,7 @@ def checkPackageStructure() -> bool:
     return True
 
 
-def checkRequiredFiles() -> bool:
+def check_required_files() -> bool:
     """Verify required configuration files exist."""
     logger.info("\nChecking required files")
 
@@ -77,7 +77,7 @@ def checkRequiredFiles() -> bool:
     return True
 
 
-def checkImports() -> bool:
+def check_imports() -> bool:
     """Verify that the package can be imported."""
     logger.info("\nChecking imports")
 
@@ -101,7 +101,7 @@ def checkImports() -> bool:
         return False
 
 
-def checkBasicFunctionality() -> bool:
+def check_basic_functionality() -> bool:
     """Verify basic functionality works."""
     logger.info("\nChecking basic functionality")
 
@@ -130,7 +130,7 @@ def checkBasicFunctionality() -> bool:
         return False
 
 
-def checkNamingConventions() -> bool:
+def check_naming_conventions() -> bool:
     """Verify naming conventions are followed."""
     logger.info("\nChecking naming conventions")
 
@@ -157,11 +157,11 @@ def main() -> int:
     print("=" * 60)
 
     checks = [
-        ("Package Structure", checkPackageStructure),
-        ("Required Files", checkRequiredFiles),
-        ("Imports", checkImports),
-        ("Basic Functionality", checkBasicFunctionality),
-        ("Naming Conventions", checkNamingConventions),
+        ("Package Structure", check_package_structure),
+        ("Required Files", check_required_files),
+        ("Imports", check_imports),
+        ("Basic Functionality", check_basic_functionality),
+        ("Naming Conventions", check_naming_conventions),
     ]
 
     results = []

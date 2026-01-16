@@ -28,18 +28,18 @@ class EventCache:
         # Thread safety - protects all access to _state
         self._lock = threading.RLock()
 
-    def addEvent(self, channel: str, event: Dict[str, Any]) -> None:
+    def add_event(self, channel: str, event: Dict[str, Any]) -> None:
         """Add event from EventConsumer (thread-safe)."""
         with self._lock:
-            self._state.addEvent(channel, event)
+            self._state.add_event(channel, event)
             self._last_update_time = time.time()
 
-    def getGametickState(self) -> Dict[str, Any]:
+    def get_gametick_state(self) -> Dict[str, Any]:
         """Get latest gametick state with tick, energy, position, etc."""
         with self._lock:
             return self._state.latest_states.get("gametick", {}).copy()
 
-    def getRecentEvents(self, channel: str, n: int | None = None) -> List[Dict[str, Any]]:
+    def get_recent_events(self, channel: str, n: int | None = None) -> List[Dict[str, Any]]:
         """Get recent events from ring buffer channel (newest last)."""
         with self._lock:
             events = list(self._state.recent_events[channel])
@@ -47,26 +47,26 @@ class EventCache:
                 events = events[-n:]
             return events
 
-    def getAllRecentEvents(self) -> Dict[str, List[Dict[str, Any]]]:
+    def get_all_recent_events(self) -> Dict[str, List[Dict[str, Any]]]:
         """Get all recent events across all ring buffer channels."""
         with self._lock:
             return {channel: list(events) for channel, events in self._state.recent_events.items()}
 
-    def getLastUpdateTime(self) -> float:
+    def get_last_update_time(self) -> float:
         """Get timestamp of last cache update (Unix timestamp)."""
         with self._lock:
             return self._last_update_time
 
-    def getAge(self) -> float:
+    def get_age(self) -> float:
         """Get age of cached data in seconds since last update."""
         with self._lock:
             if self._last_update_time == 0:
                 return float("inf")
             return time.time() - self._last_update_time
 
-    def isFresh(self, max_age: float = 1.0) -> bool:
+    def is_fresh(self, max_age: float = 1.0) -> bool:
         """Check if cache data is fresh (age < max_age)."""
-        return self.getAge() < max_age
+        return self.get_age() < max_age
 
     def clear(self) -> None:
         """Clear all cached data and reset update time."""
@@ -98,29 +98,29 @@ class EventCache:
         gametick = self._state.latest_states.get("gametick", {})
         world_view = self._state.latest_states.get("world_view_loaded", {})
 
-        sceneX = gametick.get("sceneX")
-        sceneY = gametick.get("sceneY")
-        if sceneX is None or sceneY is None:
+        scene_x = gametick.get("sceneX")
+        scene_y = gametick.get("sceneY")
+        if scene_x is None or scene_y is None:
             return None
 
-        baseX = world_view.get("base_x", 0)
-        baseY = world_view.get("base_y", 0)
+        base_x = world_view.get("base_x", 0)
+        base_y = world_view.get("base_y", 0)
         plane = world_view.get("plane", 0)
 
-        return {"x": sceneX + baseX, "y": sceneY + baseY, "plane": plane}
+        return {"x": scene_x + base_x, "y": scene_y + base_y, "plane": plane}
 
     @property
-    def scenePosition(self) -> Dict[str, int] | None:
+    def scene_position(self) -> Dict[str, int] | None:
         """Get current player scene position {sceneX, sceneY}."""
         gametick = self._state.latest_states.get("gametick", {})
-        sceneX = gametick.get("sceneX")
-        sceneY = gametick.get("sceneY")
-        if sceneX is None or sceneY is None:
+        scene_x = gametick.get("sceneX")
+        scene_y = gametick.get("sceneY")
+        if scene_x is None or scene_y is None:
             return None
-        return {"sceneX": sceneX, "sceneY": sceneY}
+        return {"sceneX": scene_x, "sceneY": scene_y}
 
     @property
-    def targetLocation(self) -> Dict[str, int] | None:
+    def target_location(self) -> Dict[str, int] | None:
         """Get current destination location {x, y} where player is walking to."""
         gametick = self._state.latest_states.get("gametick", {})
         x = gametick.get("target_location_x")
@@ -129,45 +129,45 @@ class EventCache:
             return None
         return {"x": x, "y": y}
 
-    def getVarp(self, varp_id: int) -> int | None:
+    def get_varp(self, varp_id: int) -> int | None:
         """Get current value of a varp from cache."""
         with self._lock:
             if len(self._state.varps) < varp_id + 1 and not self._state.varps_initialized:
-                self._state.initVarps()
+                self._state.init_varps()
             if varp_id >= len(self._state.varps):
                 return None
             return self._state.varps[varp_id]
 
-    def getVarc(self, varc_id: int) -> Any | None:
+    def get_varc(self, varc_id: int) -> Any | None:
         """Get current value of a varc from cache."""
         with self._lock:
             varc = self._state.varcs.get(varc_id, None)
             if varc is None and not self._state.varcs_initialized:
-                self._state.initVarcs()
+                self._state.init_varcs()
                 varc = self._state.varcs.get(varc_id, None)
             return varc
 
-    def getAllSkills(self) -> Dict[str, Dict[str, int]]:
+    def get_all_skills(self) -> Dict[str, Dict[str, int]]:
         """Get all tracked skills as dict mapping name to skill data."""
         with self._lock:
             if len(self._state.skills) != 24:
-                self._state.initSkills()
+                self._state.init_skills()
             return self._state.skills.copy()
 
-    def getGroundItems(self) -> Dict[int, Any]:
+    def get_ground_items(self) -> Dict[int, Any]:
         """Get current ground items state as dict of packed coords to item lists."""
         with self._lock:
             if (
                 self._state.latest_states.get("ground_items") is None
                 and not self._state.ground_items_initialized
             ):
-                self._state.initGroundItems()
+                self._state.init_ground_items()
                 if waitUntil(self._state.latest_states.get("ground_items") is not None, timeout=5):
                     self._state.ground_items_initialized = True
 
             return self._state.latest_states.get("ground_items", {}).copy()
 
-    def getItemContainer(self, container_id: int) -> ItemContainer | None:
+    def get_item_container(self, container_id: int) -> ItemContainer | None:
         """Get item container by ID (93=inventory, 94=equipment, 95=bank)."""
         with self._lock:
             containers = self._state.itemcontainers
@@ -184,40 +184,40 @@ class EventCache:
 
             return self._state.itemcontainers.get(container_id, None)
 
-    def getMenuOptions(self) -> List[Dict[str, Any]]:
+    def get_menu_options(self) -> List[Dict[str, Any]]:
         """Get latest menu options."""
         with self._lock:
             menu_state = self._state.latest_states.get("post_menu_sort", {}).copy()
             return menu_state
 
-    def getMenuOpenState(self) -> Dict[str, Any]:
+    def get_menu_open_state(self) -> Dict[str, Any]:
         """Get latest menu open state."""
         with self._lock:
             return self._state.latest_states.get("menu_open", {}).copy()
 
-    def getLastSelectedWidget(self) -> Dict[str, Any]:
+    def get_last_selected_widget(self) -> Dict[str, Any]:
         """Get latest selected widget state."""
         with self._lock:
             return self._state.latest_states.get("selected_widget", {}).copy()
 
-    def getMenuClickedState(self) -> Dict[str, Any]:
+    def get_menu_clicked_state(self) -> Dict[str, Any]:
         """Get latest menu option clicked state."""
         with self._lock:
             return self._state.latest_states.get("menu_option_clicked", {}).copy()
 
-    def consumeMenuClickedState(self) -> Dict[str, Any]:
+    def consume_menu_clicked_state(self) -> Dict[str, Any]:
         with self._lock:
             if "menu_option_clicked" in self._state.latest_states:
                 self._state.latest_states["menu_option_clicked"]["consumed"] = True
                 return self._state.latest_states["menu_option_clicked"].copy()
             return {}
 
-    def isMenuOptionClickedConsumed(self) -> bool:
+    def is_menu_option_clicked_consumed(self) -> bool:
         with self._lock:
             menu_clicked = self._state.latest_states.get("menu_option_clicked", {})
             return menu_clicked.get("consumed", False)
 
-    def getOpenWidgets(self) -> List[Dict[int, Any]]:
+    def get_open_widgets(self) -> List[Dict[int, Any]]:
         """Get list of currently open widgets."""
         with self._lock:
             return (
@@ -226,7 +226,7 @@ class EventCache:
                 .copy()
             )
 
-    def getCameraState(
+    def get_camera_state(
         self,
     ) -> Tuple[float, float, float, float, float, int, int, int, int, int] | None:
         """Get current camera state for projection calculations, or None if unavailable."""
@@ -248,12 +248,12 @@ class EventCache:
                 camera.get("viewportYOffset", 0),
             )
 
-    def getCameraStateDict(self) -> Dict[str, Any]:
+    def get_camera_state_dict(self) -> Dict[str, Any]:
         """Get current camera state as a dictionary."""
         with self._lock:
             return self._state.latest_states.get("camera_changed", {}).copy()
 
-    def getEntityTransform(self) -> Tuple[int, int, int, int] | None:
+    def get_entity_transform(self) -> Tuple[int, int, int, int] | None:
         """Get WorldEntity transform for projection, or None if top-level world."""
         with self._lock:
             entity = self._state.latest_states.get("world_entity")
@@ -267,24 +267,24 @@ class EventCache:
                 entity.get("groundHeightOffset", 0),
             )
 
-    def getEntityTransformDict(self) -> Dict[str, Any]:
+    def get_entity_transform_dict(self) -> Dict[str, Any]:
         """Get current WorldEntity transform as a dictionary."""
         with self._lock:
             return self._state.latest_states.get("world_entity", {}).copy()
 
-    def getWorldViewState(self) -> Dict[str, Any]:
+    def get_world_view_state(self) -> Dict[str, Any]:
         """Get current world view state with scene dimensions and tile heights."""
         with self._lock:
             return self._state.latest_states.get("world_view_loaded", {}).copy()
 
-    def getCurrentPlane(self) -> int:
+    def get_current_plane(self) -> int:
         """Get current plane/level (0-3), defaults to 0."""
         with self._lock:
-            worldView = self._state.latest_states.get("world_view_loaded", {})
-            return worldView.get("plane", 0)
+            world_view = self._state.latest_states.get("world_view_loaded", {})
+            return world_view.get("plane", 0)
 
 
 if __name__ == "__main__":
     # Simple test
     cache = EventCache()
-    print(cache.getSkill("Attack"))
+    print(cache.get_skill("Attack"))

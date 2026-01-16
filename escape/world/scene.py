@@ -22,61 +22,61 @@ class VisibleTiles:
         return len(self._indices)
 
     @property
-    def sceneX(self) -> np.ndarray:
+    def scene_x(self) -> np.ndarray:
         """Scene X coordinates of visible tiles."""
-        return self._grid._sceneXs[self._indices]
+        return self._grid._scene_xs[self._indices]
 
     @property
-    def sceneY(self) -> np.ndarray:
+    def scene_y(self) -> np.ndarray:
         """Scene Y coordinates of visible tiles."""
-        return self._grid._sceneYs[self._indices]
+        return self._grid._scene_ys[self._indices]
 
     @property
-    def worldX(self) -> np.ndarray:
+    def world_x(self) -> np.ndarray:
         """World X coordinates of visible tiles."""
-        return self._grid._sceneXs[self._indices].astype(np.int32) + self._grid.baseX
+        return self._grid._scene_xs[self._indices].astype(np.int32) + self._grid.base_x
 
     @property
-    def worldY(self) -> np.ndarray:
+    def world_y(self) -> np.ndarray:
         """World Y coordinates of visible tiles."""
-        return self._grid._sceneYs[self._indices].astype(np.int32) + self._grid.baseY
+        return self._grid._scene_ys[self._indices].astype(np.int32) + self._grid.base_y
 
     @property
-    def screenX(self) -> np.ndarray:
+    def screen_x(self) -> np.ndarray:
         """Screen X coordinates of tile centers."""
-        centerX, _ = self._grid.getTileCenters()
-        return centerX[self._indices]
+        center_x, _ = self._grid.get_tile_centers()
+        return center_x[self._indices]
 
     @property
-    def screenY(self) -> np.ndarray:
+    def screen_y(self) -> np.ndarray:
         """Screen Y coordinates of tile centers."""
-        _, centerY = self._grid.getTileCenters()
-        return centerY[self._indices]
+        _, center_y = self._grid.get_tile_centers()
+        return center_y[self._indices]
 
     @property
     def indices(self) -> np.ndarray:
         """Flat tile indices into the grid."""
         return self._indices
 
-    def getScreenPoint(self, i: int) -> "Point":
+    def get_screen_point(self, i: int) -> "Point":
         """Get screen position of tile at local index i."""
         from escape.types import Point
 
-        centerX, centerY = self._grid.getTileCenters()
+        center_x, center_y = self._grid.get_tile_centers()
         idx = self._indices[i]
-        return Point(int(centerX[idx]), int(centerY[idx]))
+        return Point(int(center_x[idx]), int(center_y[idx]))
 
-    def getWorldCoord(self, i: int) -> Tuple[int, int]:
+    def get_world_coord(self, i: int) -> Tuple[int, int]:
         """Get world coordinates of tile at local index i."""
         idx = self._indices[i]
         return (
-            int(self._grid._sceneXs[idx]) + self._grid.baseX,
-            int(self._grid._sceneYs[idx]) + self._grid.baseY,
+            int(self._grid._scene_xs[idx]) + self._grid.base_x,
+            int(self._grid._scene_ys[idx]) + self._grid.base_y,
         )
 
-    def getQuad(self, i: int) -> "Quad":
+    def get_quad(self, i: int) -> "Quad":
         """Get Quad for tile at local index i."""
-        return self._grid.getTileQuad(self._indices[i])
+        return self._grid.get_tile_quad(self._indices[i])
 
 
 class Scene:
@@ -89,13 +89,13 @@ class Scene:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def _getTileGrid(self) -> "TileGrid | None":
+    def _get_tile_grid(self) -> "TileGrid | None":
         """Get cached TileGrid from projection."""
         from escape.world.projection import projection
 
         return projection.tiles
 
-    def _getPlayerScenePos(self) -> Tuple[int, int] | None:
+    def _get_player_scene_pos(self) -> Tuple[int, int] | None:
         """Get player scene position from cache."""
         from escape.globals import getEventCache
 
@@ -105,124 +105,124 @@ class Scene:
         x, y = gt.get("sceneX"), gt.get("sceneY")
         return (x, y) if x is not None and y is not None else None
 
-    def getVisibleTiles(self, margin: int = 0) -> VisibleTiles | None:
+    def get_visible_tiles(self, margin: int = 0) -> VisibleTiles | None:
         """Get all tiles visible on screen."""
-        grid = self._getTileGrid()
+        grid = self._get_tile_grid()
         if grid is None:
             return None
 
-        indices = grid.getVisibleIndices(margin=margin)
+        indices = grid.get_visible_indices(margin=margin)
         return VisibleTiles(grid, indices)
 
-    def getVisibleTilesNearPlayer(self, radius: int = 25, margin: int = 0) -> VisibleTiles | None:
+    def get_visible_tiles_near_player(self, radius: int = 25, margin: int = 0) -> VisibleTiles | None:
         """Get visible tiles within radius of player."""
-        grid = self._getTileGrid()
+        grid = self._get_tile_grid()
         if grid is None:
             return None
 
-        pos = self._getPlayerScenePos()
+        pos = self._get_player_scene_pos()
         if pos is None:
             return None
 
         px, py = pos
 
         # Create mask for tiles near player
-        nearMask = (
-            (grid._sceneXs >= max(0, px - radius))
-            & (grid._sceneXs <= min(grid.sizeX - 1, px + radius))
-            & (grid._sceneYs >= max(0, py - radius))
-            & (grid._sceneYs <= min(grid.sizeY - 1, py + radius))
+        near_mask = (
+            (grid._scene_xs >= max(0, px - radius))
+            & (grid._scene_xs <= min(grid.size_x - 1, px + radius))
+            & (grid._scene_ys >= max(0, py - radius))
+            & (grid._scene_ys <= min(grid.size_y - 1, py + radius))
         )
 
-        indices = grid.getVisibleIndices(mask=nearMask, margin=margin)
+        indices = grid.get_visible_indices(mask=near_mask, margin=margin)
         return VisibleTiles(grid, indices)
 
-    def getTilesInArea(
+    def get_tiles_in_area(
         self,
-        worldX1: int,
-        worldY1: int,
-        worldX2: int,
-        worldY2: int,
+        world_x1: int,
+        world_y1: int,
+        world_x2: int,
+        world_y2: int,
         margin: int = 0,
     ) -> VisibleTiles | None:
         """Get visible tiles in a world rectangle."""
-        grid = self._getTileGrid()
+        grid = self._get_tile_grid()
         if grid is None:
             return None
 
         # Convert to scene coords
-        minSX = max(0, min(worldX1, worldX2) - grid.baseX)
-        maxSX = min(grid.sizeX - 1, max(worldX1, worldX2) - grid.baseX)
-        minSY = max(0, min(worldY1, worldY2) - grid.baseY)
-        maxSY = min(grid.sizeY - 1, max(worldY1, worldY2) - grid.baseY)
+        min_sx = max(0, min(world_x1, world_x2) - grid.base_x)
+        max_sx = min(grid.size_x - 1, max(world_x1, world_x2) - grid.base_x)
+        min_sy = max(0, min(world_y1, world_y2) - grid.base_y)
+        max_sy = min(grid.size_y - 1, max(world_y1, world_y2) - grid.base_y)
 
-        if minSX > maxSX or minSY > maxSY:
+        if min_sx > max_sx or min_sy > max_sy:
             return None
 
         # Create mask
-        areaMask = (
-            (grid._sceneXs >= minSX)
-            & (grid._sceneXs <= maxSX)
-            & (grid._sceneYs >= minSY)
-            & (grid._sceneYs <= maxSY)
+        area_mask = (
+            (grid._scene_xs >= min_sx)
+            & (grid._scene_xs <= max_sx)
+            & (grid._scene_ys >= min_sy)
+            & (grid._scene_ys <= max_sy)
         )
 
-        indices = grid.getVisibleIndices(mask=areaMask, margin=margin)
+        indices = grid.get_visible_indices(mask=area_mask, margin=margin)
         return VisibleTiles(grid, indices)
 
-    def isTileOnScreen(self, worldX: int, worldY: int) -> bool:
+    def is_tile_on_screen(self, world_x: int, world_y: int) -> bool:
         """Check if a world tile is visible on screen."""
-        grid = self._getTileGrid()
+        grid = self._get_tile_grid()
         if grid is None:
             return False
 
-        sceneX = worldX - grid.baseX
-        sceneY = worldY - grid.baseY
-        if not (0 <= sceneX < grid.sizeX and 0 <= sceneY < grid.sizeY):
+        scene_x = world_x - grid.base_x
+        scene_y = world_y - grid.base_y
+        if not (0 <= scene_x < grid.size_x and 0 <= scene_y < grid.size_y):
             return False
 
-        tileIdx = sceneX * grid.sizeY + sceneY
-        return bool(grid.tileOnScreen[tileIdx])
+        tile_idx = scene_x * grid.size_y + scene_y
+        return bool(grid.tile_on_screen[tile_idx])
 
-    def getTileQuad(self, worldX: int, worldY: int) -> "Quad | None":
+    def get_tile_quad(self, world_x: int, world_y: int) -> "Quad | None":
         """Get Quad for a world tile. Returns None if not in scene or not valid."""
-        grid = self._getTileGrid()
+        grid = self._get_tile_grid()
         if grid is None:
             return None
 
-        sceneX = worldX - grid.baseX
-        sceneY = worldY - grid.baseY
-        if not (0 <= sceneX < grid.sizeX and 0 <= sceneY < grid.sizeY):
+        scene_x = world_x - grid.base_x
+        scene_y = world_y - grid.base_y
+        if not (0 <= scene_x < grid.size_x and 0 <= scene_y < grid.size_y):
             return None
 
-        tileIdx = sceneX * grid.sizeY + sceneY
-        if not grid.tileValid[tileIdx]:
+        tile_idx = scene_x * grid.size_y + scene_y
+        if not grid.tile_valid[tile_idx]:
             return None
 
-        return grid.getTileQuad(tileIdx)
+        return grid.get_tile_quad(tile_idx)
 
-    def getSceneBounds(self) -> Tuple[int, int, int, int]:
+    def get_scene_bounds(self) -> Tuple[int, int, int, int]:
         """Get world bounds: (minX, minY, maxX, maxY)."""
-        grid = self._getTileGrid()
+        grid = self._get_tile_grid()
         if grid is None:
             from escape.world.projection import projection
 
             return (
-                projection.baseX,
-                projection.baseY,
-                projection.baseX + projection.sizeX - 1,
-                projection.baseY + projection.sizeY - 1,
+                projection.base_x,
+                projection.base_y,
+                projection.base_x + projection.size_x - 1,
+                projection.base_y + projection.size_y - 1,
             )
-        return (grid.baseX, grid.baseY, grid.baseX + grid.sizeX - 1, grid.baseY + grid.sizeY - 1)
+        return (grid.base_x, grid.base_y, grid.base_x + grid.size_x - 1, grid.base_y + grid.size_y - 1)
 
-    def isInScene(self, worldX: int, worldY: int) -> bool:
+    def is_in_scene(self, world_x: int, world_y: int) -> bool:
         """Check if world coordinate is in loaded scene."""
-        grid = self._getTileGrid()
+        grid = self._get_tile_grid()
         if grid is None:
             return False
-        sceneX = worldX - grid.baseX
-        sceneY = worldY - grid.baseY
-        return 0 <= sceneX < grid.sizeX and 0 <= sceneY < grid.sizeY
+        scene_x = world_x - grid.base_x
+        scene_y = world_y - grid.base_y
+        return 0 <= scene_x < grid.size_x and 0 <= scene_y < grid.size_y
 
 
 # Module-level instance

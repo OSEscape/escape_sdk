@@ -34,36 +34,36 @@ class CacheManager:
         self.objects_dir = self.data_dir / "objects"
         self.varps_dir = self.data_dir / "varps"
 
-    def ensureDirs(self) -> None:
+    def ensure_dirs(self) -> None:
         """Create all cache directories if they don't exist."""
         self.generated_dir.mkdir(parents=True, exist_ok=True)
         self.objects_dir.mkdir(parents=True, exist_ok=True)
         self.varps_dir.mkdir(parents=True, exist_ok=True)
 
-    def getGeneratedPath(self, filename: str) -> Path:
+    def get_generated_path(self, filename: str) -> Path:
         """Get path for a generated file."""
         return self.generated_dir / filename
 
-    def getObjectsPath(self) -> Path:
+    def get_objects_path(self) -> Path:
         """Get path for objects data directory."""
         return self.objects_dir
 
-    def getVarpsPath(self) -> Path:
+    def get_varps_path(self) -> Path:
         """Get path for varps data directory."""
         return self.varps_dir
 
-    def getDataPath(self, resource_type: str) -> Path:
+    def get_data_path(self, resource_type: str) -> Path:
         """Get path for a specific resource type."""
         return self.data_dir / resource_type
 
-    def clearCache(self) -> None:
+    def clear_cache(self) -> None:
         """Clear all cached files (use with caution)."""
         import shutil
 
         if self.base_path.exists():
             shutil.rmtree(self.base_path)
 
-    def getCacheSize(self) -> int:
+    def get_cache_size(self) -> int:
         """Get total size of cache in bytes."""
         total = 0
         if self.base_path.exists():
@@ -77,12 +77,12 @@ class CacheManager:
 _cache_manager: CacheManager | None = None
 
 
-def getCacheManager() -> CacheManager:
+def get_cache_manager() -> CacheManager:
     """Get global cache manager instance."""
     global _cache_manager
     if _cache_manager is None:
         _cache_manager = CacheManager()
-        _cache_manager.ensureDirs()
+        _cache_manager.ensure_dirs()
     return _cache_manager
 
 
@@ -93,7 +93,7 @@ BASE_URL = "https://storage.googleapis.com/osrs-chroma-storage-eu"
 _resources_loaded = False
 
 
-def _downloadFile(url: str, dest: Path, decompress_gz: bool = True) -> bool:
+def _download_file(url: str, dest: Path, decompress_gz: bool = True) -> bool:
     """Download a file from URL to destination."""
     try:
         logger.info(f"Downloading {url}")
@@ -140,7 +140,7 @@ def _downloadFile(url: str, dest: Path, decompress_gz: bool = True) -> bool:
         return False
 
 
-def _getRemoteMetadata() -> dict | None:
+def _get_remote_metadata() -> dict | None:
     """Fetch remote metadata to check current revision."""
     url = f"{BASE_URL}/varps/latest/metadata.json"
     try:
@@ -154,7 +154,7 @@ def _getRemoteMetadata() -> dict | None:
         return None
 
 
-def _needsUpdate(cache_dir: Path) -> bool:
+def _needs_update(cache_dir: Path) -> bool:
     """Check if resources need updating."""
     # Check if files exist
     required_files = ["metadata.json", "varps.json", "varbits.json", "objects.db"]
@@ -163,7 +163,7 @@ def _needsUpdate(cache_dir: Path) -> bool:
         return True
 
     # Get remote metadata
-    remote_meta = _getRemoteMetadata()
+    remote_meta = _get_remote_metadata()
     if remote_meta is None:
         # Can't reach server, use cached data if available
         return False
@@ -187,7 +187,7 @@ def _needsUpdate(cache_dir: Path) -> bool:
     return False
 
 
-def ensureResourcesLoaded() -> bool:
+def ensure_resources_loaded() -> bool:
     """Ensure game resources are downloaded and loaded."""
     global _resources_loaded
 
@@ -195,12 +195,12 @@ def ensureResourcesLoaded() -> bool:
         return True
 
     try:
-        cache_manager = getCacheManager()
-        cache_dir = cache_manager.getDataPath("game_data")
+        cache_manager = get_cache_manager()
+        cache_dir = cache_manager.get_data_path("game_data")
         cache_dir.mkdir(parents=True, exist_ok=True)
 
         # Check if update needed
-        if _needsUpdate(cache_dir):
+        if _needs_update(cache_dir):
             logger.info("Updating game resources")
             base_url = f"{BASE_URL}/varps/latest"
 
@@ -217,7 +217,7 @@ def ensureResourcesLoaded() -> bool:
                 dest = cache_dir / local_name
                 decompress = remote_name.endswith(".gz")
 
-                if not _downloadFile(url, dest, decompress_gz=decompress):
+                if not _download_file(url, dest, decompress_gz=decompress):
                     logger.warning(f"Failed to download {local_name}")
                     return False
 
@@ -267,9 +267,9 @@ def ensureResourcesLoaded() -> bool:
         return False
 
 
-def ensureGeneratedInPath() -> Path:
+def ensure_generated_in_path() -> Path:
     """Ensure the generated cache directory is in sys.path for imports."""
-    cache_manager = getCacheManager()
+    cache_manager = get_cache_manager()
     generated_dir = cache_manager.generated_dir
 
     # Add to sys.path if not already there
@@ -280,9 +280,9 @@ def ensureGeneratedInPath() -> Path:
     return generated_dir
 
 
-def loadGeneratedModule(module_name: str) -> Any | None:
+def load_generated_module(module_name: str) -> Any | None:
     """Load a generated module from cache."""
-    ensureGeneratedInPath()
+    ensure_generated_in_path()
 
     try:
         # Try to import the module
@@ -293,9 +293,9 @@ def loadGeneratedModule(module_name: str) -> Any | None:
         return None
 
 
-def reloadGeneratedModule(module_name: str) -> Any | None:
+def reload_generated_module(module_name: str) -> Any | None:
     """Reload a generated module after regeneration."""
-    ensureGeneratedInPath()
+    ensure_generated_in_path()
 
     try:
         import importlib
@@ -308,9 +308,9 @@ def reloadGeneratedModule(module_name: str) -> Any | None:
         return None
 
 
-def hasGeneratedFiles() -> bool:
+def has_generated_files() -> bool:
     """Check if generated files exist in cache."""
-    cache_manager = getCacheManager()
+    cache_manager = get_cache_manager()
     generated_dir = cache_manager.generated_dir
 
     constants_file = generated_dir / "constants.py"
@@ -318,9 +318,9 @@ def hasGeneratedFiles() -> bool:
     return constants_file.exists()
 
 
-def ensureGeneratedFiles():
+def ensure_generated_files():
     """Ensure generated files exist, triggering update if necessary."""
-    if not hasGeneratedFiles():
+    if not has_generated_files():
         logger.warning("Generated files not found in cache, running updater")
         try:
             from escape._internal.updater.api import RuneLiteAPIUpdater
@@ -328,7 +328,7 @@ def ensureGeneratedFiles():
             updater = RuneLiteAPIUpdater()
             success = updater.update(force=False, max_age_days=7)
 
-            if not success or not hasGeneratedFiles():
+            if not success or not has_generated_files():
                 raise FileNotFoundError(
                     "Failed to generate required files. "
                     "Run 'python -m escape._internal.updater --force' manually."
@@ -341,4 +341,4 @@ def ensureGeneratedFiles():
 
 
 # Initialize on import - ensure generated path is available
-ensureGeneratedInPath()
+ensure_generated_in_path()

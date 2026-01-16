@@ -60,26 +60,26 @@ class GroundItem:
         return self.position.unpack()
 
     @property
-    def isYours(self) -> bool:
+    def is_yours(self) -> bool:
         """Check if this item belongs to you."""
         return self.ownership in (1, 3)
 
     @property
-    def canLoot(self) -> bool:
+    def can_loot(self) -> bool:
         """Check if you can loot this item (yours or public)."""
         return self.ownership in (0, 1, 3)
 
     @property
-    def isPublic(self) -> bool:
+    def is_public(self) -> bool:
         """Check if this item is visible to everyone."""
         return self.ownership == 0
 
-    def distanceFromPlayer(self) -> int:
+    def distance_from_player(self) -> int:
         """Calculate distance from player to this item."""
         player_pos = PackedPosition(
             self.client.player.x, self.client.player.y, self.client.player.plane
         )
-        return self.position.distanceTo(player_pos)
+        return self.position.distance_to(player_pos)
 
     def __repr__(self) -> str:
         ownership_str = {0: "public", 1: "yours", 2: "other", 3: "yours_tradeable"}.get(

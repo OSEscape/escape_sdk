@@ -103,7 +103,7 @@ class Tabs:
         """Music tab."""
         return music
 
-    def getOpenTab(self) -> GameTab | None:
+    def get_open_tab(self) -> GameTab | None:
         """Get the currently open tab, or None if unknown."""
         from escape.client import client
 
