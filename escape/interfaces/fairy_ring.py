@@ -2,7 +2,7 @@ from escape._internal.logger import logger
 from escape.client import client
 from escape.types.box import Box
 from escape.types.widget import Widget, WidgetFields
-from escape.utilities.timing import sleep, waitUntil
+from escape.utilities.timing import waitUntil
 
 
 class FairyRingInterface:
@@ -114,10 +114,7 @@ class FairyRingInterface:
     def _next_letter(self, letter: str, clockwise: bool, index: int) -> str:
         letters = self.letter_strings[index]
         current_index = letters.index(letter)
-        if clockwise:
-            next_index = (current_index - 1) % 4
-        else:
-            next_index = (current_index + 1) % 4
+        next_index = (current_index - 1) % 4 if clockwise else (current_index + 1) % 4
         return letters[next_index]
 
     def _rotate_to_sequence(self, target_code: str) -> bool:
@@ -147,7 +144,7 @@ class FairyRingInterface:
                 box = Box.fromRect(*button)
                 s = "Rotate clockwise" if steps > 0 else "Rotate counter-clockwise"
                 if box.clickOption(s):
-                    waitUntil(lambda: self._check_index_to_target(i, next_letter), timeout=5)
+                    waitUntil(lambda i=i, nl=next_letter: self._check_index_to_target(i, nl), timeout=5)
                 else:
                     return False
         self.cached_info = self._get_all_info()

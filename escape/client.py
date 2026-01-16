@@ -22,10 +22,7 @@ def _ensure_generated_symlink() -> None:
 
     # Determine target cache directory
     xdg_cache = os.getenv("XDG_CACHE_HOME")
-    if xdg_cache:
-        cache_base = Path(xdg_cache)
-    else:
-        cache_base = Path.home() / ".cache"
+    cache_base = Path(xdg_cache) if xdg_cache else Path.home() / ".cache"
     generated_target = cache_base / "escape" / "generated"
 
     # Ensure target directory exists

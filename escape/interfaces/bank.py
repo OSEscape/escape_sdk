@@ -4,7 +4,6 @@ Banking module - handles all banking operations.
 
 import math
 import random
-from typing import List
 
 from escape._internal.logger import logger
 from escape.client import client
@@ -89,7 +88,7 @@ class Bank(ItemContainer):
         pass
 
     @property
-    def items(self) -> List[Item | None]:
+    def items(self) -> list[Item | None]:
         cached = client.cache.getItemContainer(self.CONTAINER_ID)
         self._items = cached.items
         return self._items

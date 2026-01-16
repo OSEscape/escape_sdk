@@ -7,7 +7,7 @@ from enum import Enum
 from escape.client import client
 from escape.types.gametab import GameTab, GameTabs
 from escape.types.interfaces.buttons import Buttons
-from escape.utilities.timing import sleep, waitTicks, waitUntil
+from escape.utilities.timing import waitTicks, waitUntil
 
 
 class PrayerType(Enum):

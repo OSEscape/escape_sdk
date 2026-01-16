@@ -1,6 +1,6 @@
 """Scene utilities for working with tiles in the loaded scene."""
 
-from typing import TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -66,7 +66,7 @@ class VisibleTiles:
         idx = self._indices[i]
         return Point(int(center_x[idx]), int(center_y[idx]))
 
-    def get_world_coord(self, i: int) -> Tuple[int, int]:
+    def get_world_coord(self, i: int) -> tuple[int, int]:
         """Get world coordinates of tile at local index i."""
         idx = self._indices[i]
         return (
@@ -95,7 +95,7 @@ class Scene:
 
         return projection.tiles
 
-    def _get_player_scene_pos(self) -> Tuple[int, int] | None:
+    def _get_player_scene_pos(self) -> tuple[int, int] | None:
         """Get player scene position from cache."""
         from escape.globals import getEventCache
 
@@ -201,7 +201,7 @@ class Scene:
 
         return grid.get_tile_quad(tile_idx)
 
-    def get_scene_bounds(self) -> Tuple[int, int, int, int]:
+    def get_scene_bounds(self) -> tuple[int, int, int, int]:
         """Get world bounds: (minX, minY, maxX, maxY)."""
         grid = self._get_tile_grid()
         if grid is None:

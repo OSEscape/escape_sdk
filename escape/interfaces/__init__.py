@@ -4,7 +4,7 @@ from escape.client import client
 from escape.interfaces.bank import Bank, bank
 from escape.interfaces.fairy_ring import FairyRingInterface, fairy_ring
 from escape.types.interfaces.general_interface import GeneralInterface
-from escape.types.widget import Widget, WidgetFields
+from escape.types.widget import Widget
 
 # Lazy-loaded reverse lookup: group_id -> name
 _interface_id_to_name: dict[int, str] | None = None

@@ -2,7 +2,6 @@
 Inventory tab module.
 """
 
-from typing import List
 
 from escape.types.box import Box, createGrid
 from escape.types.gametab import GameTab, GameTabs
@@ -142,7 +141,7 @@ class Inventory(GameTabs, ItemContainer):
         # Use drop_slots for the actual dropping logic
         return self.drop_slots(slots, force_shift=force_shift)
 
-    def drop_items(self, identifiers: List[ItemIdentifier], force_shift: bool = False) -> int:
+    def drop_items(self, identifiers: list[ItemIdentifier], force_shift: bool = False) -> int:
         """Drop all occurrences of multiple items. Returns total count dropped."""
         # Collect all slots to drop (all occurrences of all items)
         all_slots = []
@@ -156,7 +155,7 @@ class Inventory(GameTabs, ItemContainer):
         # Use drop_slots for the actual dropping logic
         return self.drop_slots(all_slots, force_shift=force_shift)
 
-    def drop_slots(self, slot_indices: List[int], force_shift: bool = False) -> int:
+    def drop_slots(self, slot_indices: list[int], force_shift: bool = False) -> int:
         """Drop items from specific slot indices. Returns count dropped."""
         from time import sleep
 

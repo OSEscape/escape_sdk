@@ -1,6 +1,5 @@
 """PackedPosition type for efficient OSRS coordinate storage."""
 
-from typing import Tuple
 
 
 class PackedPosition:
@@ -46,7 +45,7 @@ class PackedPosition:
         """Get packed integer representation."""
         return self._packed
 
-    def unpack(self) -> Tuple[int, int, int]:
+    def unpack(self) -> tuple[int, int, int]:
         """Unpack to (x, y, plane) tuple."""
         return (self.x, self.y, self.plane)
 
@@ -92,7 +91,7 @@ def pack_position_signed(x: int, y: int, plane: int) -> int:
     return packed
 
 
-def unpack_position(packed: int) -> Tuple[int, int, int]:
+def unpack_position(packed: int) -> tuple[int, int, int]:
     """Unpack a 32-bit integer into (x, y, plane)."""
     # Convert signed to unsigned for bit operations
     if packed < 0:

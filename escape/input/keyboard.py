@@ -2,7 +2,6 @@
 
 import random
 import time
-from typing import List, Optional
 
 try:
     import pyautogui as pag

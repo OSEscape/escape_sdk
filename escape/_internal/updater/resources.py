@@ -6,8 +6,6 @@ Handles automatic version checking and updating of game resources.
 Now delegates to cache_manager for actual download/load operations.
 """
 
-from pathlib import Path
-from typing import Tuple
 
 from escape._internal.logger import logger
 
@@ -17,7 +15,7 @@ class ResourceUpdater:
     Manages automatic updates for game resources (varps, objects, etc.)
     """
 
-    def should_update(self) -> Tuple[bool, str]:
+    def should_update(self) -> tuple[bool, str]:
         """
         Check if game data needs update.
 

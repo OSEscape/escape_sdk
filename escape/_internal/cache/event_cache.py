@@ -6,7 +6,7 @@ Wraps StateBuilder with thread safety and provides clean public methods.
 
 import threading
 import time
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 from escape.types import ItemContainer
 from escape.utilities.timing import waitUntil
@@ -28,18 +28,18 @@ class EventCache:
         # Thread safety - protects all access to _state
         self._lock = threading.RLock()
 
-    def add_event(self, channel: str, event: Dict[str, Any]) -> None:
+    def add_event(self, channel: str, event: dict[str, Any]) -> None:
         """Add event from EventConsumer (thread-safe)."""
         with self._lock:
             self._state.add_event(channel, event)
             self._last_update_time = time.time()
 
-    def get_gametick_state(self) -> Dict[str, Any]:
+    def get_gametick_state(self) -> dict[str, Any]:
         """Get latest gametick state with tick, energy, position, etc."""
         with self._lock:
             return self._state.latest_states.get("gametick", {}).copy()
 
-    def get_recent_events(self, channel: str, n: int | None = None) -> List[Dict[str, Any]]:
+    def get_recent_events(self, channel: str, n: int | None = None) -> list[dict[str, Any]]:
         """Get recent events from ring buffer channel (newest last)."""
         with self._lock:
             events = list(self._state.recent_events[channel])
@@ -47,7 +47,7 @@ class EventCache:
                 events = events[-n:]
             return events
 
-    def get_all_recent_events(self) -> Dict[str, List[Dict[str, Any]]]:
+    def get_all_recent_events(self) -> dict[str, list[dict[str, Any]]]:
         """Get all recent events across all ring buffer channels."""
         with self._lock:
             return {channel: list(events) for channel, events in self._state.recent_events.items()}
@@ -93,7 +93,7 @@ class EventCache:
         return gametick.get("energy")
 
     @property
-    def position(self) -> Dict[str, int] | None:
+    def position(self) -> dict[str, int] | None:
         """Get current player world position {x, y, plane}."""
         gametick = self._state.latest_states.get("gametick", {})
         world_view = self._state.latest_states.get("world_view_loaded", {})
@@ -110,7 +110,7 @@ class EventCache:
         return {"x": scene_x + base_x, "y": scene_y + base_y, "plane": plane}
 
     @property
-    def scene_position(self) -> Dict[str, int] | None:
+    def scene_position(self) -> dict[str, int] | None:
         """Get current player scene position {sceneX, sceneY}."""
         gametick = self._state.latest_states.get("gametick", {})
         scene_x = gametick.get("sceneX")
@@ -120,7 +120,7 @@ class EventCache:
         return {"sceneX": scene_x, "sceneY": scene_y}
 
     @property
-    def target_location(self) -> Dict[str, int] | None:
+    def target_location(self) -> dict[str, int] | None:
         """Get current destination location {x, y} where player is walking to."""
         gametick = self._state.latest_states.get("gametick", {})
         x = gametick.get("target_location_x")
@@ -147,14 +147,14 @@ class EventCache:
                 varc = self._state.varcs.get(varc_id, None)
             return varc
 
-    def get_all_skills(self) -> Dict[str, Dict[str, int]]:
+    def get_all_skills(self) -> dict[str, dict[str, int]]:
         """Get all tracked skills as dict mapping name to skill data."""
         with self._lock:
             if len(self._state.skills) != 24:
                 self._state.init_skills()
             return self._state.skills.copy()
 
-    def get_ground_items(self) -> Dict[int, Any]:
+    def get_ground_items(self) -> dict[int, Any]:
         """Get current ground items state as dict of packed coords to item lists."""
         with self._lock:
             if (
@@ -184,28 +184,28 @@ class EventCache:
 
             return self._state.itemcontainers.get(container_id, None)
 
-    def get_menu_options(self) -> List[Dict[str, Any]]:
+    def get_menu_options(self) -> list[dict[str, Any]]:
         """Get latest menu options."""
         with self._lock:
             menu_state = self._state.latest_states.get("post_menu_sort", {}).copy()
             return menu_state
 
-    def get_menu_open_state(self) -> Dict[str, Any]:
+    def get_menu_open_state(self) -> dict[str, Any]:
         """Get latest menu open state."""
         with self._lock:
             return self._state.latest_states.get("menu_open", {}).copy()
 
-    def get_last_selected_widget(self) -> Dict[str, Any]:
+    def get_last_selected_widget(self) -> dict[str, Any]:
         """Get latest selected widget state."""
         with self._lock:
             return self._state.latest_states.get("selected_widget", {}).copy()
 
-    def get_menu_clicked_state(self) -> Dict[str, Any]:
+    def get_menu_clicked_state(self) -> dict[str, Any]:
         """Get latest menu option clicked state."""
         with self._lock:
             return self._state.latest_states.get("menu_option_clicked", {}).copy()
 
-    def consume_menu_clicked_state(self) -> Dict[str, Any]:
+    def consume_menu_clicked_state(self) -> dict[str, Any]:
         with self._lock:
             if "menu_option_clicked" in self._state.latest_states:
                 self._state.latest_states["menu_option_clicked"]["consumed"] = True
@@ -217,7 +217,7 @@ class EventCache:
             menu_clicked = self._state.latest_states.get("menu_option_clicked", {})
             return menu_clicked.get("consumed", False)
 
-    def get_open_widgets(self) -> List[Dict[int, Any]]:
+    def get_open_widgets(self) -> list[dict[int, Any]]:
         """Get list of currently open widgets."""
         with self._lock:
             return (
@@ -228,7 +228,7 @@ class EventCache:
 
     def get_camera_state(
         self,
-    ) -> Tuple[float, float, float, float, float, int, int, int, int, int] | None:
+    ) -> tuple[float, float, float, float, float, int, int, int, int, int] | None:
         """Get current camera state for projection calculations, or None if unavailable."""
         with self._lock:
             camera = self._state.latest_states.get("camera_changed")
@@ -248,12 +248,12 @@ class EventCache:
                 camera.get("viewportYOffset", 0),
             )
 
-    def get_camera_state_dict(self) -> Dict[str, Any]:
+    def get_camera_state_dict(self) -> dict[str, Any]:
         """Get current camera state as a dictionary."""
         with self._lock:
             return self._state.latest_states.get("camera_changed", {}).copy()
 
-    def get_entity_transform(self) -> Tuple[int, int, int, int] | None:
+    def get_entity_transform(self) -> tuple[int, int, int, int] | None:
         """Get WorldEntity transform for projection, or None if top-level world."""
         with self._lock:
             entity = self._state.latest_states.get("world_entity")
@@ -267,12 +267,12 @@ class EventCache:
                 entity.get("groundHeightOffset", 0),
             )
 
-    def get_entity_transform_dict(self) -> Dict[str, Any]:
+    def get_entity_transform_dict(self) -> dict[str, Any]:
         """Get current WorldEntity transform as a dictionary."""
         with self._lock:
             return self._state.latest_states.get("world_entity", {}).copy()
 
-    def get_world_view_state(self) -> Dict[str, Any]:
+    def get_world_view_state(self) -> dict[str, Any]:
         """Get current world view state with scene dimensions and tile heights."""
         with self._lock:
             return self._state.latest_states.get("world_view_loaded", {}).copy()

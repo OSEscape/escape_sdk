@@ -2,7 +2,7 @@
 Batch client for RuneLite API operations.
 """
 
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from .api import RuneLiteAPI
@@ -20,7 +20,7 @@ class BatchOperation:
         signature: str,
         declaring_class: str,
         target: str | None = None,
-        args: List[Any] | None = None,
+        args: list[Any] | None = None,
     ):
         self.ref = ref
         self.target = target
@@ -29,7 +29,7 @@ class BatchOperation:
         self.declaring_class = declaring_class
         self.args = args or []
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "ref": self.ref,
             "target": self.target,
@@ -85,7 +85,7 @@ class Batch:
 
     def __init__(self, api: "RuneLiteAPI"):
         self._api = api
-        self._operations: List[BatchOperation] = []
+        self._operations: list[BatchOperation] = []
         self._ref_counter = 1
 
     @property
@@ -102,7 +102,7 @@ class Batch:
         target_ref: str,
         target_type: str | None,
         method_name: str,
-        args: List[Any],
+        args: list[Any],
     ) -> BatchRef:
         method_info = self._api.getMethodInfo(method_name, args, target_class=target_type)
 
@@ -124,7 +124,7 @@ class Batch:
         return_type = self._extract_return_type(method_info["signature"])
         return BatchRef(self, ref_id, return_type)
 
-    def _convert_args(self, args: List[Any]) -> List[Any]:
+    def _convert_args(self, args: list[Any]) -> list[Any]:
         converted = []
         for arg in args:
             if isinstance(arg, BatchRef):
@@ -147,7 +147,7 @@ class Batch:
                 return ret_sig
         return None
 
-    def execute(self, selections: Dict[str, "BatchRef"]) -> Dict[str, Any]:
+    def execute(self, selections: dict[str, "BatchRef"]) -> dict[str, Any]:
         if not self._operations:
             return {"success": True, "results": {}}
 

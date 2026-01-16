@@ -1,6 +1,6 @@
 """Player state middleware."""
 
-from typing import Any, Dict
+from typing import Any
 
 
 class Player:
@@ -16,10 +16,10 @@ class Player:
 
     def _init(self):
         """Actual initialization, runs once."""
-        self._cached_state: Dict[str, Any] = {}
+        self._cached_state: dict[str, Any] = {}
         self._cached_tick: int = -1
 
-    def _get_state(self) -> Dict[str, Any]:
+    def _get_state(self) -> dict[str, Any]:
         """Get cached player state (refreshed per tick)."""
         from escape.client import client
 
@@ -36,7 +36,7 @@ class Player:
         return self._cached_state
 
     @property
-    def position(self) -> Dict[str, int]:
+    def position(self) -> dict[str, int]:
         """Get player position."""
         return self._get_state()
 

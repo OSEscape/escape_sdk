@@ -3,7 +3,6 @@ GroundItemList type with fluent filtering.
 """
 
 from collections.abc import Callable
-from typing import List
 
 from .ground_item import GroundItem
 from .item import ItemIdentifier
@@ -13,7 +12,7 @@ from .packed_position import PackedPosition
 class GroundItemList:
     """List of ground items with fluent filtering methods."""
 
-    def __init__(self, items: List[GroundItem]):
+    def __init__(self, items: list[GroundItem]):
         """Initialize ground item list."""
         self._items = items
 
@@ -84,7 +83,7 @@ class GroundItemList:
         """Get number of items in list."""
         return len(self._items)
 
-    def to_list(self) -> List[GroundItem]:
+    def to_list(self) -> list[GroundItem]:
         """Convert to regular Python list."""
         return self._items.copy()
 

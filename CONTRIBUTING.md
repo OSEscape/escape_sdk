@@ -10,6 +10,47 @@ Thank you for your interest in contributing to Escape! This document provides gu
 4. Install pre-commit hooks: `pre-commit install`
 5. Create a branch: `git checkout -b feat/your-feature-name`
 
+## Ruff - Our Code Quality Tool
+
+We use **[Ruff](https://docs.astral.sh/ruff/)** for all linting and formatting. Ruff is an extremely fast Python linter and formatter written in Rust - it's 10-100x faster than traditional tools like flake8/black.
+
+### Why Ruff?
+
+- **Speed**: Lints entire codebase in milliseconds
+- **All-in-one**: Replaces flake8, isort, black, pyupgrade, and more
+- **Modern**: Native support for Python 3.12+ features
+- **Zero config needed**: Works out of the box with our `pyproject.toml`
+
+### Quick Commands
+
+```bash
+# Check for linting issues
+ruff check .
+
+# Auto-fix linting issues
+ruff check --fix .
+
+# Format code
+ruff format .
+
+# Check formatting without changing files
+ruff format --check .
+```
+
+### Pre-commit Integration
+
+Ruff runs automatically on every commit via pre-commit hooks:
+
+```bash
+# Install hooks (one-time setup)
+pre-commit install
+
+# Now every commit automatically runs ruff
+git commit -m "feat: add new feature"  # ruff runs automatically
+```
+
+If pre-commit blocks your commit, just run `ruff check --fix . && ruff format .` and commit again.
+
 ## Commit Message Convention
 
 We use [Conventional Commits](https://www.conventionalcommits.org/) for automated versioning and changelog generation.
@@ -46,14 +87,14 @@ Add `!` after type or `BREAKING CHANGE:` in footer for major version bump:
 ```bash
 feat!: redesign inventory API
 
-BREAKING CHANGE: getItems() now returns Item objects instead of IDs
+BREAKING CHANGE: get_items() now returns Item objects instead of IDs
 ```
 
 ### Examples
 
 ```bash
 # Feature
-feat(inventory): add getItemsByName method
+feat(inventory): add get_items_by_name method
 
 # Bug fix
 fix(bank): resolve deposit all items issue
@@ -68,14 +109,30 @@ Closes #123
 
 ## Code Style
 
-### Naming Conventions
+### Naming Conventions (PEP 8)
 
 | Element | Convention | Example |
 |---------|------------|---------|
-| Functions/Methods | camelCase | `getItems()`, `isInventoryFull()` |
+| Functions/Methods | snake_case | `get_items()`, `is_inventory_full()` |
 | Classes | PascalCase | `Inventory`, `BankInterface` |
 | Constants | UPPER_CASE | `MAX_INVENTORY_SIZE` |
-| Private | _camelCase | `_internalHelper()` |
+| Private | _snake_case | `_internal_helper()` |
+
+### Type Hints
+
+Use modern Python type hints:
+
+```python
+from collections.abc import Sequence
+
+# For parameters, prefer abstract types (Sequence, Mapping, Iterable)
+def process_items(items: Sequence[Item]) -> list[Item]:
+    return [item for item in items if item.is_valid]
+
+# For return types, use concrete types (list, dict)
+def get_all_items() -> list[Item]:
+    return self._items.copy()
+```
 
 ### Singleton Pattern
 
@@ -96,7 +153,7 @@ class NewModule:
         pass
 
 # Module-level export
-newModule = NewModule()
+new_module = NewModule()
 ```
 
 ### Property vs Method
@@ -111,7 +168,7 @@ def tabs(self) -> Tabs:
     return tabs
 
 # Method for action
-def getItems(self) -> list[Item]:
+def get_items(self) -> list[Item]:
     return self._items
 ```
 
@@ -121,11 +178,11 @@ Always use absolute imports:
 
 ```python
 # Correct
-from escape.globals import getClient
+from escape.globals import get_client
 from escape.tabs.inventory import inventory
 
 # Wrong
-from ...globals import getClient
+from ...globals import get_client
 ```
 
 ## Project Structure
@@ -180,14 +237,14 @@ Use dependency injection for testing:
 from escape.tabs.inventory import Inventory
 from unittest.mock import Mock
 
-def testGetItems():
-    mockClient = Mock()
-    mockClient.cache.getItemContainer.return_value = [...]
+def test_get_items():
+    mock_client = Mock()
+    mock_client.cache.get_item_container.return_value = [...]
 
     inventory = Inventory.__new__(Inventory)
-    inventory.client = mockClient
+    inventory.client = mock_client
 
-    items = inventory.getItems()
+    items = inventory.get_items()
     assert len(items) == 5
 ```
 
@@ -212,9 +269,9 @@ docs: improve bank interface examples
 
 Before submitting:
 
-- [ ] Code follows naming conventions (camelCase for functions)
+- [ ] Code follows PEP 8 naming conventions (snake_case for functions)
 - [ ] All tests pass
-- [ ] Pre-commit hooks pass
+- [ ] Pre-commit hooks pass (`ruff check` and `ruff format`)
 - [ ] Commit messages follow conventional commits
 - [ ] Type hints are included
 - [ ] Docstrings use Google style

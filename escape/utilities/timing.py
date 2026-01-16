@@ -5,7 +5,7 @@ Timing utilities - delays, waits, retries.
 import random
 import time
 from collections.abc import Callable
-from typing import Any, Tuple
+from typing import Any
 
 import escape.globals as globals
 from escape._internal.logger import logger
@@ -78,7 +78,7 @@ def retry(
     return None
 
 
-def measure_time(func: Callable[[], Any]) -> Tuple[Any, float]:
+def measure_time(func: Callable[[], Any]) -> tuple[Any, float]:
     """Measure execution time of a function."""
     start = time.time()
     result = func()

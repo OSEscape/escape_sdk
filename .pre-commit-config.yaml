@@ -11,17 +11,6 @@ repos:
       - id: ruff-format
         exclude: ^(escape/generated/|scripts/)
 
-  # Custom naming convention checker
-  - repo: local
-    hooks:
-      - id: naming-convention
-        name: Check camelCase naming convention
-        entry: python3 scripts/check_naming.py
-        language: system
-        types: [python]
-        pass_filenames: false
-        exclude: ^escape/generated/
-
   # Note: mypy disabled in pre-commit (too slow, run manually with: mypy escape/)
   # Type checking with mypy
   # - repo: https://github.com/pre-commit/mirrors-mypy

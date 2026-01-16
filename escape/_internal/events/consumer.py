@@ -225,12 +225,11 @@ class EventConsumer:
 
                 # Verify sequence continuity
                 expected_seq = self.last_seq[channel] + 1
-                if seq != expected_seq and self.last_seq[channel] > 0:
-                    if self.warn_on_gaps:
-                        gap_size = seq - expected_seq
-                        logger.warning(
-                            f"[{channel}] Gap detected! Expected {expected_seq}, got {seq} (missed {gap_size})"
-                        )
+                if seq != expected_seq and self.last_seq[channel] > 0 and self.warn_on_gaps:
+                    gap_size = seq - expected_seq
+                    logger.warning(
+                        f"[{channel}] Gap detected! Expected {expected_seq}, got {seq} (missed {gap_size})"
+                    )
 
                 # Store event in cache
                 # print(f"🔔 [{channel}] Processing event seq={seq} with event {event}")

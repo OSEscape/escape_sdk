@@ -10,7 +10,7 @@ import mmap
 import os
 import struct
 import time
-from typing import Any, Dict, List, Tuple, Type
+from typing import Any
 
 from escape._internal.logger import logger
 
@@ -192,12 +192,13 @@ class RuneLiteAPI:
     def connect(self) -> bool:
         """Connect to the universal bridge"""
         try:
-            self.api_fd = open("/dev/shm/runelite_api_universal", "r+b")
+            # File handles kept open intentionally - mmap requires fd to stay open
+            self.api_fd = open("/dev/shm/runelite_api_universal", "r+b")  # noqa: SIM115
             self.api_channel = mmap.mmap(
                 self.api_fd.fileno(), 16 * 1024 * 1024
             )  # 16MB to match C side
 
-            self.result_fd = open("/dev/shm/runelite_results_universal", "r+b")
+            self.result_fd = open("/dev/shm/runelite_results_universal", "r+b")  # noqa: SIM115
             self.result_buffer = mmap.mmap(
                 self.result_fd.fileno(), 16 * 1024 * 1024
             )  # 16MB to match C side
@@ -208,7 +209,7 @@ class RuneLiteAPI:
             logger.error(f"Failed to connect: {e}")
             return False
 
-    def _parse_signature_params(self, signature: str) -> List[str]:
+    def _parse_signature_params(self, signature: str) -> list[str]:
         """Parse JNI signature and extract all parameter types."""
         params_str = signature[signature.index("(") + 1 : signature.index(")")]
         if not params_str:
@@ -272,7 +273,7 @@ class RuneLiteAPI:
 
         return f"net/runelite/api/{normalized}"
 
-    def _find_method_in_hierarchy(self, method_name: str, target_class: str, signatures: List) -> List:
+    def _find_method_in_hierarchy(self, method_name: str, target_class: str, signatures: list) -> list:
         """Find method signatures by walking up the inheritance tree."""
         # Extract simple class name for inheritance lookup
         simple_target = target_class.split("/")[-1]
@@ -317,14 +318,14 @@ class RuneLiteAPI:
         return []
 
     def get_method_signature(
-        self, method_name: str, args: List | None = None, target_class: str = "Client"
+        self, method_name: str, args: list | None = None, target_class: str = "Client"
     ) -> str | None:
         """Get the correct JNI signature for a method based on arguments."""
         info = self.get_method_info(method_name, args, target_class)
         return info["signature"] if info else None
 
     def get_method_info(
-        self, method_name: str, args: List | None = None, target_class: str = "Client"
+        self, method_name: str, args: list | None = None, target_class: str = "Client"
     ) -> dict | None:
         """Get signature, declaring_class, and return_type for a method."""
         # Check if target_class is a plugin class (contains "shortestpath")
@@ -383,7 +384,7 @@ class RuneLiteAPI:
 
         return None
 
-    def _score_signature_match(self, signature: str, args: List) -> int:
+    def _score_signature_match(self, signature: str, args: list) -> int:
         """Score how well arguments match a signature (-1 = no match)."""
         # Extract parameter types from signature (using consolidated parser)
         param_types = self._parse_signature_params(signature)
@@ -452,7 +453,7 @@ class RuneLiteAPI:
 
     def convert_argument(
         self, arg_value: Any, signature: str, arg_index: int = 0
-    ) -> Tuple[str, str]:
+    ) -> tuple[str, str]:
         """Convert argument to (type, value) tuple using scraped type data."""
         # FIRST: Check if it's an EnumValue object - this takes priority!
         if EnumValue and isinstance(arg_value, EnumValue):
@@ -475,7 +476,7 @@ class RuneLiteAPI:
         # Fallback for when perfect data isn't available
         return self._convert_fallback(arg_value, jni_type)
 
-    def _convert_by_category(self, arg_value: Any, jni_type: str, type_info: dict) -> Tuple[str, str]:
+    def _convert_by_category(self, arg_value: Any, jni_type: str, type_info: dict) -> tuple[str, str]:
         """Convert argument based on type category from API data."""
         category = type_info["category"]
 
@@ -516,7 +517,7 @@ class RuneLiteAPI:
 
         return ("object", str(arg_value))
 
-    def _convert_fallback(self, arg_value: Any, jni_type: str) -> Tuple[str, str]:
+    def _convert_fallback(self, arg_value: Any, jni_type: str) -> tuple[str, str]:
         """Fallback conversion when type_conversion data isn't available."""
         if isinstance(arg_value, int):
             if jni_type == "I":
@@ -571,11 +572,11 @@ class RuneLiteAPI:
                     return enum_info.get("name_to_ordinal", {}).get(value_name.upper())
         return None
 
-    def get_enum(self, enum_name: str) -> Type | None:
+    def get_enum(self, enum_name: str) -> type | None:
         """Get an enum class by name"""
         return self.enum_classes.get(enum_name)
 
-    def list_enums(self) -> List[str]:
+    def list_enums(self) -> list[str]:
         """List all available enum names"""
         return sorted(self.enum_classes.keys())
 
@@ -690,7 +691,7 @@ class RuneLiteAPI:
         # Data was already trimmed in _wait_for_response if it had a magic header
         return msgpack.unpackb(data, raw=False, strict_map_key=False)
 
-    def execute_batch_query(self, operations: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def execute_batch_query(self, operations: list[dict[str, Any]]) -> dict[str, Any]:
         """Execute a batch query using MessagePack v2 protocol."""
         if not self.api_channel or not self.result_buffer:
             raise RuntimeError("Not connected to bridge - call connect() first")
@@ -735,7 +736,7 @@ class RuneLiteAPI:
         target: str,
         method: str,
         signature: str,
-        args: List[Any] | None = None,
+        args: list[Any] | None = None,
         async_exec: bool = False,
         declaring_class: str | None = None,
     ) -> Any:

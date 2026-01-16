@@ -1,12 +1,12 @@
 """Varps and Varbits accessor functions."""
 
-from typing import Any, Dict
+from typing import Any
 
 from escape._internal.logger import logger
 
 # Module-level data (loaded by cache_manager at init)
-_varps_data: Dict[int, Dict[str, Any]] | None = None
-_varbits_data: Dict[int, Dict[str, Any]] | None = None
+_varps_data: dict[int, dict[str, Any]] | None = None
+_varbits_data: dict[int, dict[str, Any]] | None = None
 
 
 def _get_varp_value(varp_id: int) -> int | None:
@@ -29,7 +29,7 @@ def extract_bits(value: int, start_bit: int, end_bit: int) -> int:
     return (value >> start_bit) & mask
 
 
-def get_varbit_info(varbit_id: int) -> Dict[str, Any] | None:
+def get_varbit_info(varbit_id: int) -> dict[str, Any] | None:
     """Get metadata about a varbit (which varp it belongs to, bit positions)."""
     if not _varbits_data:
         return None
@@ -110,7 +110,7 @@ def get_varbit_by_name(name: str) -> int | None:
     return None
 
 
-def list_varps(filter_name: str | None = None) -> Dict[int, Dict[str, Any]]:
+def list_varps(filter_name: str | None = None) -> dict[int, dict[str, Any]]:
     """List all available varps, optionally filtered by name."""
     if not _varps_data:
         return {}
@@ -125,7 +125,7 @@ def list_varps(filter_name: str | None = None) -> Dict[int, Dict[str, Any]]:
     return {int(k): v for k, v in _varps_data.items()}
 
 
-def list_varbits(filter_name: str | None = None) -> Dict[int, Dict[str, Any]]:
+def list_varbits(filter_name: str | None = None) -> dict[int, dict[str, Any]]:
     """List all available varbits, optionally filtered by name."""
     if not _varbits_data:
         return {}
@@ -152,10 +152,10 @@ def get_varc_value(varc_id: int) -> Any | None:
 
 
 # Cache for VarClientID id -> name mapping (built on first use)
-_varc_id_to_name: Dict[int, str] | None = None
+_varc_id_to_name: dict[int, str] | None = None
 
 
-def _build_varc_cache() -> Dict[int, str]:
+def _build_varc_cache() -> dict[int, str]:
     """Build varc id->name cache using fast __dict__ access."""
     global _varc_id_to_name
 

@@ -1,7 +1,7 @@
 """Game Objects accessor functions for OSRS object definitions and locations."""
 
 import sqlite3
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 from escape._internal.logger import logger
 from escape.types.packed_position import pack_position_signed, unpack_position
@@ -10,7 +10,7 @@ from escape.types.packed_position import pack_position_signed, unpack_position
 _db_connection: sqlite3.Connection | None = None
 
 
-def get_by_id(object_id: int) -> Dict[str, Any] | None:
+def get_by_id(object_id: int) -> dict[str, Any] | None:
     """Get object definition by ID."""
     if _db_connection is None:
         logger.error("Objects database not loaded")
@@ -34,7 +34,7 @@ def get_by_id(object_id: int) -> Dict[str, Any] | None:
     return None
 
 
-def get_by_name(name: str, exact: bool = False) -> List[Dict[str, Any]]:
+def get_by_name(name: str, exact: bool = False) -> list[dict[str, Any]]:
     """Search for objects by name."""
     if _db_connection is None:
         logger.error("Objects database not loaded")
@@ -65,7 +65,7 @@ def get_by_name(name: str, exact: bool = False) -> List[Dict[str, Any]]:
     return [{"id": row[0], "name": row[1]} for row in cursor.fetchall()]
 
 
-def get_locations(object_id: int) -> List[Tuple[int, int, int]]:
+def get_locations(object_id: int) -> list[tuple[int, int, int]]:
     """Get all spawn locations for an object ID."""
     if _db_connection is None:
         logger.error("Objects database not loaded")
@@ -83,7 +83,7 @@ def get_locations(object_id: int) -> List[Tuple[int, int, int]]:
     return locations
 
 
-def get_nearby(x: int, y: int, plane: int = 0, radius: int = 10) -> List[Dict[str, Any]]:
+def get_nearby(x: int, y: int, plane: int = 0, radius: int = 10) -> list[dict[str, Any]]:
     """Get all objects near a coordinate."""
     if _db_connection is None:
         logger.error("Objects database not loaded")
@@ -149,7 +149,7 @@ def get_nearby(x: int, y: int, plane: int = 0, radius: int = 10) -> List[Dict[st
     return results
 
 
-def search_by_action(action: str) -> List[Dict[str, Any]]:
+def search_by_action(action: str) -> list[dict[str, Any]]:
     """Find all objects with a specific action."""
     if _db_connection is None:
         logger.error("Objects database not loaded")
@@ -220,7 +220,7 @@ def count_locations() -> int:
     return cursor.fetchone()[0]
 
 
-def execute_query(query: str, params: tuple = ()) -> List[Dict[str, Any]]:
+def execute_query(query: str, params: tuple = ()) -> list[dict[str, Any]]:
     """Execute a custom SQL query on the objects database."""
     if _db_connection is None:
         logger.error("Objects database not loaded")

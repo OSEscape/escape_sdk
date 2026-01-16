@@ -1,5 +1,3 @@
-import escape.utilities.timing as timing
-from escape.client import client
 from escape.types.box import Box
 from escape.types.widget import Widget, WidgetFields
 

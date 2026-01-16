@@ -10,7 +10,7 @@ import re
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Set, Tuple
+from typing import Any
 
 from escape._internal.logger import logger
 
@@ -23,7 +23,7 @@ class MethodInfo:
     signature: str
     return_type: str
     generic_return_type: str | None = None  # Full generic type like "List<Player>"
-    params: List[str] = field(default_factory=list)
+    params: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -31,8 +31,8 @@ class EnumInfo:
     """Enum with values"""
 
     name: str
-    values: List[str] = field(default_factory=list)
-    value_map: Dict[str, Any] = field(default_factory=dict)
+    values: list[str] = field(default_factory=list)
+    value_map: dict[str, Any] = field(default_factory=dict)
 
 
 class EfficientRuneLiteScraper:
@@ -41,21 +41,21 @@ class EfficientRuneLiteScraper:
     """
 
     def __init__(self):
-        self.methods: Dict[
-            str, List[Tuple[str, str, str | None]]
+        self.methods: dict[
+            str, list[tuple[str, str, str | None]]
         ] = {}  # method_name -> [(class, signature, generic_type)]
-        self.enums: Dict[str, EnumInfo] = {}
-        self.classes: Set[str] = set()
-        self.constants: Dict[str, Dict[str, Any]] = {}  # class -> {constant: value}
-        self.inheritance: Dict[
-            str, Dict[str, Any]
+        self.enums: dict[str, EnumInfo] = {}
+        self.classes: set[str] = set()
+        self.constants: dict[str, dict[str, Any]] = {}  # class -> {constant: value}
+        self.inheritance: dict[
+            str, dict[str, Any]
         ] = {}  # class -> {extends: str, implements: List[str]}
-        self.class_packages: Dict[str, str] = {}  # class_name -> full_package_path
-        self.all_class_files: List[
-            Tuple[Path, str, str]
+        self.class_packages: dict[str, str] = {}  # class_name -> full_package_path
+        self.all_class_files: list[
+            tuple[Path, str, str]
         ] = []  # [(file_path, class_name, package_path)]
-        self.interface_ids: Dict[str, Any] = {}  # InterfaceID structure with nested classes
-        self.sprite_ids: Dict[str, Any] = {}  # SpriteID structure with nested classes
+        self.interface_ids: dict[str, Any] = {}  # InterfaceID structure with nested classes
+        self.sprite_ids: dict[str, Any] = {}  # SpriteID structure with nested classes
 
         # JNI type mappings
         self.type_map = {
@@ -692,10 +692,7 @@ class EfficientRuneLiteScraper:
                 if param:
                     # Extract type (everything except last word which is param name)
                     type_match = re.match(r"(.+?)\s+\w+$", param)
-                    if type_match:
-                        java_type = type_match.group(1)
-                    else:
-                        java_type = param  # No name, just type
+                    java_type = type_match.group(1) if type_match else param
 
                     param_sig += self._type_to_jni(java_type)
 
@@ -704,7 +701,7 @@ class EfficientRuneLiteScraper:
 
         return f"({param_sig}){return_sig}"
 
-    def _split_params(self, params: str) -> List[str]:
+    def _split_params(self, params: str) -> list[str]:
         """Split parameters handling generics and annotations."""
         result = []
         current = []
@@ -851,7 +848,7 @@ class EfficientRuneLiteScraper:
 
         print("=" * 60)
 
-    def _build_type_conversion_database(self) -> Dict[str, Any]:
+    def _build_type_conversion_database(self) -> dict[str, Any]:
         """Build type conversion database from scraped data."""
         db = {
             "primitives": {},
@@ -900,7 +897,7 @@ class EfficientRuneLiteScraper:
         # 3. Process all method signatures to find all types
         seen_types = set()
         for _method_name, implementations in self.methods.items():
-            for class_name, signature, _generic_type in implementations:
+            for _class_name, signature, _generic_type in implementations:
                 # Extract parameter and return types
                 params, ret = self._parse_jni_signature(signature)
                 for param_type in params:
@@ -957,7 +954,7 @@ class EfficientRuneLiteScraper:
 
         return db
 
-    def _parse_jni_signature(self, signature: str) -> Tuple[List[str], str]:
+    def _parse_jni_signature(self, signature: str) -> tuple[list[str], str]:
         """Parse JNI signature to extract parameter and return types."""
         match = re.match(r"\((.*?)\)(.+)", signature)
         if not match:
@@ -1031,7 +1028,7 @@ class EfficientRuneLiteScraper:
         else:
             return "object"
 
-    def _build_conversion_lookup(self, db: Dict) -> Dict:
+    def _build_conversion_lookup(self, db: dict) -> dict:
         """Build quick lookup for Python value to bridge type conversion."""
         return {
             "instructions": {
@@ -1051,7 +1048,7 @@ class EfficientRuneLiteScraper:
             },
         }
 
-    def _build_inheritance_tree(self) -> Tuple[Dict[str, str], Dict[str, List[str]]]:
+    def _build_inheritance_tree(self) -> tuple[dict[str, str], dict[str, list[str]]]:
         """Build parent and children mappings from inheritance data."""
         child_to_parent = {}  # class_name -> parent_name
         parent_to_children = {}  # parent_name -> [child1, child2, ...]
@@ -1186,8 +1183,8 @@ class EfficientRuneLiteScraper:
             logger.warning(f"Skipped: {resolution_stats['skipped']} invalid signatures")
 
     def _split_into_inheritance_trees(
-        self, class_list: List[Tuple[str, Any]], child_to_parent: Dict[str, str]
-    ) -> List[List[Tuple[str, Any]]]:
+        self, class_list: list[tuple[str, Any]], child_to_parent: dict[str, str]
+    ) -> list[list[tuple[str, Any]]]:
         """Split classes into separate inheritance trees based on shared ancestors."""
         if len(class_list) == 1:
             return [class_list]
@@ -1199,7 +1196,7 @@ class EfficientRuneLiteScraper:
             class_info.append((class_path, simple_name, generic_type))
 
         # Build ancestor sets for each class
-        def get_all_ancestors(class_name: str) -> Set[str]:
+        def get_all_ancestors(class_name: str) -> set[str]:
             """Get all ancestors including the class itself"""
             ancestors = {class_name}
             current = class_name
@@ -1245,8 +1242,8 @@ class EfficientRuneLiteScraper:
         return trees
 
     def _split_sibling_declarations(
-        self, class_list: List[Tuple[str, Any]], child_to_parent: Dict[str, str]
-    ) -> List[List[Tuple[str, Any]]]:
+        self, class_list: list[tuple[str, Any]], child_to_parent: dict[str, str]
+    ) -> list[list[tuple[str, Any]]]:
         """Split sibling classes that both declare the same method into separate groups."""
         if len(class_list) <= 1:
             return [class_list]
@@ -1299,7 +1296,7 @@ class EfficientRuneLiteScraper:
         return groups
 
     def _find_declaring_class(
-        self, class_list: List[Tuple[str, Any]], child_to_parent: Dict[str, str]
+        self, class_list: list[tuple[str, Any]], child_to_parent: dict[str, str]
     ) -> str:
         """Find the topmost class in the hierarchy that declares this method."""
         # Extract class paths and convert to simple names
@@ -1314,7 +1311,7 @@ class EfficientRuneLiteScraper:
 
         # Build hierarchy for these classes
         # Find which classes are ancestors of others
-        def get_ancestors(class_name: str) -> List[str]:
+        def get_ancestors(class_name: str) -> list[str]:
             """Get all ancestors of a class in order (parent, grandparent, ...)"""
             ancestors = []
             current = class_name
@@ -1330,7 +1327,7 @@ class EfficientRuneLiteScraper:
 
         # For each class, get its ancestors
         class_hierarchies = {}
-        for path, simple_name in simple_names.items():
+        for _path, simple_name in simple_names.items():
             ancestors = get_ancestors(simple_name)
             class_hierarchies[simple_name] = ancestors
 

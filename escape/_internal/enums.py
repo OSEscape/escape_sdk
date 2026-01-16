@@ -5,7 +5,7 @@ Provides type-safe enum objects that prevent int/enum confusion
 """
 
 import json
-from typing import Any, Dict, Type
+from typing import Any
 
 from escape._internal.logger import logger
 
@@ -101,7 +101,7 @@ class EnumMeta(type):
             raise TypeError(f"Invalid key type: {type(key)}")
 
 
-def create_enum_class(enum_name: str, values: list, value_map: Dict | None = None) -> Type:
+def create_enum_class(enum_name: str, values: list, value_map: dict | None = None) -> type:
     """
     Create a single enum class from scraped data
     """
@@ -143,7 +143,7 @@ def create_enum_class(enum_name: str, values: list, value_map: Dict | None = Non
     return enum_class
 
 
-def generate_all_enum_classes(api_data: Dict) -> Dict[str, Type]:
+def generate_all_enum_classes(api_data: dict) -> dict[str, type]:
     """
     Generate all enum classes from the scraped API data
     """
@@ -172,7 +172,7 @@ def generate_all_enum_classes(api_data: Dict) -> Dict[str, Type]:
     return enum_classes
 
 
-def load_enums_from_file(api_data_file: str | None = None) -> Dict[str, Type]:
+def load_enums_from_file(api_data_file: str | None = None) -> dict[str, type]:
     """
     Load enum classes from the API data file
     """
@@ -222,7 +222,7 @@ __all__ = [
 
 
 # Provide convenient access to common enums (if they exist)
-def get_enum(enum_name: str) -> Type | None:
+def get_enum(enum_name: str) -> type | None:
     """Get an enum class by name"""
     return _enum_classes.get(enum_name)
 
@@ -232,7 +232,7 @@ def list_all_enums() -> list:
     return sorted(_enum_classes.keys())
 
 
-def enum_info(enum_name: str) -> Dict[str, Any]:
+def enum_info(enum_name: str) -> dict[str, Any]:
     """Get information about an enum"""
     enum_class = _enum_classes.get(enum_name)
     if not enum_class:

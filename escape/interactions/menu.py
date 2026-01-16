@@ -2,10 +2,8 @@
 Menu module - handles right-click context menu interactions.
 """
 
-import math
 import time
 from copy import deepcopy
-from typing import List, Tuple
 
 from escape.client import client
 from escape.types import Box
@@ -32,7 +30,7 @@ class Menu:
         """Check if the right-click context menu is currently open."""
         return client.cache.getMenuOpenState().get("menu_open", False)
 
-    def _get_options(self, strip_colors: bool = True) -> Tuple[List[str], List[str]]:
+    def _get_options(self, strip_colors: bool = True) -> tuple[list[str], list[str]]:
         data = deepcopy(client.cache.getMenuOptions())
         types = data["types"]
         options = data["options"]
@@ -44,7 +42,7 @@ class Menu:
         # Combine types, options, and targets into formatted strings
 
         formatted_options = [
-            f"{option} {target}".strip() for option, target in zip(options, targets)
+            f"{option} {target}".strip() for option, target in zip(options, targets, strict=False)
         ]
         if strip_colors:
             formatted_options = [stripColorTags(opt) for opt in formatted_options]
@@ -169,13 +167,13 @@ class Menu:
 
             return timing.waitUntil(lambda: not self.is_open(), timeout=timeout, poll_interval=0.001)
 
-    def get_options(self, strip_colors: bool = True) -> List[str]:
+    def get_options(self, strip_colors: bool = True) -> list[str]:
         """Get all menu options as formatted strings in display order."""
         menu_options, _ = self._get_options(strip_colors=strip_colors)
 
         return menu_options
 
-    def get_types(self) -> List[str]:
+    def get_types(self) -> list[str]:
         """Get all menu option types in display order."""
         _, menu_types = self._get_options(strip_colors=True)
 

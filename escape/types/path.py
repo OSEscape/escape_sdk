@@ -5,7 +5,7 @@ Uses numpy arrays for efficient coordinate storage and projection integration.
 """
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
@@ -28,7 +28,7 @@ class PathObstacle:
     object_info: str | None
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "PathObstacle":
+    def from_dict(cls, data: dict[str, Any]) -> "PathObstacle":
         """Create PathObstacle from dict."""
         return cls(
             origin=PackedPosition.from_packed(data["origin"]),
@@ -49,13 +49,13 @@ class Path:
 
     __slots__ = ("_packed", "_obstacles")
 
-    def __init__(self, packed: np.ndarray, obstacles: List[PathObstacle]):
+    def __init__(self, packed: np.ndarray, obstacles: list[PathObstacle]):
         """Initialize path with packed positions and obstacles."""
         self._packed = packed.astype(np.int32)
         self._obstacles = obstacles
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "Path":
+    def from_dict(cls, data: dict[str, Any]) -> "Path":
         """Create Path from Java response dict."""
         # Direct numpy conversion - instant for any size
         packed = np.array(data["path"], dtype=np.int32)
@@ -160,7 +160,7 @@ class Path:
         _, _, visible = self.get_screen_coords(margin=margin)
         return np.where(visible)[0]
 
-    def get_visible_quads(self) -> List["Quad"]:
+    def get_visible_quads(self) -> list["Quad"]:
         """Get Quads for all visible path tiles."""
         grid = self._get_tile_grid()
         if grid is None:
@@ -215,7 +215,7 @@ class Path:
         return grid.getTileQuad(tile_idx)
 
     @property
-    def obstacles(self) -> List[PathObstacle]:
+    def obstacles(self) -> list[PathObstacle]:
         """Get all obstacles in path."""
         return self._obstacles
 

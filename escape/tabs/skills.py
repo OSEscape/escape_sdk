@@ -2,11 +2,10 @@
 Skills tab module.
 """
 
-from typing import Dict, List
 
 from escape.types.gametab import GameTab, GameTabs
 
-SKILL_NAMES: List[str] = [
+SKILL_NAMES: list[str] = [
     "Attack",
     "Defence",
     "Strength",
@@ -52,7 +51,7 @@ class Skills(GameTabs):
         GameTabs.__init__(self)
         self._last_total_xp: int | None = None
 
-    def _get_skill_data(self, skill_name: str) -> Dict[str, int]:
+    def _get_skill_data(self, skill_name: str) -> dict[str, int]:
         """Get skill data from cache."""
         from escape.client import client
 

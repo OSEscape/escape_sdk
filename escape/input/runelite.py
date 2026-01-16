@@ -4,7 +4,7 @@ import contextlib
 import subprocess
 import threading
 import time
-from typing import Any, Tuple
+from typing import Any
 
 from Xlib import X, display
 
@@ -29,8 +29,8 @@ class RuneLite:
 
         # Window state (updated by event thread)
         self._window_id: int | None = None
-        self._window_offset: Tuple[int, int] | None = None
-        self._window_size: Tuple[int, int] | None = None
+        self._window_offset: tuple[int, int] | None = None
+        self._window_size: tuple[int, int] | None = None
         self._is_minimized: bool = False
         self._is_active: bool = False
         self._state_valid: bool = False
@@ -160,11 +160,10 @@ class RuneLite:
                         self._is_active = False
 
             # PropertyNotify on root: check for active window change
-            elif evt.type == X.PropertyNotify:
-                if hasattr(evt, "atom"):
-                    atom_name = event_display.get_atom_name(evt.atom)
-                    if atom_name == "_NET_ACTIVE_WINDOW":
-                        self._update_active_state(event_display)
+            elif evt.type == X.PropertyNotify and hasattr(evt, "atom"):
+                atom_name = event_display.get_atom_name(evt.atom)
+                if atom_name == "_NET_ACTIVE_WINDOW":
+                    self._update_active_state(event_display)
 
     def _update_active_state(self, event_display: display.Display) -> None:
         """Update active window state from _NET_ACTIVE_WINDOW property."""
@@ -277,9 +276,8 @@ class RuneLite:
 
     def activate_window(self) -> bool:
         """Activate and bring RuneLite window to foreground."""
-        if self._window_id is None:
-            if not self.detect_window():
-                return False
+        if self._window_id is None and not self.detect_window():
+            return False
 
         try:
             window_id_hex = hex(self._window_id)
@@ -330,9 +328,8 @@ class RuneLite:
                 return True
 
         # Detect if needed
-        if not self._state_valid:
-            if not self.detect_window():
-                return False
+        if not self._state_valid and not self.detect_window():
+            return False
 
         # Activate if minimized or not active
         if self._is_minimized or not self._is_active:
@@ -364,19 +361,19 @@ class RuneLite:
         if self.auto_refresh:
             self.refresh_window_position()
 
-    def get_window_offset(self) -> Tuple[int, int] | None:
+    def get_window_offset(self) -> tuple[int, int] | None:
         """Get current window offset (x, y)."""
         self._auto_refresh()
         with self._lock:
             return self._window_offset
 
-    def get_window_size(self) -> Tuple[int, int] | None:
+    def get_window_size(self) -> tuple[int, int] | None:
         """Get current window size (width, height)."""
         self._auto_refresh()
         with self._lock:
             return self._window_size
 
-    def get_game_bounds(self) -> Tuple[int, int, int, int] | None:
+    def get_game_bounds(self) -> tuple[int, int, int, int] | None:
         """Get game window bounds (x, y, width, height)."""
         self._auto_refresh()
 

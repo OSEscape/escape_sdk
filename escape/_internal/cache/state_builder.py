@@ -2,16 +2,15 @@
 
 from collections import defaultdict, deque
 from time import time
-from typing import Any, Deque, Dict, List
+from typing import Any
 
 import numpy as np
 
-import escape.utilities.timing as timing
 from escape._internal.events.channels import LATEST_STATE_CHANNELS
 from escape._internal.logger import logger
 from escape._internal.resources import varps as varps_resource
 from escape.globals import get_api
-from escape.types import Item, ItemContainer
+from escape.types import ItemContainer
 
 # Skill names constant - defined here to avoid circular import with tabs.skills
 # Note: Also defined in tabs/skills.py for public API access
@@ -49,22 +48,22 @@ class StateBuilder:
     def __init__(self, event_history_size: int = 100):
         """Initialize with empty state."""
         # Latest-state channels (overwritten, no history)
-        self.latest_states: Dict[str, Dict[str, Any]] = {}
+        self.latest_states: dict[str, dict[str, Any]] = {}
 
         # Ring buffer channels (last N events)
-        self.recent_events: Dict[str, Deque] = defaultdict(lambda: deque(maxlen=event_history_size))
+        self.recent_events: dict[str, deque] = defaultdict(lambda: deque(maxlen=event_history_size))
 
-        self.recently_changed_containers: Deque = deque(maxlen=100)
+        self.recently_changed_containers: deque = deque(maxlen=100)
 
         # Derived state from ring buffer events
-        self.varps: List[int] = []  # {varp_id: value}
-        self.varcs: Dict[int, Any] = {}  # {varc_id: value}
+        self.varps: list[int] = []  # {varp_id: value}
+        self.varcs: dict[int, Any] = {}  # {varc_id: value}
 
-        self.skills: Dict[str, Dict[str, int]] = {}  # {skill_name: {level, xp, boosted_level}}
-        self.last_click: Dict[str, Any] = {}  # {button, coords, time}
-        self.chat_history: Deque = deque(maxlen=100)  # Last 100 chat messages
-        self.current_state: Dict[str, Any] = {}  # Other derived state as needed
-        self.animating_actors: Dict[str, Any] = defaultdict(dict)  # Actors currently animating
+        self.skills: dict[str, dict[str, int]] = {}  # {skill_name: {level, xp, boosted_level}}
+        self.last_click: dict[str, Any] = {}  # {button, coords, time}
+        self.chat_history: deque = deque(maxlen=100)  # Last 100 chat messages
+        self.current_state: dict[str, Any] = {}  # Other derived state as needed
+        self.animating_actors: dict[str, Any] = defaultdict(dict)  # Actors currently animating
 
         self.ground_items_initialized = False
         self.varps_initialized = False
@@ -72,13 +71,13 @@ class StateBuilder:
         self.skills_initialized = False
         self.containers_initialized = False
 
-        self.itemcontainers: Dict[int, ItemContainer] = {}
+        self.itemcontainers: dict[int, ItemContainer] = {}
 
         self.itemcontainers[93] = ItemContainer(93, 28)  # Inventory
         self.itemcontainers[94] = ItemContainer(94, 14)  # Equipment
         self.itemcontainers[95] = ItemContainer(95, -1)  # Bank
 
-    def add_event(self, channel: str, event: Dict[str, Any]) -> None:
+    def add_event(self, channel: str, event: dict[str, Any]) -> None:
         """Process incoming event and update state."""
         if channel in LATEST_STATE_CHANNELS:
             # Latest-state: just overwrite
@@ -95,7 +94,7 @@ class StateBuilder:
             self.recent_events[channel].append(event)
             self._process_event(channel, event)
 
-    def _process_event(self, channel: str, event: Dict[str, Any]) -> None:
+    def _process_event(self, channel: str, event: dict[str, Any]) -> None:
         """Update derived state from ring buffer event."""
         if channel == "varbit_changed":
             self._process_varbit_changed(event)
@@ -175,7 +174,7 @@ class StateBuilder:
         # Update the varp
         self.varps[varp_id] = new_varp
 
-    def _process_varbit_changed(self, event: Dict[str, Any]) -> None:
+    def _process_varbit_changed(self, event: dict[str, Any]) -> None:
         """Update varbit/varp state from event."""
         varbit_id = event.get("varbit_id")
         varp_id = event.get("varp_id")
@@ -191,7 +190,7 @@ class StateBuilder:
             # Update varbit (with bit manipulation)
             self._edit_varbit(varbit_id, varp_id, value)
 
-    def _process_varc_changed(self, event: Dict[str, Any]) -> None:
+    def _process_varc_changed(self, event: dict[str, Any]) -> None:
         """Update varc state from event."""
         varc_id = event.get("varc_id")
         value = event.get("value")
@@ -201,7 +200,7 @@ class StateBuilder:
 
         self._edit_varc(varc_id, value)
 
-    def _process_item_container_changed(self, event: Dict[str, Any]) -> None:
+    def _process_item_container_changed(self, event: dict[str, Any]) -> None:
         """Update inventory/equipment/bank from event."""
         container_id = event.get("container_id")
         items_list = event.get("items", [])
@@ -218,7 +217,7 @@ class StateBuilder:
 
         self.itemcontainers[container_id].fromArray(items_list)
 
-    def _process_stat_changed(self, event: Dict[str, Any]) -> None:
+    def _process_stat_changed(self, event: dict[str, Any]) -> None:
         """Update skill levels/XP from stat_changed event."""
         skill_name = event.get("skill")
         if not skill_name:
@@ -292,7 +291,7 @@ class StateBuilder:
 
         projection.invalidate()
 
-    def _process_world_view_loaded(self, event: Dict[str, Any]) -> None:
+    def _process_world_view_loaded(self, event: dict[str, Any]) -> None:
         """Configure Projection when world_view_loaded event is received."""
         from escape.world.projection import EntityConfig, projection
 

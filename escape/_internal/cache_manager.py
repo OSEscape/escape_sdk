@@ -5,7 +5,6 @@ import json
 import os
 import shutil
 import sys
-import time
 import urllib.request
 from pathlib import Path
 from typing import Any
@@ -118,9 +117,8 @@ def _download_file(url: str, dest: Path, decompress_gz: bool = True) -> bool:
 
                 # Decompress to working file
                 logger.info(f"Decompressing {gz_file.name}")
-                with gzip.open(gz_file, "rb") as f_in:
-                    with open(dest, "wb") as f_out:
-                        shutil.copyfileobj(f_in, f_out)
+                with gzip.open(gz_file, "rb") as f_in, open(dest, "wb") as f_out:
+                    shutil.copyfileobj(f_in, f_out)
 
                 logger.success(f"Decompressed: {dest.stat().st_size:,} bytes")
 

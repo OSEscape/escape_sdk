@@ -1,6 +1,6 @@
 """ItemContainer type for representing item containers like inventory, bank, equipment."""
 
-from typing import Any, Dict, List
+from typing import Any
 
 from escape.globals import getClient
 from escape.types.item import Item, ItemIdentifier
@@ -9,13 +9,13 @@ from escape.types.item import Item, ItemIdentifier
 class ItemContainer:
     """Base class for OSRS item containers (inventory, bank, equipment, etc.)."""
 
-    def __init__(self, container_id: int = -1, slot_count: int = -1, items: List[Item | None] = None):
+    def __init__(self, container_id: int = -1, slot_count: int = -1, items: list[Item | None] = None):
         """Initialize item container."""
         self.container_id = container_id
         self.slot_count = slot_count
         self.items = items if items is not None else []
 
-    def from_array(self, data: List[Dict[str, Any]]):
+    def from_array(self, data: list[dict[str, Any]]):
         """Populate ItemContainer from array of item dicts."""
         parsed_items = [
             Item.from_dict(item_data) if item_data is not None else None for item_data in data
@@ -37,7 +37,7 @@ class ItemContainer:
         if result:
             self.from_array(result)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert ItemContainer back to dict format."""
         return {
             "containerId": self.container_id,
@@ -59,7 +59,7 @@ class ItemContainer:
             return sum(1 for item in self.items if item is not None and item.id == identifier)
         return sum(1 for item in self.items if item is not None and identifier in item.name)
 
-    def get_items(self, identifier: ItemIdentifier) -> List[Item]:
+    def get_items(self, identifier: ItemIdentifier) -> list[Item]:
         """Get all items matching the given ID or name."""
         if isinstance(identifier, int):
             return [item for item in self.items if item is not None and item.id == identifier]
@@ -71,7 +71,7 @@ class ItemContainer:
             return self.items[slot_index]
         return None
 
-    def get_slots(self, slots: List[int]) -> List[Item | None]:
+    def get_slots(self, slots: list[int]) -> list[Item | None]:
         """Get items at specific slot indices."""
         result = []
         for slot_index in slots:
@@ -93,7 +93,7 @@ class ItemContainer:
                     return index
         return None
 
-    def find_item_slots(self, identifier: ItemIdentifier) -> List[int]:
+    def find_item_slots(self, identifier: ItemIdentifier) -> list[int]:
         """Find all slot indices containing items matching the ID or name."""
         slots = []
         if isinstance(identifier, int):
@@ -112,7 +112,7 @@ class ItemContainer:
             return any(item is not None and item.id == identifier for item in self.items)
         return any(item is not None and identifier in item.name for item in self.items)
 
-    def contains_all_items(self, identifiers: List[ItemIdentifier]) -> bool:
+    def contains_all_items(self, identifiers: list[ItemIdentifier]) -> bool:
         """Check if container contains all items matching the given IDs or names."""
         return all(self.contains_item(identifier) for identifier in identifiers)
 

@@ -2,7 +2,7 @@
 
 import random
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from escape.types.point import Point
@@ -12,21 +12,21 @@ if TYPE_CHECKING:
 class Polygon:
     """Represents an arbitrary polygon defined by n vertices."""
 
-    vertices: List["Point"]
+    vertices: list["Point"]
 
     def __post_init__(self):
         """Validate polygon has at least 3 vertices."""
         if len(self.vertices) < 3:
             raise ValueError("Polygon must have at least 3 vertices")
 
-    def from_array(self, data: List[List[int]]) -> None:
+    def from_array(self, data: list[list[int]]) -> None:
         """Populate Polygon from array of [x, y] coordinate pairs."""
         from escape.types.point import Point
 
         x_data = data[0]
         y_data = data[1]
 
-        self.vertices = [Point(x, y) for x, y in zip(x_data, y_data)]
+        self.vertices = [Point(x, y) for x, y in zip(x_data, y_data, strict=False)]
 
     def center(self) -> "Point":
         """Get the centroid (center of mass) of the polygon."""
@@ -54,13 +54,11 @@ class Polygon:
         p1x, p1y = self.vertices[0].x, self.vertices[0].y
         for i in range(1, n + 1):
             p2x, p2y = self.vertices[i % n].x, self.vertices[i % n].y
-            if y > min(p1y, p2y):
-                if y <= max(p1y, p2y):
-                    if x <= max(p1x, p2x):
-                        if p1y != p2y:
-                            xinters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
-                        if p1x == p2x or x <= xinters:
-                            inside = not inside
+            if y > min(p1y, p2y) and y <= max(p1y, p2y) and x <= max(p1x, p2x):
+                if p1y != p2y:
+                    xinters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
+                if p1x == p2x or x <= xinters:
+                    inside = not inside
             p1x, p1y = p2x, p2y
 
         return inside

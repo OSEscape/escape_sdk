@@ -2,7 +2,6 @@
 
 import random
 import time
-from typing import Optional, Tuple
 
 try:
     import pyautogui as pag
@@ -38,7 +37,7 @@ class Mouse:
         self.speed = speed
 
     @property
-    def position(self) -> Tuple[int, int]:
+    def position(self) -> tuple[int, int]:
         """Get current mouse position relative to game window."""
         screen_x, screen_y = pag.position()
         offset = self.runelite.get_window_offset()

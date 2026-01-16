@@ -8,7 +8,6 @@ New structure: escape/tabs/*, escape/_internal/*, etc.
 
 import re
 from pathlib import Path
-from typing import List, Tuple
 
 from escape._internal.logger import logger
 
@@ -38,7 +37,7 @@ IMPORT_REPLACEMENTS = {
 }
 
 
-def fix_imports_in_file(filepath: Path) -> Tuple[int, List[str]]:
+def fix_imports_in_file(filepath: Path) -> tuple[int, list[str]]:
     """
     Fix imports in a single Python file.
 

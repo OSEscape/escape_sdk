@@ -92,27 +92,10 @@ select = [
     "TCH", # flake8-type-checking
 ]
 
-# We'll ignore N802 (function name should be lowercase) since we want camelCase
+# Ignore rules - keep minimal, only for legitimate cases
 ignore = [
-    "N802",  # Function name should be lowercase (we use camelCase)
-    "N806",  # Variable in function should be lowercase (allow camelCase)
-    "N803",  # Argument name should be lowercase (allow camelCase)
-    "N815",  # Variable in class scope should not be mixedCase (allow camelCase in dataclasses)
-    "N816",  # Variable in global scope should not be mixedCase (allow camelCase for module functions)
-    "F401",  # Imported but unused (scripts use imports for testing)
-    "F821",  # Undefined name (many are dynamically generated at runtime)
     "F822",  # Undefined name in __all__ (dynamically generated)
-    "UP006", # Use `dict` instead of `Dict` (for consistency with existing code)
-    "UP035", # Deprecated typing imports (TODO: migrate to modern type hints)
-    "B905",  # zip() without strict parameter (TODO: add strict=True where appropriate)
-    "TC004", # Move import out of TYPE_CHECKING (needed at runtime in some cases)
-    "E501",  # Line too long (already handled by formatter)
-    "SIM102", # Use single if statement (nested ifs are often more readable)
-    "SIM108", # Use ternary operator (if-else blocks are often more readable)
-    "SIM115", # Use context manager (not always applicable for mmap file handles)
-    "SIM117", # Use single with statement (nested with is often clearer)
-    "B007",  # Loop control variable not used (sometimes intentional)
-    "B023",  # Function definition does not bind loop variable (false positives)
+    "E501",  # Line too long (handled by formatter)
 ]
 
 # Allow autofix for all enabled rules

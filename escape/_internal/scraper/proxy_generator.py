@@ -3,7 +3,6 @@
 
 import json
 from pathlib import Path
-from typing import Dict, List, Tuple
 
 from escape._internal.logger import logger
 
@@ -82,7 +81,7 @@ class ProxyGenerator:
             if class_name not in self.class_methods:
                 self.class_methods[class_name] = []
 
-    def _build_class_methods_mapping(self) -> Dict[str, List[Tuple[str, str, str, str, str, str]]]:
+    def _build_class_methods_mapping(self) -> dict[str, list[tuple[str, str, str, str, str, str]]]:
         """Build mapping of class names to their method tuples."""
         class_methods = {}
 
@@ -258,7 +257,7 @@ class ProxyGenerator:
             return f"List[{element_type}]"
         return "Any"
 
-    def _extract_parameters(self, signature: str) -> List[Tuple[str, str]]:
+    def _extract_parameters(self, signature: str) -> list[tuple[str, str]]:
         """Extract parameter types from a JNI signature."""
         if "(" not in signature or ")" not in signature:
             return []
@@ -309,7 +308,7 @@ class ProxyGenerator:
 
     def _get_all_methods_including_inherited(
         self, class_name: str
-    ) -> List[Tuple[str, str, str, str, str, str]]:
+    ) -> list[tuple[str, str, str, str, str, str]]:
         """Get all methods for a class including inherited methods from parents."""
         all_methods = []
         seen_methods = set()
@@ -353,7 +352,7 @@ class ProxyGenerator:
         return all_methods
 
     def _generate_proxy_class(
-        self, class_name: str, methods: List[Tuple[str, str, str, str, str, str]]
+        self, class_name: str, methods: list[tuple[str, str, str, str, str, str]]
     ) -> str:
         """Generate a proxy class for a RuneLite API class."""
         simple_name = class_name.split(".")[-1]
@@ -371,7 +370,7 @@ class ProxyGenerator:
         code += "            return getattr(ref, name)\n"
         code += "        return ref._field(name)\n\n"
 
-        method_groups: Dict[str, List[Tuple[str, str, str, str, str]]] = {}
+        method_groups: dict[str, list[tuple[str, str, str, str, str]]] = {}
         for (
             method_name,
             signature,
@@ -440,7 +439,7 @@ class ProxyGenerator:
         return code
 
     def _generate_overloaded_method(
-        self, method_name: str, signatures: List[Tuple[str, str, str, str, str]], class_name: str
+        self, method_name: str, signatures: list[tuple[str, str, str, str, str]], class_name: str
     ) -> str:
         """Generate a method that handles multiple overloads with runtime dispatch."""
         signatures.sort(key=lambda x: x[0].count(";") + x[0].count("I"))
@@ -534,8 +533,8 @@ class ProxyGenerator:
     def _generate_int_enum_method(
         self,
         method_name: str,
-        int_sig: Tuple[str, str, str, str, str],
-        enum_sig: Tuple[str, str, str, str, str],
+        int_sig: tuple[str, str, str, str, str],
+        enum_sig: tuple[str, str, str, str, str],
         enum_type: str,
     ) -> str:
         """Generate a method that handles both integer and enum arguments."""
@@ -555,24 +554,19 @@ class ProxyGenerator:
         needs_wrapping = False
         wrapped_class = None
 
-        if return_type and return_type not in (
-            "int",
-            "long",
-            "bool",
-            "boolean",
-            "float",
-            "double",
-            "str",
-            "String",
-            "java.lang.String",
-            "None",
-            "Any",
-            "QueryRef",
+        primitive_types = (
+            "int", "long", "bool", "boolean", "float", "double",
+            "str", "String", "java.lang.String", "None", "Any", "QueryRef",
+        )
+        if (
+            return_type
+            and return_type not in primitive_types
+            and "[" not in return_type
+            and "]" not in return_type
+            and return_type not in self.enums
         ):
-            if "[" not in return_type and "]" not in return_type:
-                if return_type not in self.enums:
-                    wrapped_class = return_type
-                    needs_wrapping = True
+            wrapped_class = return_type
+            needs_wrapping = True
 
         if needs_wrapping:
             code = f'''
@@ -624,7 +618,7 @@ class ProxyGenerator:
         generic_type: str,
         full_java_class: str,
         declaring_class: str,
-        params: List[Tuple[str, str]],
+        params: list[tuple[str, str]],
         is_overloaded: bool = False,
     ) -> str:
         """Generate a single method for a proxy class."""
@@ -638,24 +632,19 @@ class ProxyGenerator:
         needs_wrapping = False
         wrapped_class = None
 
-        if return_type and return_type not in (
-            "int",
-            "long",
-            "bool",
-            "boolean",
-            "float",
-            "double",
-            "str",
-            "String",
-            "java.lang.String",
-            "None",
-            "Any",
-            "QueryRef",
+        primitive_types = (
+            "int", "long", "bool", "boolean", "float", "double",
+            "str", "String", "java.lang.String", "None", "Any", "QueryRef",
+        )
+        if (
+            return_type
+            and return_type not in primitive_types
+            and "[" not in return_type
+            and "]" not in return_type
+            and return_type not in self.enums
         ):
-            if "[" not in return_type and "]" not in return_type:
-                if return_type not in self.enums:
-                    wrapped_class = return_type
-                    needs_wrapping = True
+            wrapped_class = return_type
+            needs_wrapping = True
 
         display_return_type = return_type if return_type != "Any" else "QueryRef"
         actual_return_type = full_java_class if full_java_class else return_type
@@ -760,7 +749,7 @@ class ConstructorProxy:
 
 '''
 
-        def get_dependencies(class_name: str) -> List[str]:
+        def get_dependencies(class_name: str) -> list[str]:
             """Get parent classes that need to be generated first."""
             deps = []
             simple_name = class_name.split(".")[-1]

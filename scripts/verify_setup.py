@@ -86,11 +86,11 @@ def check_imports() -> bool:
 
         logger.success(f"Successfully imported escape (version {escape.__version__})")
 
-        from escape import Client
+        from escape import Client  # noqa: F401
 
         logger.success("Successfully imported Client")
 
-        from escape._internal.query import QueryBuilder
+        from escape._internal.query import QueryBuilder  # noqa: F401
 
         logger.success("Successfully imported QueryBuilder")
 
@@ -131,18 +131,24 @@ def check_basic_functionality() -> bool:
 
 
 def check_naming_conventions() -> bool:
-    """Verify naming conventions are followed."""
-    logger.info("\nChecking naming conventions")
+    """Verify naming conventions are followed using ruff."""
+    logger.info("\nChecking naming conventions (PEP 8 snake_case)")
 
-    # Check if check_naming.py exists and is executable
-    naming_checker = Path("scripts/check_naming.py")
-    if not naming_checker.exists():
-        logger.error("scripts/check_naming.py not found")
+    import subprocess
+
+    result = subprocess.run(
+        ["ruff", "check", "--select=N", "."],
+        capture_output=True,
+        text=True,
+    )
+
+    if result.returncode == 0:
+        logger.success("All naming conventions pass (ruff --select=N)")
+        return True
+    else:
+        logger.error("Naming convention violations found:")
+        logger.error(result.stdout)
         return False
-
-    logger.success("Naming convention checker exists")
-    logger.info("→ Run: make naming (to verify)")
-    return True
 
 
 def main() -> int:

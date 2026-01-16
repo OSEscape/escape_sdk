@@ -2,10 +2,11 @@
 
 import random
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from escape.types.point import Point
+    from escape.types.polygon import Polygon
 
 
 @dataclass
@@ -18,14 +19,14 @@ class Quad:
     p4: "Point"
 
     @classmethod
-    def from_points(cls, points: List["Point"]) -> "Quad":
+    def from_points(cls, points: list["Point"]) -> "Quad":
         """Create a Quad from a list of 4 points."""
         if len(points) != 4:
             raise ValueError(f"Quad requires exactly 4 points, got {len(points)}")
         return cls(points[0], points[1], points[2], points[3])
 
     @classmethod
-    def from_coords(cls, coords: List[tuple[int, int]]) -> "Quad":
+    def from_coords(cls, coords: list[tuple[int, int]]) -> "Quad":
         """Create a Quad from a list of (x, y) coordinate tuples."""
         from escape.types.point import Point
 
@@ -35,7 +36,7 @@ class Quad:
         return cls(points[0], points[1], points[2], points[3])
 
     @classmethod
-    def from_arrays(cls, x_coords: List[int], y_coords: List[int]) -> "Quad":
+    def from_arrays(cls, x_coords: list[int], y_coords: list[int]) -> "Quad":
         """Create a Quad from separate x and y coordinate arrays."""
         from escape.types.point import Point
 
@@ -49,7 +50,7 @@ class Quad:
         )
 
     @property
-    def vertices(self) -> List["Point"]:
+    def vertices(self) -> list["Point"]:
         """Get all 4 vertices as a list."""
         return [self.p1, self.p2, self.p3, self.p4]
 

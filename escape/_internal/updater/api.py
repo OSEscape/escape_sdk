@@ -8,7 +8,6 @@ import urllib.error
 import urllib.request
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, Tuple
 
 from escape._internal.logger import logger
 
@@ -37,7 +36,7 @@ class RuneLiteAPIUpdater:
         # Ensure data directory exists
         self.data_dir.mkdir(parents=True, exist_ok=True)
 
-    def get_current_version(self) -> Dict | None:
+    def get_current_version(self) -> dict | None:
         """Get currently installed version info"""
         if not self.version_file.exists():
             return None
@@ -49,7 +48,7 @@ class RuneLiteAPIUpdater:
             logger.warning(f"Could not read version file: {e}")
             return None
 
-    def get_latest_github_version(self) -> Dict | None:
+    def get_latest_github_version(self) -> dict | None:
         """Get latest commit info from GitHub."""
         try:
             req = urllib.request.Request(
@@ -75,7 +74,7 @@ class RuneLiteAPIUpdater:
             logger.warning(f"Error parsing GitHub response: {e}")
             return None
 
-    def should_update(self, force: bool = False, max_age_days: int = 7) -> Tuple[bool, str]:
+    def should_update(self, force: bool = False, max_age_days: int = 7) -> tuple[bool, str]:
         """Determine if update is needed based on force flag, age, or new commits."""
         if force:
             return True, "Forced update requested"

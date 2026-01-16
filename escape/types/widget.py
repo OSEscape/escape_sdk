@@ -1,7 +1,6 @@
 import typing
 from typing import Literal
 
-import escape.utilities.timing as timing
 from escape.globals import getClient
 
 WidgetField = Literal[

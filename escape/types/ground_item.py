@@ -3,7 +3,7 @@ Ground item type definition.
 """
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any
 
 from .packed_position import PackedPosition
 
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 class GroundItem:
     """Represents a ground item from cache."""
 
-    data: Dict[str, Any]
+    data: dict[str, Any]
     position: PackedPosition
     client: "Client"
 

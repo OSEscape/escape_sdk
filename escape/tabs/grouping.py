@@ -5,7 +5,7 @@ Grouping tab module (Clan/Group activities).
 from escape.client import client
 from escape.types.gametab import GameTab, GameTabs
 from escape.types.interfaces.general_interface import GeneralInterface
-from escape.types.widget import Widget, WidgetFields
+from escape.types.widget import WidgetFields
 from escape.utilities.timing import waitUntil
 
 
@@ -94,9 +94,8 @@ class Grouping(GameTabs):
             if sub_tab.lower() in name.lower():
                 if self.get_open_sub_tab() == name:
                     return True
-                else:
-                    if self.sub_tabs.interact(sub_tab):
-                        return waitUntil(lambda: self.get_open_sub_tab() == name, timeout=3.0)
+                elif self.sub_tabs.interact(sub_tab):
+                    return waitUntil(lambda n=name: self.get_open_sub_tab() == n, timeout=3.0)
         return False
 
     def get_selected_game(self) -> str | None:
@@ -137,11 +136,11 @@ class Grouping(GameTabs):
         if current_game and game_name.lower() in current_game.lower():
             return True  # Already selected
 
-        if len(self.dropdown_selector.getWidgetInfo()) == 0:
-            if not self.dropdown_button.interact("") or not waitUntil(
-                self.dropdown_fully_loaded, timeout=3.0
-            ):
-                return False
+        if len(self.dropdown_selector.getWidgetInfo()) == 0 and (
+            not self.dropdown_button.interact("")
+            or not waitUntil(self.dropdown_fully_loaded, timeout=3.0)
+        ):
+            return False
         if self.dropdown_selector.interact(game_name):
             return waitUntil(lambda: self.is_game_selected(game_name), timeout=3.0)
 

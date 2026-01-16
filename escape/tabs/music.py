@@ -2,7 +2,6 @@
 Music tab module.
 """
 
-from escape.client import client
 from escape.types.gametab import GameTab, GameTabs
 
 
