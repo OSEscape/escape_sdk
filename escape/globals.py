@@ -1,12 +1,4 @@
-"""
-Global access to Client singleton.
-
-Deprecated: Prefer importing directly from escape.client
-
-    from escape.client import client
-
-This module is kept for backwards compatibility.
-"""
+"""Global access to Client (deprecated: use escape.client instead)."""
 
 from typing import TYPE_CHECKING
 
@@ -15,38 +7,21 @@ if TYPE_CHECKING:
 
 
 def getClient():
-    """
-    Get the singleton Client instance.
-
-    Deprecated: Use `from escape.client import client` instead.
-
-    Returns:
-        Client: The singleton client instance
-    """
+    """Get the Client instance (deprecated)."""
     from escape.client import client
 
     return client
 
 
 def getApi():
-    """
-    Get the singleton RuneLiteAPI instance.
-
-    Returns:
-        RuneLiteAPI: The singleton API instance
-    """
+    """Get the RuneLiteAPI instance."""
     from escape._internal.api import RuneLiteAPI
 
     return RuneLiteAPI()
 
 
 def getEventCache() -> "EventCache":
-    """
-    Get the EventCache instance from the Client singleton.
-
-    Returns:
-        EventCache: The event cache with game state and event history
-    """
+    """Get the EventCache instance from the Client."""
     from escape.client import client
 
     return client.cache

@@ -7,17 +7,7 @@ from escape.input.runelite import RuneLite, runelite
 
 
 class Input:
-    """
-    Namespace for input controls - returns singleton instances.
-
-    Example:
-        from escape.client import client
-
-        client.input.mouse.leftClick(100, 200)
-        # Or directly:
-        from escape.input.mouse import mouse
-        mouse.leftClick(100, 200)
-    """
+    """OS-level input controls: mouse, keyboard, and drawing overlays."""
 
     _instance = None
 
@@ -28,26 +18,26 @@ class Input:
 
     @property
     def runelite(self) -> RuneLite:
-        """Get RuneLite window manager singleton."""
+        """RuneLite window manager."""
         return runelite
 
     @property
     def mouse(self) -> Mouse:
-        """Get mouse controller singleton."""
+        """Mouse controller."""
         return mouse
 
     @property
     def keyboard(self) -> Keyboard:
-        """Get keyboard controller singleton."""
+        """Keyboard controller."""
         return keyboard
 
     @property
     def drawing(self) -> Drawing:
-        """Get drawing overlay singleton."""
+        """Drawing overlay for debugging."""
         return drawing
 
 
-# Module-level singleton instance
+# Module-level instance
 input = Input()
 
 

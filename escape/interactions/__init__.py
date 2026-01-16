@@ -4,17 +4,7 @@ from escape.interactions.menu import Menu, menu
 
 
 class Interactions:
-    """
-    Namespace for interaction systems - returns singleton instances.
-
-    Example:
-        from escape.client import client
-
-        client.interactions.menu.clickOption("Take")
-        # Or directly:
-        from escape.interactions.menu import menu
-        menu.clickOption("Take")
-    """
+    """Interaction systems for right-click menus and context actions."""
 
     _instance = None
 
@@ -25,11 +15,11 @@ class Interactions:
 
     @property
     def menu(self) -> Menu:
-        """Get menu interaction handler singleton."""
+        """Menu interaction handler."""
         return menu
 
 
-# Module-level singleton instance
+# Module-level instance
 interactions = Interactions()
 
 

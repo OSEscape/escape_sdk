@@ -1,13 +1,4 @@
-"""
-Centralized cache management for Escape.
-
-Uses ~/.cache/escape/ for all generated files and resources following XDG Base Directory specification.
-
-This module also handles:
-- Downloading and loading game resources (varps, objects) at initialization
-- Managing generated files (query proxies, constants) in cache
-- Ensuring generated modules are importable via sys.path
-"""
+"""Centralized cache management for Escape using ~/.cache/escape/."""
 
 import gzip
 import json
@@ -19,17 +10,14 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
+from escape._internal.logger import logger
+
 
 class CacheManager:
     """Manages cache directories for Escape resources and generated files."""
 
     def __init__(self, base_path: Path | None = None):
-        """
-        Initialize cache manager.
-
-        Args:
-            base_path: Optional custom base path. If None, uses ~/.cache/escape
-        """
+        """Initialize cache manager with optional custom base path."""
         if base_path is None:
             # Use XDG_CACHE_HOME if set, otherwise default to ~/.cache
             xdg_cache = os.getenv("XDG_CACHE_HOME")
@@ -53,45 +41,19 @@ class CacheManager:
         self.varps_dir.mkdir(parents=True, exist_ok=True)
 
     def getGeneratedPath(self, filename: str) -> Path:
-        """
-        Get path for a generated file.
-
-        Args:
-            filename: Name of the generated file
-
-        Returns:
-            Full path to the file in ~/.cache/escape/generated/
-        """
+        """Get path for a generated file."""
         return self.generated_dir / filename
 
     def getObjectsPath(self) -> Path:
-        """
-        Get path for objects data directory.
-
-        Returns:
-            Path to ~/.cache/escape/data/objects/
-        """
+        """Get path for objects data directory."""
         return self.objects_dir
 
     def getVarpsPath(self) -> Path:
-        """
-        Get path for varps data directory.
-
-        Returns:
-            Path to ~/.cache/escape/data/varps/
-        """
+        """Get path for varps data directory."""
         return self.varps_dir
 
     def getDataPath(self, resource_type: str) -> Path:
-        """
-        Get path for a specific resource type.
-
-        Args:
-            resource_type: Type of resource (e.g., 'objects', 'varps')
-
-        Returns:
-            Path to the resource directory
-        """
+        """Get path for a specific resource type."""
         return self.data_dir / resource_type
 
     def clearCache(self) -> None:
@@ -102,12 +64,7 @@ class CacheManager:
             shutil.rmtree(self.base_path)
 
     def getCacheSize(self) -> int:
-        """
-        Get total size of cache in bytes.
-
-        Returns:
-            Total cache size in bytes
-        """
+        """Get total size of cache in bytes."""
         total = 0
         if self.base_path.exists():
             for path in self.base_path.rglob("*"):
@@ -121,22 +78,13 @@ _cache_manager: CacheManager | None = None
 
 
 def getCacheManager() -> CacheManager:
-    """
-    Get global cache manager instance.
-
-    Returns:
-        Global CacheManager instance
-    """
+    """Get global cache manager instance."""
     global _cache_manager
     if _cache_manager is None:
         _cache_manager = CacheManager()
         _cache_manager.ensureDirs()
     return _cache_manager
 
-
-# =============================================================================
-# Game Resources Download & Initialization
-# =============================================================================
 
 # Base URL for game resources
 BASE_URL = "https://storage.googleapis.com/osrs-chroma-storage-eu"
@@ -146,19 +94,9 @@ _resources_loaded = False
 
 
 def _downloadFile(url: str, dest: Path, decompress_gz: bool = True) -> bool:
-    """
-    Download a file from URL to destination.
-
-    Args:
-        url: URL to download from
-        dest: Local destination path
-        decompress_gz: If True and URL ends with .gz, decompress after download
-
-    Returns:
-        True if successful, False otherwise
-    """
+    """Download a file from URL to destination."""
     try:
-        print(f"📥 Downloading {url}...")
+        logger.info(f"Downloading {url}")
 
         # Create request with cache-busting headers
         req = urllib.request.Request(url)
@@ -176,39 +114,34 @@ def _downloadFile(url: str, dest: Path, decompress_gz: bool = True) -> bool:
                 with open(gz_file, "wb") as f:
                     f.write(data)
 
-                print(f"💾 Downloaded: {gz_file.stat().st_size:,} bytes")
+                logger.info(f"Downloaded: {gz_file.stat().st_size:,} bytes")
 
                 # Decompress to working file
-                print(f"📦 Decompressing {gz_file.name}...")
+                logger.info(f"Decompressing {gz_file.name}")
                 with gzip.open(gz_file, "rb") as f_in:
                     with open(dest, "wb") as f_out:
                         shutil.copyfileobj(f_in, f_out)
 
-                print(f"✅ Decompressed: {dest.stat().st_size:,} bytes")
+                logger.success(f"Decompressed: {dest.stat().st_size:,} bytes")
 
                 # Delete the .gz file after decompression
                 gz_file.unlink()
-                print("🗑️  Removed compressed file")
+                logger.info("Removed compressed file")
             else:
                 # Write directly
                 with open(dest, "wb") as f:
                     f.write(data)
-                print(f"✅ Downloaded: {dest.stat().st_size:,} bytes")
+                logger.success(f"Downloaded: {dest.stat().st_size:,} bytes")
 
         return True
 
     except Exception as e:
-        print(f"❌ Failed to download {url}: {e}")
+        logger.error(f"Failed to download {url}: {e}")
         return False
 
 
 def _getRemoteMetadata() -> dict | None:
-    """
-    Fetch remote metadata to check current revision.
-
-    Returns:
-        Metadata dict or None if fetch fails
-    """
+    """Fetch remote metadata to check current revision."""
     url = f"{BASE_URL}/varps/latest/metadata.json"
     try:
         req = urllib.request.Request(url)
@@ -217,24 +150,16 @@ def _getRemoteMetadata() -> dict | None:
             data = response.read()
             return json.loads(data)
     except Exception as e:
-        print(f"⚠️  Failed to fetch remote metadata: {e}")
+        logger.warning(f"Failed to fetch remote metadata: {e}")
         return None
 
 
 def _needsUpdate(cache_dir: Path) -> bool:
-    """
-    Check if resources need updating.
-
-    Args:
-        cache_dir: Path to game_data cache directory
-
-    Returns:
-        True if update needed, False otherwise
-    """
+    """Check if resources need updating."""
     # Check if files exist
     required_files = ["metadata.json", "varps.json", "varbits.json", "objects.db"]
     if not all((cache_dir / f).exists() for f in required_files):
-        print("🔄 Resources not found locally, downloading...")
+        logger.info("Resources not found locally, downloading")
         return True
 
     # Get remote metadata
@@ -256,24 +181,14 @@ def _needsUpdate(cache_dir: Path) -> bool:
     local_revision = local_meta.get("cache_id") or local_meta.get("revision")
 
     if remote_revision and local_revision and remote_revision != local_revision:
-        print(f"🔄 New revision available: {local_revision} → {remote_revision}")
+        logger.info(f"New revision available: {local_revision} → {remote_revision}")
         return True
 
     return False
 
 
 def ensureResourcesLoaded() -> bool:
-    """
-    Ensure game resources are downloaded and loaded.
-
-    Downloads varps, varbits, and objects database if needed,
-    then loads them into the respective resource modules.
-
-    This should be called once at Client initialization.
-
-    Returns:
-        True if successful, False otherwise
-    """
+    """Ensure game resources are downloaded and loaded."""
     global _resources_loaded
 
     if _resources_loaded:
@@ -286,7 +201,7 @@ def ensureResourcesLoaded() -> bool:
 
         # Check if update needed
         if _needsUpdate(cache_dir):
-            print("⬇️  Updating game resources...")
+            logger.info("Updating game resources")
             base_url = f"{BASE_URL}/varps/latest"
 
             # Download all files
@@ -303,10 +218,10 @@ def ensureResourcesLoaded() -> bool:
                 decompress = remote_name.endswith(".gz")
 
                 if not _downloadFile(url, dest, decompress_gz=decompress):
-                    print(f"⚠️  Failed to download {local_name}")
+                    logger.warning(f"Failed to download {local_name}")
                     return False
 
-            print("✅ Resources downloaded successfully")
+            logger.success("Resources downloaded successfully")
 
         # Load resources into modules
         from escape._internal.resources import objects, varps
@@ -322,7 +237,7 @@ def ensureResourcesLoaded() -> bool:
                 varps._varps_data = {item["id"]: item for item in raw_varps if "id" in item}
             else:
                 varps._varps_data = raw_varps
-            print(f"✅ Loaded {len(varps._varps_data)} varps")
+            logger.success(f"Loaded {len(varps._varps_data)} varps")
 
         with open(varbits_file) as f:
             raw_varbits = json.load(f)
@@ -331,7 +246,7 @@ def ensureResourcesLoaded() -> bool:
                 varps._varbits_data = {item["id"]: item for item in raw_varbits if "id" in item}
             else:
                 varps._varbits_data = raw_varbits
-            print(f"✅ Loaded {len(varps._varbits_data)} varbits")
+            logger.success(f"Loaded {len(varps._varbits_data)} varbits")
 
         # Load objects database
         import sqlite3
@@ -339,31 +254,21 @@ def ensureResourcesLoaded() -> bool:
         db_file = cache_dir / "objects.db"
         objects._db_connection = sqlite3.connect(str(db_file))
         objects._db_connection.row_factory = sqlite3.Row
-        print("✅ Loaded objects database")
+        logger.success("Loaded objects database")
 
         _resources_loaded = True
         return True
 
     except Exception as e:
-        print(f"❌ Failed to load resources: {e}")
+        logger.error(f"Failed to load resources: {e}")
         import traceback
 
         traceback.print_exc()
         return False
 
 
-# =============================================================================
-# Generated Files Management (query proxies, constants, etc.)
-# =============================================================================
-
-
 def ensureGeneratedInPath() -> Path:
-    """
-    Ensure the generated cache directory is in sys.path for imports.
-
-    Returns:
-        Path to the generated directory
-    """
+    """Ensure the generated cache directory is in sys.path for imports."""
     cache_manager = getCacheManager()
     generated_dir = cache_manager.generated_dir
 
@@ -376,20 +281,7 @@ def ensureGeneratedInPath() -> Path:
 
 
 def loadGeneratedModule(module_name: str) -> Any | None:
-    """
-    Load a generated module from cache.
-
-    Args:
-        module_name: Name of the module (e.g., 'query_proxies', 'constants')
-
-    Returns:
-        The loaded module, or None if it doesn't exist
-
-    Example:
-        >>> proxies = loadGeneratedModule('query_proxies')
-        >>> if proxies:
-        >>>     client = proxies.ClientProxy()
-    """
+    """Load a generated module from cache."""
     ensureGeneratedInPath()
 
     try:
@@ -402,15 +294,7 @@ def loadGeneratedModule(module_name: str) -> Any | None:
 
 
 def reloadGeneratedModule(module_name: str) -> Any | None:
-    """
-    Reload a generated module (useful after regeneration).
-
-    Args:
-        module_name: Name of the module (e.g., 'query_proxies', 'constants')
-
-    Returns:
-        The reloaded module, or None if it doesn't exist
-    """
+    """Reload a generated module after regeneration."""
     ensureGeneratedInPath()
 
     try:
@@ -425,30 +309,19 @@ def reloadGeneratedModule(module_name: str) -> Any | None:
 
 
 def hasGeneratedFiles() -> bool:
-    """
-    Check if generated files exist in cache.
-
-    Returns:
-        True if query_proxies.py and constants.py exist
-    """
+    """Check if generated files exist in cache."""
     cache_manager = getCacheManager()
     generated_dir = cache_manager.generated_dir
 
-    proxy_file = generated_dir / "query_proxies.py"
     constants_file = generated_dir / "constants.py"
 
-    return proxy_file.exists() and constants_file.exists()
+    return constants_file.exists()
 
 
 def ensureGeneratedFiles():
-    """
-    Ensure generated files exist, triggering update if necessary.
-
-    This should be called before importing generated modules.
-    Raises FileNotFoundError if files can't be generated.
-    """
+    """Ensure generated files exist, triggering update if necessary."""
     if not hasGeneratedFiles():
-        print("⚠️  Generated files not found in cache, running updater...")
+        logger.warning("Generated files not found in cache, running updater")
         try:
             from escape._internal.updater.api import RuneLiteAPIUpdater
 

@@ -118,7 +118,7 @@ escape/
 │
 └── _internal/          # Internal implementation
     ├── api.py          # RuneLite bridge API
-    ├── query_builder.py # Fluent query interface
+    ├── batch.py        # Batch query execution
     ├── cache/          # Event cache and state builder
     ├── events/         # Inotify event consumer
     └── resources/      # Varps, objects database

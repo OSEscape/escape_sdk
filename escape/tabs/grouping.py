@@ -10,14 +10,7 @@ from escape.utilities.timing import waitUntil
 
 
 class Grouping(GameTabs):
-    """
-    Singleton grouping tab - displays clan chat and group activities.
-
-    Example:
-        from escape.tabs.grouping import grouping
-
-        grouping.open()
-    """
+    """Grouping tab for clan chat and minigame teleports."""
 
     TAB_TYPE = GameTab.GROUPING
 
@@ -179,5 +172,5 @@ class Grouping(GameTabs):
         return self.clickTeleport()
 
 
-# Module-level singleton instance
+# Module-level instance
 grouping = Grouping()

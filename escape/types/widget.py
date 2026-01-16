@@ -4,8 +4,6 @@ from typing import Literal
 import escape.utilities.timing as timing
 from escape.globals import getClient
 
-# --- All 64 widget fields as a Literal union -----------------------------
-
 WidgetField = Literal[
     "getActions",
     "getAnimationId",
@@ -74,17 +72,8 @@ WidgetField = Literal[
 ]
 
 
-# --- Autocomplete helper -------------------------------------------------
-
-
 class _WidgetFields:
-    """
-    Provides autocomplete for widget field names.
-
-    Usage:
-        w = Widget(id)
-        w.enable(WidgetFields.getBounds)  # IDE autocomplete works!
-    """
+    """Provides autocomplete for widget field names."""
 
     getActions: WidgetField = "getActions"
     getAnimationId: WidgetField = "getAnimationId"
@@ -152,29 +141,12 @@ class _WidgetFields:
     isHidden: WidgetField = "isHidden"
 
 
-# Singleton instance for autocomplete
+# Module-level instance for IDE autocomplete
 WidgetFields = _WidgetFields()
 
 
-# --- Widget mask builder -------------------------------------------------
-
-
 class Widget:
-    """
-    A Python-side mask builder for widget property queries.
-
-    Usage with autocomplete:
-        w = Widget(widget_id)
-        w.enable(WidgetFields.getBounds)    # IDE autocomplete!
-        w.enable(WidgetFields.getActions)
-        data = w.get()
-
-    Usage with strings (also valid):
-        w = Widget(widget_id)
-        w.enable("getBounds")
-        w.enable("getActions")
-        data = w.get()
-    """
+    """Python-side mask builder for widget property queries."""
 
     _FIELDS: list[WidgetField] = list(typing.get_args(WidgetField))  # keeps exact order
     _FIELD_BITS = {name: 1 << i for i, name in enumerate(_FIELDS)}
@@ -182,8 +154,6 @@ class Widget:
     def __init__(self, id):
         self._mask = 0
         self.id = id
-
-    # ---- Public API -----------------------------------------------------
 
     @property
     def mask(self) -> int:
@@ -210,8 +180,6 @@ class Widget:
         self._mask = (1 << len(self._FIELDS)) - 1
         return self
 
-    # ---- Alternate constructors ----------------------------------------
-
     @classmethod
     def fromNames(cls, *fields: WidgetField) -> "Widget":
         """Build a mask in one line."""
@@ -219,8 +187,6 @@ class Widget:
         for f in fields:
             w.enable(f)
         return w
-
-    # ---- Debug helpers --------------------------------------------------
 
     def asDict(self) -> dict[str, bool]:
         """Return {field: enabled?}."""
@@ -275,37 +241,13 @@ class Widget:
         return result
 
     def getAsyncMode(self) -> bool:
-        """
-        Determine if async execution is safe for this widget query.
-
-        Returns False if getParent or getParentId are in the mask, as these
-        require synchronous execution to properly resolve parent references.
-
-        Returns:
-            True if async execution is safe, False otherwise
-        """
+        """Return False if mask includes getParent/getParentId (requires sync)."""
         parent_fields = self._FIELD_BITS["getParent"] | self._FIELD_BITS["getParentId"]
         return (self._mask & parent_fields) == 0
 
     @staticmethod
     def getBatch(widgets: list["Widget"]) -> list[dict[str, typing.Any]]:
-        """
-        Get properties for multiple widgets in a single batch request.
-
-        Each widget can have its own mask, allowing different fields
-        to be queried for different widgets.
-
-        Args:
-            widgets: List of Widget instances with their masks configured
-
-        Returns:
-            List of property dicts, one per widget in the same order
-
-        Example:
-            w1 = Widget(id1).enable(WidgetFields.getBounds)
-            w2 = Widget(id2).enable(WidgetFields.getSpriteId)
-            results = Widget.getBatch([w1, w2])
-        """
+        """Get properties for multiple widgets in a single batch request."""
         if not widgets:
             return []
 
@@ -329,23 +271,7 @@ class Widget:
 
     @staticmethod
     def getBatchChildren(widgets: list["Widget"]) -> list[dict[str, typing.Any]]:
-        """
-        Get properties of children for multiple widgets in a single batch request.
-
-        Each widget can have its own mask, allowing different fields
-        to be queried for different widgets.
-
-        Args:
-            widgets: List of Widget instances with their masks configured
-
-        Returns:
-            List of property dicts for children, one per widget in the same order
-
-        Example:
-            w1 = Widget(id1).enable(WidgetFields.getBounds)
-            w2 = Widget(id2).enable(WidgetFields.getSpriteId)
-            results = Widget.getBatchChildren([w1, w2])
-        """
+        """Get children properties for multiple widgets in a single batch request."""
         if not widgets:
             return []
 

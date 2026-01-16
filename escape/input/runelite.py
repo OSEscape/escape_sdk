@@ -12,17 +12,7 @@ from escape.types.box import Box
 
 
 class RuneLite:
-    """
-    Singleton RuneLite window position tracker using X11 events.
-
-    Uses python-xlib to subscribe to window events (move, resize, minimize, focus)
-    instead of polling. State is updated automatically when events arrive.
-
-    Example:
-        from escape.input.runelite import runelite
-
-        offset = runelite.getWindowOffset()
-    """
+    """RuneLite window position tracker using X11 events."""
 
     _instance = None
 
@@ -33,13 +23,7 @@ class RuneLite:
         return cls._instance
 
     def _init(self, window_title: str = "RuneLite", auto_refresh: bool = True):
-        """
-        Actual initialization, runs once.
-
-        Args:
-            window_title: Title of the RuneLite window to track
-            auto_refresh: If True, automatically activate window when needed
-        """
+        """Initialize the instance."""
         self.window_title = window_title
         self.auto_refresh = auto_refresh
 
@@ -96,12 +80,7 @@ class RuneLite:
             self._event_thread = None
 
     def _eventLoop(self) -> None:
-        """
-        Background thread listening for X11 window events.
-
-        Subscribes to StructureNotify (move/resize), PropertyChange (state),
-        and FocusChange events on the RuneLite window.
-        """
+        """Background thread listening for X11 window events."""
         try:
             # Create separate display connection for event thread
             event_display = display.Display()
@@ -142,13 +121,7 @@ class RuneLite:
                 self._state_valid = False
 
     def _handleEvent(self, evt: Any, event_display: display.Display) -> None:
-        """
-        Handle an X11 event and update internal state.
-
-        Args:
-            evt: The X11 event
-            event_display: The display connection for the event thread
-        """
+        """Handle an X11 event and update internal state."""
         with self._lock:
             # ConfigureNotify: window moved or resized
             if evt.type == X.ConfigureNotify:
@@ -207,12 +180,7 @@ class RuneLite:
             pass
 
     def detectWindow(self) -> bool:
-        """
-        Detect RuneLite window and get its position/size.
-
-        Returns:
-            True if window found, False otherwise
-        """
+        """Detect RuneLite window and get its position/size."""
         try:
             # Use wmctrl to find the exact RuneLite window
             result = subprocess.run(
@@ -308,12 +276,7 @@ class RuneLite:
             pass
 
     def activateWindow(self) -> bool:
-        """
-        Activate and bring RuneLite window to foreground.
-
-        Returns:
-            True if successful, False otherwise
-        """
+        """Activate and bring RuneLite window to foreground."""
         if self._window_id is None:
             if not self.detectWindow():
                 return False
@@ -348,32 +311,17 @@ class RuneLite:
             return False
 
     def isWindowMinimized(self) -> bool:
-        """
-        Check if window is minimized.
-
-        Returns:
-            True if minimized, False otherwise
-        """
+        """Check if window is minimized."""
         with self._lock:
             return self._is_minimized
 
     def isWindowActive(self) -> bool:
-        """
-        Check if the window is currently active (in foreground).
-
-        Returns:
-            True if window is active, False otherwise
-        """
+        """Check if the window is currently active."""
         with self._lock:
             return self._is_active
 
     def ensureWindowReady(self) -> bool:
-        """
-        Ensure window is detected, not minimized, and activated.
-
-        Returns:
-            True if window is ready, False otherwise
-        """
+        """Ensure window is detected, not minimized, and activated."""
         with self._lock:
             if not self._state_valid:
                 # Need to detect first
@@ -393,21 +341,7 @@ class RuneLite:
         return True
 
     def refreshWindowPosition(self, force: bool = False, max_age: float = 10.0) -> bool:
-        """
-        Refresh the window position if needed.
-
-        With event-based tracking, this is mostly a no-op unless:
-        - Window hasn't been detected yet (state_valid is False)
-        - Window is minimized or inactive (will activate)
-        - force=True (will re-detect from scratch)
-
-        Args:
-            force: If True, always re-detect window position
-            max_age: Ignored (kept for API compatibility)
-
-        Returns:
-            True if window is ready, False otherwise
-        """
+        """Refresh the window position if needed."""
         if force:
             return self.detectWindow()
 
@@ -431,34 +365,19 @@ class RuneLite:
             self.refreshWindowPosition()
 
     def getWindowOffset(self) -> Tuple[int, int] | None:
-        """
-        Get current window offset (x, y).
-
-        Returns:
-            Tuple of (x, y) or None if window not detected
-        """
+        """Get current window offset (x, y)."""
         self._autoRefresh()
         with self._lock:
             return self._window_offset
 
     def getWindowSize(self) -> Tuple[int, int] | None:
-        """
-        Get current window size (width, height).
-
-        Returns:
-            Tuple of (width, height) or None if window not detected
-        """
+        """Get current window size (width, height)."""
         self._autoRefresh()
         with self._lock:
             return self._window_size
 
     def getGameBounds(self) -> Tuple[int, int, int, int] | None:
-        """
-        Get game window bounds (x, y, width, height).
-
-        Returns:
-            Tuple of (x, y, width, height) or None if window not detected
-        """
+        """Get game window bounds (x, y, width, height)."""
         self._autoRefresh()
 
         with self._lock:
@@ -472,26 +391,12 @@ class RuneLite:
         return None
 
     def setMinimized(self, minimized: bool) -> None:
-        """
-        Manually set the minimized state.
-
-        Use this when your code minimizes/restores the window externally.
-
-        Args:
-            minimized: True if window was minimized, False if restored
-        """
+        """Manually set the minimized state."""
         with self._lock:
             self._is_minimized = minimized
 
     def setActive(self, active: bool) -> None:
-        """
-        Manually set the active state.
-
-        Use this when your code activates/deactivates the window externally.
-
-        Args:
-            active: True if window is now active, False otherwise
-        """
+        """Manually set the active state."""
         with self._lock:
             self._is_active = active
 
@@ -503,5 +408,5 @@ class RuneLite:
                 self._display.close()
 
 
-# Module-level singleton instance
+# Module-level instance
 runelite = RuneLite()

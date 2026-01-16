@@ -6,6 +6,7 @@ import math
 import random
 from typing import List
 
+from escape._internal.logger import logger
 from escape.client import client
 from escape.types.box import Box, createGrid
 from escape.types.item import Item, ItemIdentifier
@@ -18,14 +19,7 @@ class BankItem:
     """Represents an item to withdraw from the bank."""
 
     def __init__(self, identifier: ItemIdentifier, quantity: int, noted: bool = False):
-        """
-        Initialize a bank item for withdrawal.
-
-        Args:
-            identifier: Item ID (int) or name (str) of the item
-            quantity: The quantity to withdraw (use -1 or 0 for All)
-            noted: Whether to withdraw as noted
-        """
+        """Initialize a bank item for withdrawal."""
         self.identifier = identifier
         self.quantity = quantity
         self.noted = noted
@@ -38,15 +32,7 @@ class BankItem:
 
 
 class Bank(ItemContainer):
-    """
-    Singleton banking operations class.
-
-    Example:
-        from escape.interfaces.bank import bank
-
-        if bank.isOpen():
-            bank.depositAll()
-    """
+    """Banking operations for deposits, withdrawals, and bank management."""
 
     # Expose BankItem as a class attribute for easy access
     BankItem = BankItem
@@ -65,7 +51,6 @@ class Bank(ItemContainer):
         self.slotCount = 920
         self._items = []
 
-        """Actual initialization, runs once."""
         self.deposit_all_button = Box(425, 295, 461, 331)
         self.deposit_gear_button = Box(462, 295, 498, 331)
         self.withdraw_item_button = Box(121, 310, 171, 332)
@@ -110,12 +95,7 @@ class Bank(ItemContainer):
         return self._items
 
     def isOpen(self) -> bool:
-        """
-        Check if bank interface is open.
-
-        Returns:
-            True if bank is open, False otherwise
-        """
+        """Check if bank interface is open."""
 
         if client.InterfaceID.BANKMAIN in client.interfaces.getOpenInterfaces():
             if not self.is_setup:
@@ -129,17 +109,7 @@ class Bank(ItemContainer):
         return False
 
     def getOpenTab(self) -> int | None:
-        """
-        Get currently open bank tab.
-
-        Returns:
-            Tab index (0-8) if bank is open, None otherwise
-
-        Example:
-            tab = banking.getOpenTab()
-            if tab is not None:
-                print(f"Current bank tab: {tab}")
-        """
+        """Get currently open bank tab."""
         if not self.isOpen():
             return None
 
@@ -169,7 +139,7 @@ class Bank(ItemContainer):
 
         currently_noted = client.resources.varps.getVarbitByName("BANK_WITHDRAWNOTES") > 0
 
-        print(f"Setting noted mode to {noted}, currently {currently_noted}")
+        logger.info(f"Setting noted mode to {noted}, currently {currently_noted}")
 
         if not currently_noted and noted:
             self.withdraw_note_button.click()
@@ -230,30 +200,14 @@ class Bank(ItemContainer):
         return counts
 
     def getIndex(self, identifier: ItemIdentifier) -> int | None:
-        """
-        Get the slot index of an item in the bank.
-
-        Args:
-            identifier: Item ID (int) or name (str)
-
-        Returns:
-            Slot index if found, None otherwise
-        """
+        """Get the slot index of an item in the bank."""
         if not self.containsItem(identifier):
             return None
 
         return self.findItemSlot(identifier)
 
     def getItemBox(self, identifier: ItemIdentifier) -> Box | None:
-        """
-        Get the bounding box of an item in the bank.
-
-        Args:
-            identifier: Item ID (int) or name (str)
-
-        Returns:
-            Box if found, None otherwise
-        """
+        """Get the bounding box of an item in the bank."""
         index = self.getIndex(identifier)
 
         if index is None:
@@ -272,19 +226,14 @@ class Bank(ItemContainer):
                 rectdata[1] + rectdata[3],
             )
         except Exception as e:
-            print(f"Error getting item area: {e}")
+            logger.error(f"Error getting item area: {e}")
             return None
 
     def isBoxClickable(self, box: Box) -> bool:
         return 83 <= box.y1 <= 257
 
     def getScrollCount(self, box: Box) -> tuple[int, bool]:
-        """
-        Returns:
-            (scroll_count, scroll_up)
-            scroll_up = True  -> your 'scroll up' gesture (increases y1 by +45 per scroll)
-            scroll_up = False -> 'scroll down' gesture (decreases y1 by -45 per scroll)
-        """
+        """Calculate scroll count and direction to make box visible."""
         step = 45
         min_y, max_y = 83, 257
         y = box.y1
@@ -314,15 +263,7 @@ class Bank(ItemContainer):
             return k, scroll_up
 
     def makeItemVisible(self, identifier: ItemIdentifier) -> Box | None:
-        """
-        Scroll the bank view to make an item visible and clickable.
-
-        Args:
-            identifier: Item ID (int) or name (str)
-
-        Returns:
-            Box if item is now visible, None otherwise
-        """
+        """Scroll the bank view to make an item visible and clickable."""
         if not self.containsItem(identifier):
             raise ValueError("Item not found in bank")
 
@@ -347,7 +288,7 @@ class Bank(ItemContainer):
             # Verify visibility
             box = self.getItemBox(identifier)
 
-        print(f"found box: {box}")
+        logger.info(f"found box: {box}")
 
         if self.isBoxClickable(box):
             return box
@@ -355,15 +296,7 @@ class Bank(ItemContainer):
             return None
 
     def getTabIndex(self, identifier: ItemIdentifier) -> int | None:
-        """
-        Get the bank tab index containing an item.
-
-        Args:
-            identifier: Item ID (int) or name (str)
-
-        Returns:
-            Tab index (0-8) if found, None otherwise
-        """
+        """Get the bank tab index containing an item."""
         index = self.getIndex(identifier)
 
         if index is None:
@@ -380,18 +313,7 @@ class Bank(ItemContainer):
         return None
 
     def openTab(self, tab_index: int) -> bool:
-        """
-        Open a specific bank tab.
-
-        Args:
-            tab_index: Index of the tab to open (0-8)
-
-        Returns:
-            True if successful, False otherwise
-
-        Example:
-            banking.openTab(2)  # Open bank tab 2
-        """
+        """Open a specific bank tab."""
         if not self.isOpen():
             return False
 
@@ -406,18 +328,7 @@ class Bank(ItemContainer):
         return timing.waitUntil(lambda: self.getOpenTab() == tab_index, timeout=2.0)
 
     def setWithdrawQuantity(self, quantity: str, wait: bool = True) -> bool:
-        """
-        Set the withdraw quantity mode.
-
-        Args:
-            quantity: One of '1', '5', '10', 'X', 'All'
-
-        Returns:
-            True if successful, False otherwise
-
-        Example:
-            banking.setWithdrawQuantity('10')  # Set withdraw mode to 10
-        """
+        """Set the withdraw quantity mode."""
         if not self.isOpen():
             return False
 
@@ -439,16 +350,11 @@ class Bank(ItemContainer):
 
     def checkItemsDeposited(self, start_count) -> bool:
         current_count = client.tabs.inventory.getTotalQuantity()
-        print(f"start count: {start_count}, current count: {current_count}")
+        logger.info(f"start count: {start_count}, current count: {current_count}")
         return current_count < start_count
 
     def depositAll(self, wait: bool = True) -> bool:
-        """
-        Deposit all items in inventory.
-
-        Returns:
-            True if successful, False otherwise
-        """
+        """Deposit all items in inventory."""
         if not self.isOpen():
             return False
 
@@ -465,16 +371,7 @@ class Bank(ItemContainer):
         return timing.waitUntil(lambda: self.checkItemsDeposited(start), timeout=2.0)
 
     def depositEquipment(self, wait: bool = True) -> bool:
-        """
-        Deposit all worn equipment.
-
-        Returns:
-            True if successful, False otherwise
-
-        Example:
-            if banking.isOpen():
-                banking.depositEquipment()
-        """
+        """Deposit all worn equipment."""
         if not self.isOpen():
             return False
 
@@ -488,23 +385,7 @@ class Bank(ItemContainer):
         return timing.waitUntil(lambda: client.tabs.equipment.getTotalCount() < start, timeout=2.0)
 
     def withdrawItems(self, bank_items: list[BankItem], safe: bool = True) -> bool:
-        """
-        Withdraw multiple items from the bank.
-
-        Args:
-            bank_items: List of BankItem objects specifying what to withdraw
-            safe: If True, raises ValueError when item not found
-
-        Returns:
-            True if all items withdrawn successfully
-
-        Example:
-            bank.withdrawItems([
-                BankItem(995, 1000),              # 1000 coins by ID
-                BankItem("Lobster", 5),           # 5 lobsters by name
-                BankItem("Dragon bones", 28, noted=True)  # 28 noted dragon bones
-            ])
-        """
+        """Withdraw multiple items from the bank."""
         if not self.isOpen():
             return False
 
@@ -556,22 +437,9 @@ class Bank(ItemContainer):
         return True
 
     def withdrawItem(self, bank_item: BankItem, safe: bool = True) -> bool:
-        """
-        Withdraw a single item from the bank.
-
-        Args:
-            bank_item: BankItem specifying what to withdraw
-            safe: If True, raises ValueError when item not found
-
-        Returns:
-            True if item withdrawn successfully
-
-        Example:
-            bank.withdrawItem(BankItem(995, 1000))           # By ID
-            bank.withdrawItem(BankItem("Lobster", 5))        # By name
-        """
+        """Withdraw a single item from the bank."""
         return self.withdrawItems([bank_item], safe=safe)
 
 
-# Module-level singleton instance
+# Module-level instance
 bank = Bank()

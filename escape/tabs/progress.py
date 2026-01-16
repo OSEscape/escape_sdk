@@ -6,14 +6,7 @@ from escape.types.gametab import GameTab, GameTabs
 
 
 class Progress(GameTabs):
-    """
-    Singleton progress tab - displays quests and achievement diaries.
-
-    Example:
-        from escape.tabs.progress import progress
-
-        progress.open()
-    """
+    """Progress tab for viewing quests and achievement diaries."""
 
     TAB_TYPE = GameTab.PROGRESS
 
@@ -30,5 +23,5 @@ class Progress(GameTabs):
         GameTabs.__init__(self)
 
 
-# Module-level singleton instance
+# Module-level instance
 progress = Progress()

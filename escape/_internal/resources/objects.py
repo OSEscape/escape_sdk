@@ -1,18 +1,9 @@
-"""
-Game Objects accessor functions.
-
-Provides access to OSRS object definitions and locations from SQLite database.
-Data is loaded once at initialization by cache_manager.ensureResourcesLoaded().
-
-Positions are stored as packed 32-bit integers:
-- Bits [31-30]: Plane (2 bits, 0-3)
-- Bits [29-15]: X coordinate (15 bits, 0-32767)
-- Bits [14-0]: Y coordinate (15 bits, 0-32767)
-"""
+"""Game Objects accessor functions for OSRS object definitions and locations."""
 
 import sqlite3
 from typing import Any, Dict, List, Tuple
 
+from escape._internal.logger import logger
 from escape.types.packed_position import packPositionSigned, unpackPosition
 
 # Module-level database connection (loaded by cache_manager at init)
@@ -20,21 +11,9 @@ _db_connection: sqlite3.Connection | None = None
 
 
 def getById(object_id: int) -> Dict[str, Any] | None:
-    """
-    Get object definition by ID.
-
-    Args:
-        object_id: The object ID
-
-    Returns:
-        Dict with object name and ID, or None if not found
-
-    Example:
-        >>> getById(1276)
-        {'id': 1276, 'name': 'Tree'}
-    """
+    """Get object definition by ID."""
     if _db_connection is None:
-        print("❌ Objects database not loaded")
+        logger.error("Objects database not loaded")
         return None
 
     cursor = _db_connection.cursor()
@@ -56,22 +35,9 @@ def getById(object_id: int) -> Dict[str, Any] | None:
 
 
 def getByName(name: str, exact: bool = False) -> List[Dict[str, Any]]:
-    """
-    Search for objects by name.
-
-    Args:
-        name: Object name to search for
-        exact: If True, match exact name; if False, match substring
-
-    Returns:
-        List of matching object definitions
-
-    Example:
-        >>> getByName("tree")
-        [{'id': 1276, 'name': 'Tree'}, {'id': 1277, 'name': 'Oak tree'}, ...]
-    """
+    """Search for objects by name."""
     if _db_connection is None:
-        print("❌ Objects database not loaded")
+        logger.error("Objects database not loaded")
         return []
 
     cursor = _db_connection.cursor()
@@ -100,21 +66,9 @@ def getByName(name: str, exact: bool = False) -> List[Dict[str, Any]]:
 
 
 def getLocations(object_id: int) -> List[Tuple[int, int, int]]:
-    """
-    Get all spawn locations for an object ID.
-
-    Args:
-        object_id: The object ID
-
-    Returns:
-        List of (x, y, plane) tuples
-
-    Example:
-        >>> getLocations(1276)  # Tree
-        [(3200, 3200, 0), (3201, 3200, 0), ...]
-    """
+    """Get all spawn locations for an object ID."""
     if _db_connection is None:
-        print("❌ Objects database not loaded")
+        logger.error("Objects database not loaded")
         return []
 
     cursor = _db_connection.cursor()
@@ -130,24 +84,9 @@ def getLocations(object_id: int) -> List[Tuple[int, int, int]]:
 
 
 def getNearby(x: int, y: int, plane: int = 0, radius: int = 10) -> List[Dict[str, Any]]:
-    """
-    Get all objects near a coordinate (optimized with precise range queries).
-
-    Args:
-        x: World X coordinate
-        y: World Y coordinate
-        plane: Plane/height level (0-3)
-        radius: Search radius in tiles
-
-    Returns:
-        List of dicts with object info and location
-
-    Example:
-        >>> getNearby(3222, 3218, 0, radius=5)
-        [{'object_id': 1276, 'name': 'Tree', 'x': 3220, 'y': 3220, 'plane': 0}, ...]
-    """
+    """Get all objects near a coordinate."""
     if _db_connection is None:
-        print("❌ Objects database not loaded")
+        logger.error("Objects database not loaded")
         return []
 
     # Calculate coordinate bounds
@@ -211,21 +150,9 @@ def getNearby(x: int, y: int, plane: int = 0, radius: int = 10) -> List[Dict[str
 
 
 def searchByAction(action: str) -> List[Dict[str, Any]]:
-    """
-    Find all objects with a specific action.
-
-    Args:
-        action: Action string to search for (e.g., "Bank", "Chop down")
-
-    Returns:
-        List of dicts with object info
-
-    Example:
-        >>> searchByAction("Bank")
-        [{'id': 10356, 'name': '(null)', 'actions': [None, 'Bank', 'Collect', ...]}, ...]
-    """
+    """Find all objects with a specific action."""
     if _db_connection is None:
-        print("❌ Objects database not loaded")
+        logger.error("Objects database not loaded")
         return []
 
     cursor = _db_connection.cursor()
@@ -272,14 +199,9 @@ def searchByAction(action: str) -> List[Dict[str, Any]]:
 
 
 def countObjects() -> int:
-    """
-    Get total number of unique objects in database.
-
-    Returns:
-        Total object count
-    """
+    """Get total number of unique objects in database."""
     if _db_connection is None:
-        print("❌ Objects database not loaded")
+        logger.error("Objects database not loaded")
         return 0
 
     cursor = _db_connection.cursor()
@@ -288,14 +210,9 @@ def countObjects() -> int:
 
 
 def countLocations() -> int:
-    """
-    Get total number of object spawn locations in database.
-
-    Returns:
-        Total location count
-    """
+    """Get total number of object spawn locations in database."""
     if _db_connection is None:
-        print("❌ Objects database not loaded")
+        logger.error("Objects database not loaded")
         return 0
 
     cursor = _db_connection.cursor()
@@ -304,22 +221,9 @@ def countLocations() -> int:
 
 
 def executeQuery(query: str, params: tuple = ()) -> List[Dict[str, Any]]:
-    """
-    Execute a custom SQL query on the objects database.
-
-    Args:
-        query: SQL query string
-        params: Query parameters (for ? placeholders)
-
-    Returns:
-        List of result rows as dicts
-
-    Example:
-        >>> executeQuery("SELECT * FROM objects WHERE name LIKE ? LIMIT 10", ("Tree%",))
-        [{'id': 1276, 'name': 'Tree', ...}, ...]
-    """
+    """Execute a custom SQL query on the objects database."""
     if _db_connection is None:
-        print("❌ Objects database not loaded")
+        logger.error("Objects database not loaded")
         return []
 
     cursor = _db_connection.cursor()

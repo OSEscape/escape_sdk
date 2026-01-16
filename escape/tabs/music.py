@@ -7,14 +7,7 @@ from escape.types.gametab import GameTab, GameTabs
 
 
 class Music(GameTabs):
-    """
-    Singleton music tab - displays music tracks and player.
-
-    Example:
-        from escape.tabs.music import music
-
-        music.open()
-    """
+    """Music tab for browsing and playing music tracks."""
 
     TAB_TYPE = GameTab.MUSIC
 
@@ -31,5 +24,5 @@ class Music(GameTabs):
         GameTabs.__init__(self)
 
 
-# Module-level singleton instance
+# Module-level instance
 music = Music()

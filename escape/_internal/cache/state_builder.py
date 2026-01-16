@@ -1,11 +1,4 @@
-"""
-Builds derived game state from events.
-
-Processes raw events to maintain current state of:
-- Latest-state channels (gametick, etc.)
-- Ring buffer event history
-- Derived state (varbits, inventory, skills, etc.)
-"""
+"""Builds derived game state from events."""
 
 from collections import defaultdict, deque
 from time import time
@@ -15,11 +8,12 @@ import numpy as np
 
 import escape.utilities.timing as timing
 from escape._internal.events.channels import LATEST_STATE_CHANNELS
+from escape._internal.logger import logger
 from escape._internal.resources import varps as varps_resource
 from escape.globals import getApi
 from escape.types import Item, ItemContainer
 
-# Skill names constant - defined here to avoid circular import with tabs.skills singleton
+# Skill names constant - defined here to avoid circular import with tabs.skills
 # Note: Also defined in tabs/skills.py for public API access
 SKILL_NAMES = [
     "Attack",
@@ -50,20 +44,10 @@ SKILL_NAMES = [
 
 
 class StateBuilder:
-    """
-    Processes events and maintains game state.
-
-    Converts raw event stream into actionable game state.
-    Consumer calls addEvent(), users read via EventCache accessors.
-    """
+    """Processes events and maintains game state."""
 
     def __init__(self, event_history_size: int = 100):
-        """
-        Initialize with empty state.
-
-        Args:
-            event_history_size: Max events to keep per ring buffer channel
-        """
+        """Initialize with empty state."""
         # Latest-state channels (overwritten, no history)
         self.latest_states: Dict[str, Dict[str, Any]] = {}
 
@@ -95,21 +79,7 @@ class StateBuilder:
         self.itemcontainers[95] = ItemContainer(95, -1)  # Bank
 
     def addEvent(self, channel: str, event: Dict[str, Any]) -> None:
-        """
-        Process incoming event and update state.
-
-        Called by EventConsumer thread. No lock here - EventCache handles that.
-
-        Args:
-            channel: Event channel name
-            event: Event data dict
-        """
-        if channel in [
-            "var_client_int_changed",
-            "var_client_str_changed",
-            "varbit_changed",
-        ] and event.get("varc_id", -1) not in [1, 2]:
-            print(f"Processing event on channel {channel}: {event}")  # DEBUG
+        """Process incoming event and update state."""
         if channel in LATEST_STATE_CHANNELS:
             # Latest-state: just overwrite
             event["_timestamp"] = time()
@@ -126,13 +96,7 @@ class StateBuilder:
             self._processEvent(channel, event)
 
     def _processEvent(self, channel: str, event: Dict[str, Any]) -> None:
-        """
-        Update derived state from ring buffer event.
-
-        Args:
-            channel: Event channel name
-            event: Event data dict
-        """
+        """Update derived state from ring buffer event."""
         if channel == "varbit_changed":
             self._processVarbitChanged(event)
         elif channel in ["var_client_int_changed", "var_client_str_changed"]:
@@ -161,13 +125,7 @@ class StateBuilder:
             pass  # Could implement item despawn tracking if needed
 
     def _editVarp(self, varp_id: int, new_value: int) -> None:
-        """
-        Set a varp to a new value.
-
-        Args:
-            varp_id: Varp index
-            new_value: New 32-bit value
-        """
+        """Set a varp to a new value."""
         # Ensure varps list is large enough
         if varp_id >= len(self.varps):
             # Extend list with zeros
@@ -176,28 +134,13 @@ class StateBuilder:
         self.varps[varp_id] = new_value
 
     def _editVarc(self, varc_id: int, new_value: Any) -> None:
-        """
-        Set a varc to a new value.
-
-        Args:
-            varc_id: Varc index
-            new_value: New value (any type)
-        """
+        """Set a varc to a new value."""
         if (len(self.varcs) == 0) and (not self.varcs_initialized):
             self.initVarcs()
         self.varcs[varc_id] = new_value
 
     def _editVarbit(self, varbit_id: int, varp_id: int, new_value: int) -> None:
-        """
-        Update a varbit value by modifying specific bits in its parent varp.
-
-        Uses bit manipulation to preserve other bits in the varp.
-
-        Args:
-            varbit_id: Varbit index (for lookup)
-            varp_id: Parent varp index
-            new_value: New value for the varbit
-        """
+        """Update a varbit value by modifying specific bits in its parent varp."""
         # Get varbit metadata from resources (direct import to avoid race condition)
         varbit_info = varps_resource.getVarbitInfo(varbit_id)
 
@@ -233,17 +176,7 @@ class StateBuilder:
         self.varps[varp_id] = new_varp
 
     def _processVarbitChanged(self, event: Dict[str, Any]) -> None:
-        """
-        Update varbit/varp state from event.
-
-        Special case: varbit_id == -1 means update the full varp (no bit manipulation).
-
-        Args:
-            event: Varbit changed event dict with keys:
-                - varbit_id: Varbit index (-1 means full varp update)
-                - varp_id: Parent varp index
-                - value: New value
-        """
+        """Update varbit/varp state from event."""
         varbit_id = event.get("varbit_id")
         varp_id = event.get("varp_id")
         value = event.get("value")
@@ -259,14 +192,7 @@ class StateBuilder:
             self._editVarbit(varbit_id, varp_id, value)
 
     def _processVarcChanged(self, event: Dict[str, Any]) -> None:
-        """
-        Update varc state from event.
-
-        Args:
-            event: Varc changed event dict with keys:
-                - varc_id: Varc index
-                - value: New value
-        """
+        """Update varc state from event."""
         varc_id = event.get("varc_id")
         value = event.get("value")
 
@@ -276,12 +202,7 @@ class StateBuilder:
         self._editVarc(varc_id, value)
 
     def _processItemContainerChanged(self, event: Dict[str, Any]) -> None:
-        """
-        Update inventory/equipment/bank from event.
-
-        Args:
-            event: Item container changed event dict
-        """
+        """Update inventory/equipment/bank from event."""
         container_id = event.get("container_id")
         items_list = event.get("items", [])
 
@@ -298,20 +219,7 @@ class StateBuilder:
         self.itemcontainers[container_id].fromArray(items_list)
 
     def _processStatChanged(self, event: Dict[str, Any]) -> None:
-        """
-        Update skill levels/XP from stat_changed event.
-
-        Event format:
-        {
-            'skill': 'Attack',
-            'level': 75,
-            'xp': 1210421,
-            'boosted_level': 80  # If boosted by potion
-        }
-
-        Args:
-            event: Stat changed event dict
-        """
+        """Update skill levels/XP from stat_changed event."""
         skill_name = event.get("skill")
         if not skill_name:
             return
@@ -324,12 +232,8 @@ class StateBuilder:
         }
 
     def initVarps(self) -> None:
-        """
-        use query to get full list of varps
-        """
         api = getApi()
         q = api.query()
-
         v = q.client.getServerVarps()
         results = q.execute({"varps": v})
         varps = results["results"].get("varps", [])
@@ -338,12 +242,8 @@ class StateBuilder:
             self.varps_initialized = True
 
     def initVarcs(self) -> None:
-        """
-        use query to get full list of varcs
-        """
         api = getApi()
         q = api.query()
-
         v = q.client.getVarcMap()
         results = q.execute({"varcs": v})
         varcs = results["results"].get("varcs", {})
@@ -352,16 +252,11 @@ class StateBuilder:
             self.varcs_initialized = True
 
     def initSkills(self) -> None:
-        """
-        use query to get full list of skills
-        """
         api = getApi()
         q = api.query()
-
         levels = q.client.getRealSkillLevels()
         xps = q.client.getSkillExperiences()
         boosted_levels = q.client.getBoostedSkillLevels()
-
         results = q.execute({"levels": levels, "xps": xps, "boosted_levels": boosted_levels})
         if len(results["results"].get("levels", {})) > 0:
             self.skills_initialized = True
@@ -376,9 +271,7 @@ class StateBuilder:
                 }
 
     def initGroundItems(self) -> None:
-        """
-        use query to get full list of ground items
-        """
+        """Initialize ground items via query."""
         api = getApi()
 
         try:
@@ -390,7 +283,7 @@ class StateBuilder:
                 async_exec=False,
             )
         except Exception as e:
-            print(f"❌ Rebuild grounditems failed: {e}")
+            logger.error(f"Rebuild grounditems failed: {e}")
             return
 
     def _processCameraChanged(self) -> None:
@@ -400,21 +293,7 @@ class StateBuilder:
         projection.invalidate()
 
     def _processWorldViewLoaded(self, event: Dict[str, Any]) -> None:
-        """
-        Configure Projection singleton when world_view_loaded event is received.
-
-        This is called immediately when the event arrives, ensuring the projection
-        module always has correct scene data.
-
-        Args:
-            event: World view loaded event with keys:
-                - tile_heights: Flat list of heights [4 * sizeX * sizeY]
-                - bridge_flags: Flat list of bools (may be smaller than sizeX * sizeY)
-                - base_x, base_y: Scene base coordinates
-                - size_x, size_y: Scene dimensions
-                - boundsX, boundsY, boundsWidth, boundsHeight: Entity bounds (0 for top-level)
-                - plane: Current plane
-        """
+        """Configure Projection when world_view_loaded event is received."""
         from escape.world.projection import EntityConfig, projection
 
         # Extract scene data
@@ -461,7 +340,7 @@ class StateBuilder:
         baseX = event.get("base_x", 0)
         baseY = event.get("base_y", 0)
 
-        # Set scene data on projection singleton and invalidate cache
+        # Set scene data on projection and invalidate cache
         projection.setScene(tileHeights, bridgeFlags, baseX, baseY, sizeX, sizeY)
         projection.invalidate()
 

@@ -1,12 +1,4 @@
-"""
-Walker module - handles walking from point A to point B.
-
-Smart walker that:
-1. Gets a path from the pathfinder
-2. Tracks current walk target to avoid spam-clicking
-3. Only clicks new tiles when near current target or idle
-4. Finds suitable visible tiles along the path
-"""
+"""Walker module - handles walking from point A to point B with target tracking."""
 
 from typing import TYPE_CHECKING
 
@@ -21,25 +13,7 @@ LOCAL_UNITS_PER_TILE = 128
 
 
 class Walker:
-    """
-    Singleton walker for navigating from point A to point B.
-
-    Uses pathfinder to get a path, then clicks visible tiles to walk.
-    Tracks current walk target to avoid spam-clicking - only clicks
-    new tiles when the player is near their current target or idle.
-
-    Example:
-        from escape.navigation.walker import walker
-
-        # Walk to destination (handles target tracking automatically)
-        while walker.distanceToDestination(3165, 3487) > 0:
-            walker.walkTo(3165, 3487)
-            time.sleep(0.6)
-
-        # Or via client namespace
-        from escape.client import client
-        client.navigation.walker.walkTo(3165, 3487)
-    """
+    """Walker for navigating with smart target tracking."""
 
     _instance = None
 
@@ -72,15 +46,7 @@ class Walker:
         return (pos.get("sceneX", 0), pos.get("sceneY", 0))
 
     def _getTargetScenePosition(self) -> tuple[int, int] | None:
-        """
-        Get current walk target in scene coordinates.
-
-        The target_location from Java is in LOCAL coordinates (128 units/tile).
-        Converts to scene coordinates for distance calculations.
-
-        Returns:
-            Tuple of (sceneX, sceneY) or None if not walking to a target.
-        """
+        """Get current walk target in scene coordinates."""
         from escape.client import client
 
         target = client.cache.targetLocation
@@ -99,12 +65,7 @@ class Walker:
         return (sceneX, sceneY)
 
     def _distanceToTarget(self) -> int | None:
-        """
-        Get Chebyshev distance from player to current walk target.
-
-        Returns:
-            Distance in tiles, or None if no target or position unknown.
-        """
+        """Get Chebyshev distance from player to current walk target."""
         playerPos = self._getPlayerScenePosition()
         targetPos = self._getTargetScenePosition()
 
@@ -117,24 +78,11 @@ class Walker:
         return max(abs(targetX - playerX), abs(targetY - playerY))
 
     def hasTarget(self) -> bool:
-        """
-        Check if player currently has a walk target.
-
-        Returns:
-            True if player is walking to a target.
-        """
+        """Check if player currently has a walk target."""
         return self._getTargetScenePosition() is not None
 
     def isNearTarget(self, threshold: int = 2) -> bool:
-        """
-        Check if player is near their current walk target.
-
-        Args:
-            threshold: Distance in tiles to consider "near" (default 2)
-
-        Returns:
-            True if player is within threshold of target, or has no target.
-        """
+        """Check if player is near their current walk target (within threshold tiles)."""
         dist = self._distanceToTarget()
         if dist is None:
             return True  # No target = effectively "at" target
@@ -142,31 +90,11 @@ class Walker:
         return dist <= threshold
 
     def shouldClickNewTile(self, threshold: int = 2) -> bool:
-        """
-        Determine if we should click a new tile to continue walking.
-
-        Returns True if:
-        - Player has no current walk target (idle)
-        - Player is within threshold tiles of current target
-
-        Args:
-            threshold: Distance threshold to consider "near target" (default 2)
-
-        Returns:
-            True if we should click a new tile.
-        """
+        """Determine if we should click a new tile (idle or near target)."""
         return self.isNearTarget(threshold=threshold)
 
     def _findFirstObstacleIndex(self, path: "Path") -> int:
-        """
-        Find the index of the first obstacle on the path.
-
-        Args:
-            path: Path to search
-
-        Returns:
-            Index of first obstacle origin, or path length if no obstacles
-        """
+        """Find the index of the first obstacle on the path."""
         if not path.hasObstacles():
             return path.length()
 
@@ -190,26 +118,7 @@ class Walker:
         playerY: int,
         maxIndex: int,
     ) -> int | None:
-        """
-        Select the optimal tile to click for walking.
-
-        Selection criteria:
-        - Must be in visibleIndices
-        - Must be before maxIndex (obstacle)
-        - Quad center must be inside viewport (clickable)
-        - Prefers tiles further from player (more efficient walking)
-        - Skips tiles too close to player (< 3 tiles)
-
-        Args:
-            path: The path to walk
-            visibleIndices: Indices of visible path tiles
-            playerX: Player world X
-            playerY: Player world Y
-            maxIndex: Maximum index (first obstacle or path end)
-
-        Returns:
-            Best tile index to click, or None if no suitable tile
-        """
+        """Select the optimal tile to click for walking (visible, clickable, far enough)."""
         from escape.world.scene import scene
 
         # Filter to tiles before obstacle
@@ -272,21 +181,7 @@ class Walker:
         return int(farIndices[-1])  # Last one is furthest along path
 
     def clickTile(self, worldX: int, worldY: int) -> bool:
-        """
-        Click a specific world tile to walk to it.
-
-        Hovers over the tile, waits for WALK action, and clicks.
-
-        Args:
-            worldX: World X coordinate
-            worldY: World Y coordinate
-
-        Returns:
-            True if tile was clicked successfully, False otherwise
-
-        Example:
-            >>> walker.clickTile(3165, 3487)
-        """
+        """Click a specific world tile to walk to it."""
         from escape.client import client
         from escape.world.scene import scene
 
@@ -313,37 +208,7 @@ class Walker:
         margin: int = 50,
         nearTargetThreshold: int = 2,
     ) -> bool:
-        """
-        Walk towards destination by clicking a tile along the path.
-
-        Smart walking with target tracking:
-        - Only clicks a new tile if player is near current target or idle
-        - Avoids spam-clicking while player is still walking
-        - Automatically selects optimal visible tile along path
-
-        Currently walks up to the first obstacle only - obstacles like doors,
-        ladders, etc. need separate handling.
-
-        Args:
-            destX: Destination world X coordinate
-            destY: Destination world Y coordinate
-            destPlane: Destination plane (default 0)
-            margin: Pixel margin from viewport edge for tile selection (default 50)
-            nearTargetThreshold: Distance to target before clicking new tile (default 2)
-
-        Returns:
-            True if a tile was clicked or already walking, False on error
-
-        Example:
-            >>> from escape.navigation.walker import walker
-            >>> import time
-            >>>
-            >>> # Walk to destination with automatic target tracking
-            >>> while walker.distanceToDestination(3165, 3487) > 0:
-            ...     walker.walkTo(3165, 3487)
-            ...     time.sleep(0.6)  # Check every tick
-            >>> print("Arrived!")
-        """
+        """Walk towards destination by clicking a tile along the path."""
         from escape.navigation.pathfinder import pathfinder
 
         # Get player position
@@ -392,15 +257,7 @@ class Walker:
         return self._clickWalkQuad(quad)
 
     def _clickWalkQuad(self, quad: "Quad") -> bool:
-        """
-        Hover over quad and click with WALK action.
-
-        Args:
-            quad: Quad to click
-
-        Returns:
-            True if clicked successfully
-        """
+        """Hover over quad and click with WALK action."""
         from escape.client import client
 
         # Hover on the tile
@@ -414,32 +271,11 @@ class Walker:
         return client.interactions.menu.clickOptionType("WALK")
 
     def isMoving(self) -> bool:
-        """
-        Check if player is currently moving.
-
-        Returns True if player has a walk target they haven't reached yet.
-
-        Returns:
-            True if player is moving
-
-        Example:
-            >>> while walker.isMoving():
-            ...     time.sleep(0.1)
-            >>> print("Stopped moving")
-        """
+        """Check if player is currently moving (has a walk target)."""
         return self.hasTarget()
 
     def distanceToDestination(self, destX: int, destY: int) -> int:
-        """
-        Get Chebyshev distance from player to destination.
-
-        Args:
-            destX: Destination world X
-            destY: Destination world Y
-
-        Returns:
-            Distance in tiles, or -1 if position unknown
-        """
+        """Get Chebyshev distance from player to destination (-1 if unknown)."""
         playerPos = self._getPlayerPosition()
         if playerPos is None:
             return -1
@@ -448,5 +284,5 @@ class Walker:
         return max(abs(destX - playerX), abs(destY - playerY))
 
 
-# Module-level singleton instance
+# Module-level instance
 walker = Walker()

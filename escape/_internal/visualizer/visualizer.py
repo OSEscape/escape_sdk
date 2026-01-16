@@ -16,19 +16,7 @@ Color = tuple[int, int, int] | str
 
 
 class Visualizer:
-    """
-    Singleton debug visualizer for rendering overlays on RuneLite screenshots.
-
-    Only one window is ever created, even with multiple Visualizer instances.
-
-    Example:
-        >>> from escape._internal.visualizer import Visualizer
-        >>>
-        >>> viz = Visualizer()
-        >>> viz.capture()  # Grab current RuneLite frame
-        >>> # Drawing methods coming soon...
-        >>> viz.render()   # Display in debug window
-    """
+    """Debug visualizer for rendering overlays on RuneLite screenshots."""
 
     _instance = None
 
@@ -45,17 +33,7 @@ class Visualizer:
         self._debugWindow = DebugWindow()
 
     def capture(self) -> bool:
-        """
-        Capture screenshot of RuneLite window.
-
-        Returns:
-            True if capture succeeded, False otherwise
-
-        Example:
-            >>> viz = Visualizer()
-            >>> if viz.capture():
-            ...     viz.render()
-        """
+        """Capture screenshot of RuneLite window."""
         image = captureRuneLite()
         if image is None:
             return False
@@ -65,37 +43,15 @@ class Visualizer:
         return True
 
     def getImage(self) -> Image.Image | None:
-        """
-        Get the current captured image.
-
-        Returns:
-            PIL Image or None if no capture has been made
-        """
+        """Get the current captured image."""
         return self._image
 
     def setImage(self, image: Image.Image) -> None:
-        """
-        Set custom image (for testing or external sources).
-
-        Args:
-            image: PIL Image to use
-        """
+        """Set custom image for testing or external sources."""
         self._image = image
 
     def render(self) -> bool:
-        """
-        Render current image to debug window.
-
-        Creates window on first call, reuses existing window on subsequent calls.
-
-        Returns:
-            True if render succeeded, False if no image to render
-
-        Example:
-            >>> viz = Visualizer()
-            >>> viz.capture()
-            >>> viz.render()  # Opens/updates debug window
-        """
+        """Render current image to debug window."""
         if self._image is None:
             return False
 
@@ -110,8 +66,6 @@ class Visualizer:
         """Check if debug window is currently open."""
         return self._debugWindow.isOpen()
 
-    # ===== Drawing Methods =====
-
     def drawBox(
         self,
         box: Box,
@@ -119,20 +73,7 @@ class Visualizer:
         width: int = 2,
         fill: Color | None = None,
     ) -> None:
-        """
-        Draw a Box (rectangle) on the image.
-
-        Args:
-            box: Box to draw
-            color: Outline color (RGB tuple or name)
-            width: Line width in pixels
-            fill: Optional fill color
-
-        Example:
-            >>> viz.capture()
-            >>> viz.drawBox(Box(100, 100, 200, 200), color="green", width=3)
-            >>> viz.render()
-        """
+        """Draw a Box rectangle on the image."""
         if self._draw is None:
             return
         self._draw.rectangle(
@@ -146,20 +87,7 @@ class Visualizer:
         width: int = 2,
         fill: Color | None = None,
     ) -> None:
-        """
-        Draw a Circle on the image.
-
-        Args:
-            circle: Circle to draw
-            color: Outline color (RGB tuple or name)
-            width: Line width in pixels
-            fill: Optional fill color
-
-        Example:
-            >>> viz.capture()
-            >>> viz.drawCircle(Circle(150, 150, 50), color="blue")
-            >>> viz.render()
-        """
+        """Draw a Circle on the image."""
         if self._draw is None:
             return
         x1 = circle.centerX - circle.radius
@@ -175,20 +103,7 @@ class Visualizer:
         width: int = 2,
         fill: Color | None = None,
     ) -> None:
-        """
-        Draw a Polygon on the image.
-
-        Args:
-            polygon: Polygon to draw
-            color: Outline color (RGB tuple or name)
-            width: Line width in pixels
-            fill: Optional fill color
-
-        Example:
-            >>> viz.capture()
-            >>> viz.drawPolygon(npc.hull, color="yellow")
-            >>> viz.render()
-        """
+        """Draw a Polygon on the image."""
         if self._draw is None:
             return
         points = [(v.x, v.y) for v in polygon.vertices]
@@ -201,20 +116,7 @@ class Visualizer:
         width: int = 2,
         fill: Color | None = None,
     ) -> None:
-        """
-        Draw a Quad (quadrilateral) on the image.
-
-        Args:
-            quad: Quad to draw
-            color: Outline color (RGB tuple or name)
-            width: Line width in pixels
-            fill: Optional fill color
-
-        Example:
-            >>> viz.capture()
-            >>> viz.drawQuad(tile.quad, color="cyan")
-            >>> viz.render()
-        """
+        """Draw a Quad quadrilateral on the image."""
         if self._draw is None:
             return
         points = [
@@ -231,22 +133,9 @@ class Visualizer:
         color: Color = "red",
         size: int = 5,
     ) -> None:
-        """
-        Draw a Point as a small crosshair or dot.
-
-        Args:
-            point: Point to draw
-            color: Color (RGB tuple or name)
-            size: Size of the crosshair in pixels
-
-        Example:
-            >>> viz.capture()
-            >>> viz.drawPoint(Point(150, 150), color="cyan", size=10)
-            >>> viz.render()
-        """
+        """Draw a Point as a small crosshair."""
         if self._draw is None:
             return
-        # Draw crosshair
         self._draw.line([(point.x - size, point.y), (point.x + size, point.y)], fill=color, width=2)
         self._draw.line([(point.x, point.y - size), (point.x, point.y + size)], fill=color, width=2)
 
@@ -257,20 +146,7 @@ class Visualizer:
         color: Color = "red",
         width: int = 2,
     ) -> None:
-        """
-        Draw a line between two points.
-
-        Args:
-            p1: Start point
-            p2: End point
-            color: Line color (RGB tuple or name)
-            width: Line width in pixels
-
-        Example:
-            >>> viz.capture()
-            >>> viz.drawLine(Point(0, 0), Point(100, 100), color="white")
-            >>> viz.render()
-        """
+        """Draw a line between two points."""
         if self._draw is None:
             return
         self._draw.line([(p1.x, p1.y), (p2.x, p2.y)], fill=color, width=width)
@@ -281,19 +157,7 @@ class Visualizer:
         text: str,
         color: Color = "white",
     ) -> None:
-        """
-        Draw text at a point.
-
-        Args:
-            point: Position for the text
-            text: Text string to draw
-            color: Text color (RGB tuple or name)
-
-        Example:
-            >>> viz.capture()
-            >>> viz.drawText(Point(100, 100), "NPC Name", color="yellow")
-            >>> viz.render()
-        """
+        """Draw text at a point."""
         if self._draw is None:
             return
         self._draw.text((point.x, point.y), text, fill=color)

@@ -11,17 +11,7 @@ except ImportError:
 
 
 class Mouse:
-    """
-    Singleton mouse controller with human-like movement.
-    All coordinates are relative to RuneLite window by default.
-    Uses pyautogui for cross-platform mouse control.
-
-    Example:
-        from escape.input.mouse import mouse
-
-        mouse.moveTo(100, 200)
-        mouse.leftClick()
-    """
+    """Mouse controller with human-like movement."""
 
     _instance = None
 
@@ -32,12 +22,7 @@ class Mouse:
         return cls._instance
 
     def _init(self, speed: float = 1.0):
-        """
-        Actual initialization, runs once.
-
-        Args:
-            speed: Movement speed multiplier (1.0 = ~20 pixels per 20ms step)
-        """
+        """Actual initialization, runs once."""
         from escape.input.runelite import runelite
 
         if pag is None:
@@ -54,28 +39,13 @@ class Mouse:
 
     @property
     def position(self) -> Tuple[int, int]:
-        """
-        Get current mouse position relative to game window.
-
-        Returns:
-            Tuple of (x, y) coordinates relative to RuneLite window
-        """
+        """Get current mouse position relative to game window."""
         screen_x, screen_y = pag.position()
         offset = self.runelite.getWindowOffset()
         return (screen_x - offset[0], screen_y - offset[1])
 
     def _validateCoordinates(self, x: int, y: int, safe: bool) -> None:
-        """
-        Validate that coordinates are within game window bounds.
-
-        Args:
-            x: X coordinate (relative to game window)
-            y: Y coordinate (relative to game window)
-            safe: If True, reject coordinates outside window bounds
-
-        Raises:
-            ValueError: If safe=True and coordinates are outside bounds
-        """
+        """Validate that coordinates are within game window bounds."""
         if not safe:
             return  # Skip validation
 
@@ -94,15 +64,7 @@ class Mouse:
             )
 
     def _moveTo(self, x: int, y: int, safe: bool = True) -> None:
-        """
-        Core movement function - ONLY access point to pyautogui.moveTo().
-        All coordinates are relative to RuneLite window.
-
-        Args:
-            x: Target x coordinate (relative to game window)
-            y: Target y coordinate (relative to game window)
-            safe: If True, reject coordinates outside window bounds
-        """
+        """Core movement function - ONLY access point to pyautogui.moveTo()."""
         # Ensure window is ready
         self.runelite.refreshWindowPosition()
         # temp override for performance testing
@@ -171,12 +133,7 @@ class Mouse:
         pag.moveTo(abs_x, abs_y, duration=0, _pause=False)
 
     def _clickButton(self, button: str) -> None:
-        """
-        Core click function - ONLY access point to pyautogui.click().
-
-        Args:
-            button: Button to click ('left' or 'right')
-        """
+        """Core click function - ONLY access point to pyautogui.click()."""
         # Ensure window is ready (respects 10s cache)
         self.runelite.refreshWindowPosition()
 
@@ -184,12 +141,7 @@ class Mouse:
         pag.click(button=button, _pause=False, tween=None)
 
     def _hold(self, button: str) -> None:
-        """
-        Core hold function - ONLY access point to pyautogui.mouseDown().
-
-        Args:
-            button: Button to hold ('left' or 'right')
-        """
+        """Core hold function - ONLY access point to pyautogui.mouseDown()."""
         # Ensure window is ready (respects 10s cache)
         self.runelite.refreshWindowPosition()
 
@@ -197,12 +149,7 @@ class Mouse:
         pag.mouseDown(button=button, _pause=False)
 
     def _release(self, button: str) -> None:
-        """
-        Core release function - ONLY access point to pyautogui.mouseUp().
-
-        Args:
-            button: Button to release ('left' or 'right')
-        """
+        """Core release function - ONLY access point to pyautogui.mouseUp()."""
         # Ensure window is ready (respects 10s cache)
         self.runelite.refreshWindowPosition()
 
@@ -210,12 +157,7 @@ class Mouse:
         pag.mouseUp(button=button, _pause=False)
 
     def _scroll(self, clicks: int) -> None:
-        """
-        Core scroll function - ONLY access point to pyautogui.scroll().
-
-        Args:
-            clicks: Number of scroll clicks (positive=up, negative=down)
-        """
+        """Core scroll function - ONLY access point to pyautogui.scroll()."""
         # Ensure window is ready (respects 10s cache)
         self.runelite.refreshWindowPosition()
 
@@ -226,35 +168,11 @@ class Mouse:
         self._clickButton(button)
 
     def moveTo(self, x: int, y: int, safe: bool = True) -> None:
-        """
-        Move mouse to target position with human-like movement.
-        Coordinates are relative to RuneLite window.
-
-        Args:
-            x: Target x coordinate (relative to game window)
-            y: Target y coordinate (relative to game window)
-            safe: If True, reject coordinates outside window bounds
-
-        Example:
-            >>> mouse.moveTo(100, 200)  # Move to (100, 200) in game window
-            >>> mouse.moveTo(-50, -50, safe=False)  # Move outside window (unsafe)
-        """
+        """Move mouse to target position with human-like movement."""
         self._moveTo(x, y, safe=safe)
 
     def leftClick(self, x: int | None = None, y: int | None = None, safe: bool = True) -> None:
-        """
-        Perform left click at current position or move to position and click.
-        Coordinates are relative to RuneLite window.
-
-        Args:
-            x: Optional target x coordinate (if None, clicks at current position)
-            y: Optional target y coordinate (if None, clicks at current position)
-            safe: If True, reject coordinates outside window bounds
-
-        Example:
-            >>> mouse.leftClick(100, 200)  # Move and click at (100, 200)
-            >>> mouse.leftClick()  # Click at current position
-        """
+        """Perform left click at current position or move to position and click."""
         import time
 
         time.perf_counter()
@@ -264,100 +182,36 @@ class Mouse:
         time.perf_counter()
 
     def rightClick(self, x: int | None = None, y: int | None = None, safe: bool = True) -> None:
-        """
-        Perform right click at current position or move to position and click.
-        Coordinates are relative to RuneLite window.
-
-        Args:
-            x: Optional target x coordinate (if None, clicks at current position)
-            y: Optional target y coordinate (if None, clicks at current position)
-            safe: If True, reject coordinates outside window bounds
-
-        Example:
-            >>> mouse.rightClick(100, 200)  # Move and right-click at (100, 200)
-            >>> mouse.rightClick()  # Right-click at current position
-        """
+        """Perform right click at current position or move to position and click."""
         if x is not None and y is not None:
             self._moveTo(x, y, safe=safe)
 
         self._clickButton("right")
 
     def holdLeft(self, x: int | None = None, y: int | None = None, safe: bool = True) -> None:
-        """
-        Hold left mouse button at current position or move to position and hold.
-        Coordinates are relative to RuneLite window.
-
-        Args:
-            x: Optional target x coordinate (if None, holds at current position)
-            y: Optional target y coordinate (if None, holds at current position)
-            safe: If True, reject coordinates outside window bounds
-
-        Example:
-            >>> mouse.holdLeft(100, 200)  # Move and hold at (100, 200)
-            >>> mouse.moveTo(300, 400)    # Drag to new position
-            >>> mouse.releaseLeft()       # Release button
-        """
+        """Hold left mouse button at current position or move to position and hold."""
         if x is not None and y is not None:
             self._moveTo(x, y, safe=safe)
 
         self._hold("left")
 
     def holdRight(self, x: int | None = None, y: int | None = None, safe: bool = True) -> None:
-        """
-        Hold right mouse button at current position or move to position and hold.
-        Coordinates are relative to RuneLite window.
-
-        Args:
-            x: Optional target x coordinate (if None, holds at current position)
-            y: Optional target y coordinate (if None, holds at current position)
-            safe: If True, reject coordinates outside window bounds
-
-        Example:
-            >>> mouse.holdRight(100, 200)  # Move and hold right button
-            >>> mouse.moveTo(300, 400)     # Drag to new position
-            >>> mouse.releaseRight()       # Release button
-        """
+        """Hold right mouse button at current position or move to position and hold."""
         if x is not None and y is not None:
             self._moveTo(x, y, safe=safe)
 
         self._hold("right")
 
     def releaseLeft(self) -> None:
-        """
-        Release left mouse button.
-
-        Example:
-            >>> mouse.holdLeft(100, 200)
-            >>> time.sleep(1)
-            >>> mouse.releaseLeft()
-        """
+        """Release left mouse button."""
         self._release("left")
 
     def releaseRight(self) -> None:
-        """
-        Release right mouse button.
-
-        Example:
-            >>> mouse.holdRight(100, 200)
-            >>> time.sleep(1)
-            >>> mouse.releaseRight()
-        """
+        """Release right mouse button."""
         self._release("right")
 
     def scroll(self, up: bool = True, count: int = 1) -> None:
-        """
-        Scroll the mouse wheel with human-like delays between scrolls.
-
-        Args:
-            up: If True, scroll up. If False, scroll down.
-            count: Number of scroll clicks (default 1)
-
-        Example:
-            >>> mouse.scroll()              # Scroll up once
-            >>> mouse.scroll(up=False)      # Scroll down once
-            >>> mouse.scroll(count=3)       # Scroll up 3 times
-            >>> mouse.scroll(up=False, count=5)  # Scroll down 5 times
-        """
+        """Scroll the mouse wheel with human-like delays between scrolls."""
         direction = 1 if up else -1
 
         for i in range(count):
@@ -368,5 +222,5 @@ class Mouse:
                 time.sleep(random.uniform(0.025, 0.05))
 
 
-# Module-level singleton instance
+# Module-level instance
 mouse = Mouse()

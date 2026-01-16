@@ -5,7 +5,6 @@ recursive-include escape *.py *.pyi
 recursive-include tests *.py
 
 # Exclude generated files (downloaded to ~/.cache/escape/ at runtime)
-exclude escape/generated/query_proxies.py
 exclude escape/generated/constants.py
 recursive-exclude escape/generated/constants *.py
 

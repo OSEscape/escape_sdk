@@ -11,15 +11,7 @@ ItemIdentifier = int | str
 
 @dataclass
 class Item:
-    """
-    Represents an OSRS item.
-
-    Attributes:
-        id: Item ID
-        name: Item name
-        quantity: Stack size (how many of this item)
-        noted: Whether the item is noted
-    """
+    """Represents an OSRS item."""
 
     id: int
     name: str
@@ -28,27 +20,7 @@ class Item:
 
     @classmethod
     def fromDict(cls, data: Dict[str, Any]) -> "Item":
-        """
-        Convert dict from Java to Item instance.
-
-        Java sends:
-            info.put("id", itemId);
-            info.put("name", comp.getName());
-            info.put("stack", qty);
-            info.put("noted", comp.getNote() != -1);
-
-        Args:
-            data: Dict with 'id', 'name', 'stack', 'noted'
-
-        Returns:
-            Item instance
-
-        Example:
-            data = {'id': 995, 'name': 'Coins', 'stack': 1000, 'noted': False}
-            item = Item.fromDict(data)
-            print(item.name)  # "Coins"
-            print(item.quantity)  # 1000
-        """
+        """Convert dict from Java to Item instance."""
         return cls(
             id=data.get("id", -1),
             name=data.get("name", "Unknown"),
@@ -57,12 +29,7 @@ class Item:
         )
 
     def toDict(self) -> Dict[str, Any]:
-        """
-        Convert Item back to dict format.
-
-        Returns:
-            Dict with 'id', 'name', 'stack', 'noted'
-        """
+        """Convert Item back to dict format."""
         return {"id": self.id, "name": self.name, "stack": self.quantity, "noted": self.noted}
 
     def __repr__(self) -> str:
@@ -71,21 +38,7 @@ class Item:
         return f"Item({self.id}, '{self.name}' x{self.quantity}{noted_str})"
 
     def matches(self, identifier: ItemIdentifier) -> bool:
-        """
-        Check if this item matches the given identifier.
-
-        Args:
-            identifier: Item ID (int) or name substring (str)
-
-        Returns:
-            True if item matches the identifier
-
-        Example:
-            item = Item(995, "Coins", 1000, False)
-            item.matches(995)      # True (by ID)
-            item.matches("Coins")  # True (by name)
-            item.matches("oin")    # True (substring match)
-        """
+        """Check if this item matches the given identifier."""
         if isinstance(identifier, int):
             return self.id == identifier
         return identifier in self.name

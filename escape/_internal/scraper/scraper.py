@@ -12,6 +12,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Set, Tuple
 
+from escape._internal.logger import logger
+
 
 @dataclass
 class MethodInfo:
@@ -71,21 +73,19 @@ class EfficientRuneLiteScraper:
         }
 
     def scrapeLocalDirectory(self, api_path: str):
-        """
-        Scrape all Java files from local RuneLite API directory
-        """
-        print("🚀 Local file scraping starting...")
-        print(f"📁 Scanning directory: {api_path}")
+        """Scrape all Java files from local RuneLite API directory."""
+        logger.info("Local file scraping starting")
+        logger.info(f"Scanning directory: {api_path}")
         start_time = time.time()
 
         api_path = Path(api_path)
 
         # Get all Java files
         java_files = list(api_path.rglob("*.java"))
-        print(f"📊 Found {len(java_files)} Java files to process")
+        logger.info(f"Found {len(java_files)} Java files to process")
 
         # PASS 1: Build class-to-package mapping first
-        print("  Pass 1: Building class-to-package mapping...")
+        logger.info("Pass 1: Building class-to-package mapping")
         for file_path in java_files:
             class_name = file_path.stem  # filename without extension
 
@@ -109,10 +109,10 @@ class EfficientRuneLiteScraper:
                 # Base package takes precedence for duplicates
                 self.class_packages[class_name] = package_path
 
-        print(f"  Built mappings for {len(self.class_packages)} classes")
+        logger.info(f"Built mappings for {len(self.class_packages)} classes")
 
         # PASS 2: Process files with complete package knowledge
-        print("  Pass 2: Processing files with complete package knowledge...")
+        logger.info("Pass 2: Processing files with complete package knowledge")
         for idx, (file_path, class_name, package_path) in enumerate(self.all_class_files, 1):
             try:
                 # Read the file content
@@ -136,13 +136,13 @@ class EfficientRuneLiteScraper:
 
                 # Progress indicator
                 if idx % 50 == 0:
-                    print(f"  Progress: {idx}/{len(java_files)} files processed...")
+                    logger.info(f"Progress: {idx}/{len(java_files)} files processed")
 
             except Exception as e:
-                print(f"  ❌ Error processing {file_path.name}: {e}")
+                logger.error(f"Error processing {file_path.name}: {e}")
 
         elapsed = time.time() - start_time
-        print(f"✅ Processed all {len(java_files)} files in {elapsed:.1f} seconds")
+        logger.success(f"Processed all {len(java_files)} files in {elapsed:.1f} seconds")
         self._printSummary(elapsed)
 
         # Parse InterfaceID file if it exists
@@ -158,17 +158,14 @@ class EfficientRuneLiteScraper:
         self._parseItemIds(api_path)
 
     def _parseInterfaceIds(self, api_path: Path):
-        """
-        Parse the InterfaceID.java file from gameval directory.
-        This file contains widget group IDs and nested classes with packed widget IDs.
-        """
+        """Parse InterfaceID.java for widget group IDs and nested widget classes."""
         interface_id_path = api_path / "gameval" / "InterfaceID.java"
 
         if not interface_id_path.exists():
-            print("\n⚠️  InterfaceID.java not found, skipping interface ID parsing")
+            logger.warning("\n InterfaceID.java not found, skipping interface ID parsing")
             return
 
-        print("\n🎨 Parsing InterfaceID.java for widget constants...")
+        logger.info("\n Parsing InterfaceID.java for widget constants")
 
         try:
             with open(interface_id_path, encoding="utf-8") as f:
@@ -220,31 +217,26 @@ class EfficientRuneLiteScraper:
                 if nested_constants:
                     self.interface_ids["nested"][class_name] = nested_constants
 
-            print(f"   ✅ Found {len(self.interface_ids['groups'])} group IDs")
-            print(f"   ✅ Found {len(self.interface_ids['nested'])} nested widget classes")
+            logger.success(f"Found {len(self.interface_ids['groups'])} group IDs")
+            logger.success(f"Found {len(self.interface_ids['nested'])} nested widget classes")
             total_widgets = sum(len(v) for v in self.interface_ids["nested"].values())
-            print(f"   ✅ Total widget constants: {total_widgets}")
+            logger.success(f"Total widget constants: {total_widgets}")
 
         except Exception as e:
-            print(f"   ❌ Error parsing InterfaceID.java: {e}")
+            logger.error(f"Error parsing InterfaceID.java: {e}")
             import traceback
 
             traceback.print_exc()
 
     def _parseSpriteIds(self, api_path: Path):
-        """
-        Parse the SpriteID.java file from gameval directory.
-        This file contains sprite IDs with nested classes that have:
-        - Indexed constants: _0, _1, _2 (actual sprite IDs)
-        - Semantic aliases: ATTACK = _0 (references to indexed constants)
-        """
+        """Parse SpriteID.java for sprite constants with indexed and aliased values."""
         sprite_id_path = api_path / "gameval" / "SpriteID.java"
 
         if not sprite_id_path.exists():
-            print("\n⚠️  SpriteID.java not found, skipping sprite ID parsing")
+            logger.warning("\n SpriteID.java not found, skipping sprite ID parsing")
             return
 
-        print("\n🎨 Parsing SpriteID.java for sprite constants...")
+        logger.info("\n Parsing SpriteID.java for sprite constants")
 
         try:
             with open(sprite_id_path, encoding="utf-8") as f:
@@ -311,29 +303,26 @@ class EfficientRuneLiteScraper:
                 if resolved_constants:
                     self.sprite_ids["nested"][class_name] = resolved_constants
 
-            print(f"   ✅ Found {len(self.sprite_ids['constants'])} top-level sprite IDs")
-            print(f"   ✅ Found {len(self.sprite_ids['nested'])} nested sprite classes")
+            logger.success(f"Found {len(self.sprite_ids['constants'])} top-level sprite IDs")
+            logger.success(f"Found {len(self.sprite_ids['nested'])} nested sprite classes")
             total_sprites = sum(len(v) for v in self.sprite_ids["nested"].values())
-            print(f"   ✅ Total nested sprite constants: {total_sprites}")
+            logger.success(f"Total nested sprite constants: {total_sprites}")
 
         except Exception as e:
-            print(f"   ❌ Error parsing SpriteID.java: {e}")
+            logger.error(f"Error parsing SpriteID.java: {e}")
             import traceback
 
             traceback.print_exc()
 
     def _parseVarclientIds(self, api_path: Path):
-        """
-        Parse the VarClientID.java file from gameval directory.
-        This file contains simple VarClient ID constants.
-        """
+        """Parse VarClientID.java for VarClient ID constants."""
         varclient_id_path = api_path / "gameval" / "VarClientID.java"
 
         if not varclient_id_path.exists():
-            print("\n⚠️  VarClientID.java not found, skipping VarClientID parsing")
+            logger.warning("\n VarClientID.java not found, skipping VarClientID parsing")
             return
 
-        print("\n🎮 Parsing VarClientID.java for VarClient constants...")
+        logger.info("\n Parsing VarClientID.java for VarClient constants")
 
         try:
             with open(varclient_id_path, encoding="utf-8") as f:
@@ -354,28 +343,23 @@ class EfficientRuneLiteScraper:
 
             self.constants["VarClientID"] = varclient_constants
 
-            print(f"   ✅ Found {len(varclient_constants)} VarClientID constants")
+            logger.success(f"Found {len(varclient_constants)} VarClientID constants")
 
         except Exception as e:
-            print(f"   ❌ Error parsing VarClientID.java: {e}")
+            logger.error(f"Error parsing VarClientID.java: {e}")
             import traceback
 
             traceback.print_exc()
 
     def _parseItemIds(self, api_path: Path):
-        """
-        Parse the gameval ItemID.java file which includes nested Cert and Placeholder classes.
-        This provides comprehensive item IDs including noted and placeholder variants.
-
-        Note: Java's "Cert" class is mapped to Python's "Noted" class for clarity.
-        """
+        """Parse gameval ItemID.java for item IDs including noted and placeholder variants."""
         item_id_path = api_path / "gameval" / "ItemID.java"
 
         if not item_id_path.exists():
-            print("\n⚠️  gameval ItemID.java not found, falling back to regular ItemID")
+            logger.warning("\n gameval ItemID.java not found, falling back to regular ItemID")
             return
 
-        print("\n📦 Parsing gameval ItemID.java for comprehensive item constants...")
+        logger.info("\n Parsing gameval ItemID.java for comprehensive item constants")
 
         try:
             with open(item_id_path, encoding="utf-8") as f:
@@ -430,14 +414,14 @@ class EfficientRuneLiteScraper:
             # Store as net.runelite.api.gameval.ItemID to distinguish from regular ItemID
             self.constants["net.runelite.api.gameval.ItemID"] = item_ids
 
-            print(f"   ✅ Found {len(item_ids['main'])} main item IDs")
-            print(f"   ✅ Found {len(item_ids['Noted'])} noted item IDs")
-            print(f"   ✅ Found {len(item_ids['Placeholder'])} placeholder item IDs")
+            logger.success(f"Found {len(item_ids['main'])} main item IDs")
+            logger.success(f"Found {len(item_ids['Noted'])} noted item IDs")
+            logger.success(f"Found {len(item_ids['Placeholder'])} placeholder item IDs")
             total_items = sum(len(v) for v in item_ids.values())
-            print(f"   ✅ Total item constants: {total_items:,}")
+            logger.success(f"Total item constants: {total_items:,}")
 
         except Exception as e:
-            print(f"   ❌ Error parsing gameval ItemID.java: {e}")
+            logger.error(f"Error parsing gameval ItemID.java: {e}")
             import traceback
 
             traceback.print_exc()
@@ -451,9 +435,6 @@ class EfficientRuneLiteScraper:
     ):
         if storage_key is None:
             storage_key = class_name
-        """
-        Parse a class or interface file
-        """
         # Check for Lombok annotations that generate getters
         has_lombok_value = "@Value" in content
         has_lombok_data = "@Data" in content
@@ -649,9 +630,7 @@ class EfficientRuneLiteScraper:
         package_path: str = "net/runelite/api",
         storage_key: str = None,
     ):
-        """
-        Parse an enum file
-        """
+        """Parse an enum file and extract values."""
         if storage_key is None:
             storage_key = enum_name
         enum = EnumInfo(name=enum_name)
@@ -702,9 +681,7 @@ class EfficientRuneLiteScraper:
                 self.enums[storage_key] = enum
 
     def _buildSignature(self, params: str, return_type: str) -> str:
-        """
-        Build JNI signature from Java types
-        """
+        """Build JNI signature from Java parameter and return types."""
         # Build parameter signature
         param_sig = ""
         if params:
@@ -728,9 +705,7 @@ class EfficientRuneLiteScraper:
         return f"({param_sig}){return_sig}"
 
     def _splitParams(self, params: str) -> List[str]:
-        """
-        Split parameters handling generics and annotations
-        """
+        """Split parameters handling generics and annotations."""
         result = []
         current = []
         depth = 0
@@ -758,9 +733,7 @@ class EfficientRuneLiteScraper:
         return result
 
     def _typeToJni(self, java_type: str) -> str:
-        """
-        Convert Java type to JNI signature
-        """
+        """Convert Java type to JNI signature."""
         # Clean up type
         java_type = java_type.strip()
 
@@ -837,30 +810,28 @@ class EfficientRuneLiteScraper:
         return "[" * array_count + jni
 
     def _printSummary(self, elapsed: float):
-        """
-        Print scraping summary
-        """
+        """Print scraping summary with statistics."""
         print("\n" + "=" * 60)
-        print("📊 SCRAPING COMPLETE")
+        logger.info("SCRAPING COMPLETE")
         print("=" * 60)
-        print(f"⏱️  Time elapsed: {elapsed:.1f} seconds")
-        print(f"📦 Classes scraped: {len(self.classes)}")
-        print(f"🔧 Unique methods: {len(self.methods)}")
-        print(f"📝 Enums found: {len(self.enums)}")
-        print(f"📌 Constants found: {sum(len(c) for c in self.constants.values())}")
+        logger.debug(f"Time elapsed: {elapsed:.1f} seconds")
+        logger.info(f"Classes scraped: {len(self.classes)}")
+        logger.info(f"Unique methods: {len(self.methods)}")
+        logger.info(f"Enums found: {len(self.enums)}")
+        logger.info(f"Constants found: {sum(len(c) for c in self.constants.values())}")
 
         # Show method distribution
         total_implementations = sum(len(impls) for impls in self.methods.values())
-        print(f"📈 Total method implementations: {total_implementations}")
+        logger.info(f"Total method implementations: {total_implementations}")
 
         # Top methods by implementation count
-        print("\n🏆 Most implemented methods:")
+        logger.info("\n Most implemented methods")
         top_methods = sorted(self.methods.items(), key=lambda x: len(x[1]), reverse=True)[:10]
         for method, impls in top_methods:
-            print(f"   {method}: {len(impls)} implementations")
+            logger.info(f"{method}: {len(impls)} implementations")
 
         # Show important enums
-        print("\n📝 Important enums found:")
+        logger.info("\n Important enums found")
         important = [
             "InventoryID",
             "Skill",
@@ -876,14 +847,12 @@ class EfficientRuneLiteScraper:
         for enum_name in important:
             if enum_name in self.enums:
                 enum = self.enums[enum_name]
-                print(f"   {enum_name}: {len(enum.values)} values")
+                logger.info(f"{enum_name}: {len(enum.values)} values")
 
         print("=" * 60)
 
     def _buildTypeConversionDatabase(self) -> Dict[str, Any]:
-        """
-        Build a perfect type conversion database from scraped data
-        """
+        """Build type conversion database from scraped data."""
         db = {
             "primitives": {},
             "enums": {},
@@ -989,9 +958,7 @@ class EfficientRuneLiteScraper:
         return db
 
     def _parseJniSignature(self, signature: str) -> Tuple[List[str], str]:
-        """
-        Parse JNI signature to extract parameter and return types
-        """
+        """Parse JNI signature to extract parameter and return types."""
         match = re.match(r"\((.*?)\)(.+)", signature)
         if not match:
             return [], None
@@ -1027,9 +994,7 @@ class EfficientRuneLiteScraper:
         return params, return_type
 
     def _getBridgeTypeForJava(self, class_name: str) -> str:
-        """
-        Get bridge type for Java standard library class
-        """
+        """Get bridge type for Java standard library class."""
         if class_name == "java.lang.String":
             return "String"
         elif class_name == "java.lang.Integer":
@@ -1052,9 +1017,7 @@ class EfficientRuneLiteScraper:
             return "object"
 
     def _getPythonConverterForJava(self, class_name: str) -> str:
-        """
-        Get Python converter for Java standard library class
-        """
+        """Get Python converter for Java standard library class."""
         if class_name == "java.lang.String":
             return "str"
         elif class_name in ["java.lang.Integer", "java.lang.Long"]:
@@ -1069,9 +1032,7 @@ class EfficientRuneLiteScraper:
             return "object"
 
     def _buildConversionLookup(self, db: Dict) -> Dict:
-        """
-        Build a quick lookup for Python value to bridge type conversion
-        """
+        """Build quick lookup for Python value to bridge type conversion."""
         return {
             "instructions": {
                 "enum": "Convert name to ordinal using name_to_ordinal map",
@@ -1091,12 +1052,7 @@ class EfficientRuneLiteScraper:
         }
 
     def _buildInheritanceTree(self) -> Tuple[Dict[str, str], Dict[str, List[str]]]:
-        """
-        Build parent and children mappings from inheritance data.
-
-        Returns:
-            Tuple of (child_to_parent, parent_to_children) dictionaries
-        """
+        """Build parent and children mappings from inheritance data."""
         child_to_parent = {}  # class_name -> parent_name
         parent_to_children = {}  # parent_name -> [child1, child2, ...]
 
@@ -1116,15 +1072,7 @@ class EfficientRuneLiteScraper:
         return child_to_parent, parent_to_children
 
     def _getFullClassPath(self, simple_name: str) -> str | None:
-        """
-        Convert simple class name to full JNI path.
-
-        Args:
-            simple_name: Simple class name (e.g., "GameObject")
-
-        Returns:
-            Full JNI path (e.g., "net/runelite/api/GameObject") or None
-        """
+        """Convert simple class name to full JNI path."""
         # Check if it's already a full path
         if "/" in simple_name:
             return simple_name
@@ -1144,34 +1092,8 @@ class EfficientRuneLiteScraper:
         return None
 
     def _resolveDeclaringClasses(self):
-        """
-        Post-process methods to set correct declaring_class based on inheritance.
-
-        For each method signature, find the topmost class in the hierarchy that
-        declares it. This ensures that inherited methods point to the correct
-        declaring class.
-
-        IMPORTANT: Methods with the same signature in UNRELATED classes (different
-        inheritance trees) must be kept separate!
-
-        IMPORTANT: Sibling classes that BOTH declare the same method must also be
-        kept separate! E.g., GameObject and DecorativeObject both declare getConvexHull()
-        independently.
-
-        Example:
-            TileObject declares getId()
-            GameObject extends TileObject
-            -> getId() on GameObject should declare TileObject
-
-            ItemComposition (unrelated) also declares getId()
-            -> getId() on ItemComposition stays ItemComposition
-            -> Final result: TWO getId entries, one for each tree
-
-            GameObject declares getConvexHull()
-            DecorativeObject (sibling) also declares getConvexHull()
-            -> Final result: TWO getConvexHull entries, one for each sibling
-        """
-        print("\n🔍 Resolving declaring classes from inheritance hierarchy...")
+        """Resolve declaring classes based on inheritance hierarchy."""
+        logger.info("\n Resolving declaring classes from inheritance hierarchy")
 
         # Build inheritance mappings
         child_to_parent, parent_to_children = self._buildInheritanceTree()
@@ -1255,30 +1177,18 @@ class EfficientRuneLiteScraper:
         # Replace methods with resolved version
         self.methods = resolved_methods
 
-        print(f"   ✅ Resolved {resolution_stats['total']} method declarations")
-        print(
-            f"   📝 Updated: {resolution_stats['updated']}, Unchanged: {resolution_stats['unchanged']}"
+        logger.success(f"Resolved {resolution_stats['total']} method declarations")
+        logger.info(
+            f"Updated: {resolution_stats['updated']}, Unchanged: {resolution_stats['unchanged']}"
         )
-        print(f"   🌳 Found {resolution_stats['trees_found']} inheritance trees")
+        logger.info(f"Found {resolution_stats['trees_found']} inheritance trees")
         if resolution_stats["skipped"] > 0:
-            print(f"   ⚠️  Skipped: {resolution_stats['skipped']} invalid signatures")
+            logger.warning(f"Skipped: {resolution_stats['skipped']} invalid signatures")
 
     def _splitIntoInheritanceTrees(
         self, class_list: List[Tuple[str, Any]], child_to_parent: Dict[str, str]
     ) -> List[List[Tuple[str, Any]]]:
-        """
-        Split a list of classes into separate inheritance trees.
-
-        Classes that share ancestors are in the same tree.
-        Classes with no relation are in separate trees.
-
-        Args:
-            class_list: List of (class_path, generic_type) tuples
-            child_to_parent: Mapping of child class names to parent class names
-
-        Returns:
-            List of trees, where each tree is a list of (class_path, generic_type) tuples
-        """
+        """Split classes into separate inheritance trees based on shared ancestors."""
         if len(class_list) == 1:
             return [class_list]
 
@@ -1337,29 +1247,7 @@ class EfficientRuneLiteScraper:
     def _splitSiblingDeclarations(
         self, class_list: List[Tuple[str, Any]], child_to_parent: Dict[str, str]
     ) -> List[List[Tuple[str, Any]]]:
-        """
-        Split sibling classes that both declare the same method into separate groups.
-
-        When multiple classes in a tree are siblings (share a parent but neither is
-        ancestor of the other), and ALL of them declare the method (not just inherit),
-        they should be kept as separate declaring_class entries.
-
-        Example:
-            GameObject and DecorativeObject both extend TileObject
-            Both declare getConvexHull() independently
-            -> Should return [[GameObject], [DecorativeObject]]
-
-            GameObject declares getId()
-            WallObject extends TileObject but doesn't override getId()
-            -> Should return [[GameObject, WallObject]] (consolidated)
-
-        Args:
-            class_list: List of (class_path, generic_type) tuples in same inheritance tree
-            child_to_parent: Mapping of child class names to parent class names
-
-        Returns:
-            List of groups, where each group should be consolidated to one declaring_class
-        """
+        """Split sibling classes that both declare the same method into separate groups."""
         if len(class_list) <= 1:
             return [class_list]
 
@@ -1413,16 +1301,7 @@ class EfficientRuneLiteScraper:
     def _findDeclaringClass(
         self, class_list: List[Tuple[str, Any]], child_to_parent: Dict[str, str]
     ) -> str:
-        """
-        Find the topmost class in the hierarchy that declares this method.
-
-        Args:
-            class_list: List of (class_path, generic_type) tuples that declare this method
-            child_to_parent: Mapping of child class names to parent class names
-
-        Returns:
-            The class_path of the declaring class (topmost in hierarchy)
-        """
+        """Find the topmost class in the hierarchy that declares this method."""
         # Extract class paths and convert to simple names
         class_paths = [c[0] for c in class_list]
 
@@ -1474,9 +1353,7 @@ class EfficientRuneLiteScraper:
         return class_paths[0]
 
     def save(self, filename: str = "runelite_api_data.json"):
-        """
-        Save scraped data to JSON file with perfect type conversion mapping
-        """
+        """Save scraped data to JSON file with type conversion mapping."""
         # Resolve declaring classes based on inheritance hierarchy
         self._resolveDeclaringClasses()
 
@@ -1543,15 +1420,13 @@ class EfficientRuneLiteScraper:
         with open(summary_file, "w") as f:
             json.dump(summary, f, indent=2)
 
-        print(f"\n📾 Saved to {filename} and {summary_file}")
-        print(
-            f"📊 Type conversion database: {len(type_conversion_db['all_types'])} types with perfect mapping!"
+        logger.info(f"Saved to {filename} and {summary_file}")
+        logger.info(
+            f"Type conversion database: {len(type_conversion_db['all_types'])} types with perfect mapping"
         )
 
     def getSignature(self, method_name: str, class_hint: str | None = None) -> str | None:
-        """
-        Get JNI signature for a method
-        """
+        """Get JNI signature for a method, optionally filtered by class."""
         if method_name not in self.methods:
             return None
 
@@ -1568,17 +1443,15 @@ class EfficientRuneLiteScraper:
 
 
 def main():
-    """
-    Main function to run the local scraper
-    """
+    """Run the local scraper and generate constants."""
     # Path to the extracted RuneLite API
     api_path = "/tmp/runelite-master/runelite-api/src/main/java/net/runelite/api"
 
     if not Path(api_path).exists():
-        print("❌ RuneLite API not found at", api_path)
-        print("Please download and extract it first:")
-        print("  wget https://github.com/runelite/runelite/archive/refs/heads/master.zip")
-        print("  unzip master.zip 'runelite-master/runelite-api/*'")
+        logger.error("RuneLite API not found at", api_path)
+        logger.info("Please download and extract it first")
+        logger.info("wget https://github.com/runelite/runelite/archive/refs/heads/master.zip")
+        logger.info("unzip master.zip 'runelite-master/runelite-api/*'")
         return
 
     # Create scraper and run
@@ -1595,11 +1468,11 @@ def main():
     output_file = output_dir / "runelite_api_data.json"
     scraper.save(str(output_file))
 
-    print(f"\n✅ Saved complete API data to {output_file}")
-    print("📊 Final stats:")
-    print(f"  - Classes: {len(scraper.classes)}")
-    print(f"  - Methods: {len(scraper.methods)}")
-    print(f"  - Enums: {len(scraper.enums)}")
+    logger.success(f"\n Saved complete API data to {output_file}")
+    logger.info("Final stats")
+    logger.info(f"Classes: {len(scraper.classes)}")
+    logger.info(f"Methods: {len(scraper.methods)}")
+    logger.info(f"Enums: {len(scraper.enums)}")
 
     # Check specifically for WorldPoint methods
     worldpoint_methods = []
@@ -1609,35 +1482,34 @@ def main():
                 worldpoint_methods.append(f"{method_name}: {sig}")
 
     if worldpoint_methods:
-        print(f"\n✅ Found {len(worldpoint_methods)} WorldPoint methods:")
+        logger.success(f"\n Found {len(worldpoint_methods)} WorldPoint methods")
         for method in worldpoint_methods[:5]:
-            print(f"  - {method}")
+            logger.info(f"{method}")
         if len(worldpoint_methods) > 5:
-            print(f"  ... and {len(worldpoint_methods) - 5} more")
+            logger.info(f"and {len(worldpoint_methods) - 5} more")
     else:
-        print("\n⚠️ No WorldPoint methods found")
+        logger.warning("\n No WorldPoint methods found")
 
     # Test retrieval
-    print("\n🧪 Testing data retrieval:")
+    logger.info("\n Testing data retrieval")
 
     # Test some methods
     test_methods = ["getLocalPlayer", "getItemContainer", "getTickCount", "getWidget"]
     for method in test_methods:
         sig = scraper.getSignature(method)
         if sig:
-            print(f"  {method}: {sig}")
+            logger.info(f"{method}: {sig}")
 
     # Test enum access
     if "InventoryID" in scraper.enums:
         inv = scraper.enums["InventoryID"]
-        print(f"\n  InventoryID has {len(inv.values)} values")
-        print(f"    Sample: {inv.values[:5]}")
+        logger.info(f"\n InventoryID has {len(inv.values)} values")
+        logger.info(f"Sample: {inv.values[:5]}")
 
-    # Auto-run proxy generator after successful scraping
-    print("\n🔄 Running proxy generator to update Python proxy classes and constants...")
+    # Auto-run proxy generator after successful scraping to generate constants
+    logger.info("\n Running generator to update Python constants")
     try:
-        # Import the proxy generator from same directory
-        # Import proxy generator from same package
+        # Import proxy generator from same package (still used for constants)
         from .proxy_generator import ProxyGenerator
 
         # Get paths using cache manager
@@ -1646,25 +1518,21 @@ def main():
 
         # Generated files go in ~/.cache/escape/generated/
         generated_dir = cache_manager.generated_dir
-        proxy_output_path = generated_dir / "query_proxies.py"
         constants_output_path = generated_dir / "constants.py"
 
         # Ensure output directory exists
         generated_dir.mkdir(parents=True, exist_ok=True)
 
-        # Generate proxies and constants
+        # Generate constants
         generator = ProxyGenerator(str(api_data_path))
-        generator.saveProxies(str(proxy_output_path))
         generator.saveConstants(str(constants_output_path))
 
-        print(f"✅ Successfully updated proxy classes at {proxy_output_path}")
-        print(f"   Generated {len(generator.class_methods)} proxy classes")
-        print(f"✅ Successfully updated constants at {constants_output_path}")
+        logger.success(f"Successfully updated constants at {constants_output_path}")
 
     except Exception as e:
-        print(f"⚠️ Failed to run proxy generator: {e}")
-        print("   You may need to run it manually:")
-        print("   python3 -m src.scraper.proxy_generator")
+        logger.warning(f"Failed to run generator: {e}")
+        logger.info("You may need to run it manually")
+        logger.info("python3 -m src.scraper.proxy_generator")
 
 
 if __name__ == "__main__":

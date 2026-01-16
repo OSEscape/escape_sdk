@@ -29,14 +29,7 @@ class EquipmentSlots(Enum):
 
 
 class Equipment(GameTabs, ItemContainer):
-    """
-    Singleton equipment tab - displays worn equipment and stats.
-
-    Example:
-        from escape.tabs.equipment import equipment
-
-        equipment.open()
-    """
+    """Equipment tab for viewing and managing worn items."""
 
     TAB_TYPE = GameTab.EQUIPMENT
     CONTAINER_ID = 94
@@ -140,13 +133,7 @@ class Equipment(GameTabs, ItemContainer):
         return self.bottom_buttons.interact("Call follower")
 
     def removeSlot(self, slot: EquipmentSlots | str) -> bool:
-        """Remove an item from a specific equipment slot.
-
-        Args:
-            slot (EquipmentSlots | str): The equipment slot enum or name.
-        Returns:
-            bool: True if the item was removed successfully, False otherwise.
-        """
+        """Remove an item from a specific equipment slot."""
         if not self.open():
             return False
 
@@ -154,13 +141,7 @@ class Equipment(GameTabs, ItemContainer):
         return self.slots.interact(slot_name)
 
     def removeSlots(self, slots: list[EquipmentSlots | str]) -> int:
-        """Remove items from multiple equipment slots.
-
-        Args:
-            slots (list[EquipmentSlots | str]): List of equipment slot enums or names.
-        Returns:
-            int: Number of items successfully removed.
-        """
+        """Remove items from multiple equipment slots, returning count removed."""
         if not self.open():
             return 0
 
@@ -171,5 +152,5 @@ class Equipment(GameTabs, ItemContainer):
         return removed_count
 
 
-# Module-level singleton instance
+# Module-level instance
 equipment = Equipment()

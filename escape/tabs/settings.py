@@ -6,14 +6,7 @@ from escape.types.gametab import GameTab, GameTabs
 
 
 class Settings(GameTabs):
-    """
-    Singleton settings tab - displays game settings and controls.
-
-    Example:
-        from escape.tabs.settings import settings
-
-        settings.open()
-    """
+    """Settings tab for configuring game options."""
 
     TAB_TYPE = GameTab.SETTINGS
 
@@ -30,5 +23,5 @@ class Settings(GameTabs):
         GameTabs.__init__(self)
 
 
-# Module-level singleton instance
+# Module-level instance
 settings = Settings()

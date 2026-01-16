@@ -8,16 +8,7 @@ from ..types.packed_position import PackedPosition
 
 
 class GroundItems:
-    """
-    Singleton access to ground items from cache.
-
-    Example:
-        from escape.world.ground_items import groundItems
-
-        items = groundItems.getAllItems()
-        coins = items.filterByItem(995)        # By ID
-        coins = items.filterByItem("Coins")    # By name
-    """
+    """Ground items accessor from event cache."""
 
     _instance = None
 
@@ -33,37 +24,7 @@ class GroundItems:
         self._cached_tick: int = -1
 
     def getAllItems(self) -> GroundItemList:
-        """
-        Get all ground items from cache.
-
-        Cached per tick (items only change once per tick).
-
-        Returns:
-            GroundItemList with all items
-
-        Example:
-            >>> from escape.world.ground_items import groundItems
-            >>>
-            >>> # Get all items
-            >>> items = groundItems.getAllItems()
-            >>>
-            >>> # Filter coins (by ID or name)
-            >>> coins = items.filterByItem(995)
-            >>> coins = items.filterByItem("Coins")
-            >>>
-            >>> # Filter nearby items
-            >>> nearby = items.filterNearby(player.x, player.y, player.plane, 5)
-            >>>
-            >>> # Chain filters
-            >>> my_nearby_coins = items.filterByItem(995).filterYours().filterNearby(
-            ...     player.x, player.y, player.plane, 10
-            ... )
-            >>>
-            >>> # Get closest coin
-            >>> nearest_coin = items.filterByItem("Coins").sortByDistance(
-            ...     player.x, player.y, player.plane
-            ... ).first()
-        """
+        """Get all ground items from cache."""
         from escape.client import client
 
         current_tick = client.cache.tick
@@ -87,5 +48,5 @@ class GroundItems:
         return self._cached_list
 
 
-# Module-level singleton instance
+# Module-level instance
 groundItems = GroundItems()

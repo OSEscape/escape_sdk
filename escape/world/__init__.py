@@ -13,17 +13,7 @@ from escape.world.scene import Scene, VisibleTiles, scene
 
 
 class World:
-    """
-    Namespace for 3D world entities - returns singleton instances.
-
-    Example:
-        from escape.client import client
-
-        items = client.world.groundItems.getAllItems()
-        # Or directly:
-        from escape.world.ground_items import groundItems
-        items = groundItems.getAllItems()
-    """
+    """3D world entities: ground items, scene, and projection utilities."""
 
     _instance = None
 
@@ -34,21 +24,21 @@ class World:
 
     @property
     def groundItems(self) -> GroundItems:
-        """Get ground items accessor singleton."""
+        """Ground items on visible tiles."""
         return groundItems
 
     @property
     def projection(self) -> Projection:
-        """Get projection utility singleton."""
+        """3D to 2D screen projection utilities."""
         return projection
 
     @property
     def scene(self) -> Scene:
-        """Get scene utility singleton."""
+        """Scene and visible tiles management."""
         return scene
 
 
-# Module-level singleton instance
+# Module-level instance
 world = World()
 
 

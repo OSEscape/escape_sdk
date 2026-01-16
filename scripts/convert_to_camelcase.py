@@ -14,6 +14,8 @@ import re
 from pathlib import Path
 from typing import Dict, List, Tuple
 
+from escape._internal.logger import logger
+
 
 def snakeToCamel(snake_str: str) -> str:
     """
@@ -106,9 +108,9 @@ def collectAllFunctionNames(directory: Path) -> Dict[str, str]:
             all_functions.update(collector.functions)
 
         except SyntaxError as e:
-            print(f"⚠️  Syntax error in {py_file}: {e}")
+            logger.warning(f"Syntax error in {py_file}: {e}")
         except Exception as e:
-            print(f"⚠️  Error processing {py_file}: {e}")
+            logger.warning(f"Error processing {py_file}: {e}")
 
     return all_functions
 
@@ -166,7 +168,7 @@ def replaceFunctionNames(filepath: Path, replacements: Dict[str, str]) -> Tuple[
         return (0, [])
 
     except Exception as e:
-        print(f"⚠️  Error processing {filepath}: {e}")
+        logger.warning(f"Error processing {filepath}: {e}")
         return (0, [])
 
 
@@ -175,27 +177,27 @@ def main():
     escape_dir = Path(__file__).parent.parent / "escape"
 
     if not escape_dir.exists():
-        print(f"❌ Error: {escape_dir} not found")
+        logger.error(f"Error: {escape_dir} not found")
         return 1
 
-    print("🔍 Step 1: Collecting all function names...")
+    logger.info("Step 1: Collecting all function names")
     print("=" * 70)
 
     function_map = collectAllFunctionNames(escape_dir)
 
     if not function_map:
-        print("✅ No snake_case functions found - all functions already camelCase!")
+        logger.success("No snake_case functions found - all functions already camelCase!")
         return 0
 
-    print(f"Found {len(function_map)} functions to convert:")
+    logger.info(f"Found {len(function_map)} functions to convert")
     for i, (old, new) in enumerate(sorted(function_map.items())[:20], 1):
-        print(f"  {i}. {old} → {new}")
+        logger.info(f"{i}. {old} → {new}")
 
     if len(function_map) > 20:
-        print(f"  ... and {len(function_map) - 20} more")
+        logger.info(f"and {len(function_map) - 20} more")
 
     print("\n" + "=" * 70)
-    print("🔄 Step 2: Converting function names in all files...")
+    logger.info("Step 2: Converting function names in all files")
     print("=" * 70)
 
     python_files = list(escape_dir.rglob("*.py"))
@@ -209,24 +211,24 @@ def main():
             total_files_changed += 1
             total_replacements += sum(count for _, _, count in changes)
 
-            print(f"\n📝 {filepath.relative_to(escape_dir.parent)}:")
+            logger.info(f"\n {filepath.relative_to(escape_dir.parent)}")
             for old_name, new_name, count in changes[:10]:  # Show first 10
-                print(f"  ✓ {old_name} → {new_name} ({count} occurrences)")
+                logger.info(f"{old_name} → {new_name} ({count} occurrences)")
 
             if len(changes) > 10:
-                print(f"  ... and {len(changes) - 10} more changes")
+                logger.info(f"and {len(changes) - 10} more changes")
 
     print("\n" + "=" * 70)
-    print("✅ Conversion complete!")
-    print(f"   - {len(function_map)} unique functions converted")
-    print(f"   - {total_replacements} total replacements made")
-    print(f"   - {total_files_changed} files modified")
+    logger.success("Conversion complete!")
+    logger.info(f"{len(function_map)} unique functions converted")
+    logger.info(f"{total_replacements} total replacements made")
+    logger.info(f"{total_files_changed} files modified")
     print("=" * 70)
 
-    print("\n💡 Next steps:")
-    print("   1. Run: python check_naming.py")
-    print("   2. Run: python verify_setup.py")
-    print("   3. Test imports: python -c 'import escape'")
+    logger.info("\n Next steps")
+    logger.info("1. Run: python check_naming.py")
+    logger.info("2. Run: python verify_setup.py")
+    logger.info("3. Test imports: python -c 'import escape'")
 
     return 0
 

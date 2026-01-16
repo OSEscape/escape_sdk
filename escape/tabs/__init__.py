@@ -24,17 +24,7 @@ from .skills import Skills, skills
 
 
 class Tabs:
-    """
-    Namespace for game tabs - returns singleton instances.
-
-    Example:
-        from escape.client import client
-
-        client.tabs.inventory.getItems()
-        # Or directly:
-        from escape.tabs.inventory import inventory
-        inventory.getItems()
-    """
+    """Access point for all game tabs (inventory, equipment, prayer, etc.)."""
 
     _instance = None
 
@@ -45,94 +35,83 @@ class Tabs:
 
     @property
     def combat(self) -> Combat:
-        """Get combat tab singleton."""
+        """Combat tab."""
         return combat
 
     @property
     def skills(self) -> Skills:
-        """Get skills tab singleton."""
+        """Skills tab."""
         return skills
 
     @property
     def progress(self) -> Progress:
-        """Get progress tab singleton."""
+        """Progress tab."""
         return progress
 
     @property
     def inventory(self) -> Inventory:
-        """Get inventory tab singleton."""
+        """Inventory tab."""
         return inventory
 
     @property
     def equipment(self) -> Equipment:
-        """Get equipment tab singleton."""
+        """Equipment tab."""
         return equipment
 
     @property
     def prayer(self) -> Prayer:
-        """Get prayer tab singleton."""
+        """Prayer tab."""
         return prayer
 
     @property
     def magic(self) -> Magic:
-        """Get magic tab singleton."""
+        """Magic tab."""
         return magic
 
     @property
     def grouping(self) -> Grouping:
-        """Get grouping tab singleton."""
+        """Grouping tab."""
         return grouping
 
     @property
     def friends(self) -> Friends:
-        """Get friends tab singleton."""
+        """Friends tab."""
         return friends
 
     @property
     def account(self) -> Account:
-        """Get account tab singleton."""
+        """Account tab."""
         return account
 
     @property
     def settings(self) -> Settings:
-        """Get settings tab singleton."""
+        """Settings tab."""
         return settings
 
     @property
     def logout(self) -> Logout:
-        """Get logout tab singleton."""
+        """Logout tab."""
         return logout
 
     @property
     def emotes(self) -> Emotes:
-        """Get emotes tab singleton."""
+        """Emotes tab."""
         return emotes
 
     @property
     def music(self) -> Music:
-        """Get music tab singleton."""
+        """Music tab."""
         return music
 
     def getOpenTab(self) -> GameTab | None:
-        """
-        Get the currently open tab.
-
-        Returns:
-            The currently open GameTab, or None if unknown
-
-        Example:
-            >>> from escape.client import client
-            >>> tab = client.tabs.getOpenTab()
-            >>> if tab == GameTab.INVENTORY:
-            ...     print("Inventory is open")
-        """
+        """Get the currently open tab, or None if unknown."""
         from escape.client import client
 
         index = client.cache.getVarc(client.VarClientID.TOPLEVEL_PANEL)
         return GameTab(index) if index in GameTab._value2member_map_ else None
 
 
-# Module-level singleton instance
+# Module-level instance
 tabs = Tabs()
 
 

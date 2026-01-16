@@ -10,11 +10,7 @@ if TYPE_CHECKING:
 
 
 class VisibleTiles:
-    """
-    Collection of visible tiles with numpy array access.
-
-    All data comes from the cached TileGrid - no additional computation.
-    """
+    """Collection of visible tiles with numpy array access."""
 
     __slots__ = ("_grid", "_indices")
 
@@ -84,22 +80,7 @@ class VisibleTiles:
 
 
 class Scene:
-    """
-    Utilities for working with tiles in the loaded scene.
-
-    All methods use the cached TileGrid from Projection - no redundant computation.
-    Cache is automatically invalidated when camera/scene/entity events arrive.
-
-    Example:
-        >>> from escape.world.scene import scene
-        >>>
-        >>> visible = scene.getVisibleTiles()
-        >>> if visible:
-        ...     print(f"Found {len(visible)} visible tiles")
-        ...     # Vectorized operations on numpy arrays
-        ...     dist = np.abs(visible.worldX - 3100) + np.abs(visible.worldY - 3200)
-        ...     closest = visible.getScreenPoint(np.argmin(dist))
-    """
+    """Utilities for working with tiles in the loaded scene."""
 
     _instance = None
 
@@ -109,7 +90,7 @@ class Scene:
         return cls._instance
 
     def _getTileGrid(self) -> "TileGrid | None":
-        """Get cached TileGrid from projection singleton."""
+        """Get cached TileGrid from projection."""
         from escape.world.projection import projection
 
         return projection.tiles
@@ -125,15 +106,7 @@ class Scene:
         return (x, y) if x is not None and y is not None else None
 
     def getVisibleTiles(self, margin: int = 0) -> VisibleTiles | None:
-        """
-        Get all tiles visible on screen.
-
-        Args:
-            margin: Extra pixels around viewport to include
-
-        Returns:
-            VisibleTiles or None if not ready
-        """
+        """Get all tiles visible on screen."""
         grid = self._getTileGrid()
         if grid is None:
             return None
@@ -142,16 +115,7 @@ class Scene:
         return VisibleTiles(grid, indices)
 
     def getVisibleTilesNearPlayer(self, radius: int = 25, margin: int = 0) -> VisibleTiles | None:
-        """
-        Get visible tiles within radius of player.
-
-        Args:
-            radius: Tile radius around player
-            margin: Extra pixels around viewport to include
-
-        Returns:
-            VisibleTiles or None if not ready
-        """
+        """Get visible tiles within radius of player."""
         grid = self._getTileGrid()
         if grid is None:
             return None
@@ -181,17 +145,7 @@ class Scene:
         worldY2: int,
         margin: int = 0,
     ) -> VisibleTiles | None:
-        """
-        Get visible tiles in a world rectangle.
-
-        Args:
-            worldX1, worldY1: First corner
-            worldX2, worldY2: Second corner
-            margin: Extra pixels around viewport
-
-        Returns:
-            VisibleTiles or None if not ready or area outside scene
-        """
+        """Get visible tiles in a world rectangle."""
         grid = self._getTileGrid()
         if grid is None:
             return None
@@ -271,5 +225,5 @@ class Scene:
         return 0 <= sceneX < grid.sizeX and 0 <= sceneY < grid.sizeY
 
 
-# Module-level singleton
+# Module-level instance
 scene = Scene()

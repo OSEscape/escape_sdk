@@ -10,28 +10,7 @@ if TYPE_CHECKING:
 
 @dataclass
 class Quad:
-    """
-    Represents a quadrilateral defined by exactly 4 vertices.
-
-    More efficient than Polygon for 4-vertex shapes because it uses
-    optimized algorithms for containment testing (cross products) and
-    random point generation (bilinear interpolation).
-
-    Vertices should be in order (clockwise or counter-clockwise).
-
-    Attributes:
-        p1: First vertex (top-left for tiles)
-        p2: Second vertex (top-right for tiles)
-        p3: Third vertex (bottom-right for tiles)
-        p4: Fourth vertex (bottom-left for tiles)
-
-    Example:
-        >>> from escape.types.point import Point
-        >>> quad = Quad(Point(100, 100), Point(200, 110), Point(190, 200), Point(90, 190))
-        >>> quad.click()  # Click at random point within quad
-        >>> if quad.contains(Point(150, 150)):
-        ...     print("Point is inside quad")
-    """
+    """Represents a quadrilateral defined by exactly 4 vertices in order."""
 
     p1: "Point"
     p2: "Point"
@@ -40,40 +19,14 @@ class Quad:
 
     @classmethod
     def fromPoints(cls, points: List["Point"]) -> "Quad":
-        """
-        Create a Quad from a list of 4 points.
-
-        Args:
-            points: List of exactly 4 Point objects
-
-        Returns:
-            New Quad instance
-
-        Raises:
-            ValueError: If not exactly 4 points provided
-
-        Example:
-            >>> points = [Point(0, 0), Point(100, 0), Point(100, 100), Point(0, 100)]
-            >>> quad = Quad.fromPoints(points)
-        """
+        """Create a Quad from a list of 4 points."""
         if len(points) != 4:
             raise ValueError(f"Quad requires exactly 4 points, got {len(points)}")
         return cls(points[0], points[1], points[2], points[3])
 
     @classmethod
     def fromCoords(cls, coords: List[tuple[int, int]]) -> "Quad":
-        """
-        Create a Quad from a list of (x, y) coordinate tuples.
-
-        Args:
-            coords: List of exactly 4 (x, y) tuples
-
-        Returns:
-            New Quad instance
-
-        Example:
-            >>> quad = Quad.fromCoords([(0, 0), (100, 0), (100, 100), (0, 100)])
-        """
+        """Create a Quad from a list of (x, y) coordinate tuples."""
         from escape.types.point import Point
 
         if len(coords) != 4:
@@ -83,19 +36,7 @@ class Quad:
 
     @classmethod
     def fromArrays(cls, xCoords: List[int], yCoords: List[int]) -> "Quad":
-        """
-        Create a Quad from separate x and y coordinate arrays.
-
-        Args:
-            xCoords: List of 4 x coordinates
-            yCoords: List of 4 y coordinates
-
-        Returns:
-            New Quad instance
-
-        Example:
-            >>> quad = Quad.fromArrays([0, 100, 100, 0], [0, 0, 100, 100])
-        """
+        """Create a Quad from separate x and y coordinate arrays."""
         from escape.types.point import Point
 
         if len(xCoords) != 4 or len(yCoords) != 4:
@@ -109,29 +50,11 @@ class Quad:
 
     @property
     def vertices(self) -> List["Point"]:
-        """
-        Get all 4 vertices as a list.
-
-        Returns:
-            List of 4 Point objects
-
-        Example:
-            >>> for vertex in quad.vertices:
-            ...     print(f"({vertex.x}, {vertex.y})")
-        """
+        """Get all 4 vertices as a list."""
         return [self.p1, self.p2, self.p3, self.p4]
 
     def center(self) -> "Point":
-        """
-        Get the centroid (center of mass) of the quad.
-
-        Returns:
-            Point at the centroid
-
-        Example:
-            >>> quad = Quad.fromCoords([(0, 0), (100, 0), (100, 100), (0, 100)])
-            >>> center = quad.center()  # Point(50, 50)
-        """
+        """Get the centroid (center of mass) of the quad."""
         from escape.types.point import Point
 
         x = (self.p1.x + self.p2.x + self.p3.x + self.p4.x) // 4
@@ -139,16 +62,7 @@ class Quad:
         return Point(x, y)
 
     def bounds(self) -> tuple[int, int, int, int]:
-        """
-        Get the axis-aligned bounding box of this quad.
-
-        Returns:
-            Tuple of (minX, minY, maxX, maxY)
-
-        Example:
-            >>> quad = Quad.fromCoords([(10, 20), (110, 25), (105, 120), (5, 115)])
-            >>> bounds = quad.bounds()  # (5, 20, 110, 120)
-        """
+        """Get the axis-aligned bounding box of this quad."""
         xs = [self.p1.x, self.p2.x, self.p3.x, self.p4.x]
         ys = [self.p1.y, self.p2.y, self.p3.y, self.p4.y]
         return (min(xs), min(ys), max(xs), max(ys))
@@ -169,23 +83,7 @@ class Quad:
         return not (hasNeg and hasPos)
 
     def contains(self, point: "Point") -> bool:
-        """
-        Check if a point is within this quad using triangle decomposition.
-
-        More efficient than ray casting for quads - splits into 2 triangles
-        and uses barycentric coordinate tests.
-
-        Args:
-            point: Point to check
-
-        Returns:
-            True if point is inside quad, False otherwise
-
-        Example:
-            >>> quad = Quad.fromCoords([(0, 0), (100, 0), (100, 100), (0, 100)])
-            >>> quad.contains(Point(50, 50))  # True
-            >>> quad.contains(Point(200, 200))  # False
-        """
+        """Check if a point is within this quad using triangle decomposition."""
         px, py = point.x, point.y
 
         # Split quad into two triangles: (p1, p2, p3) and (p1, p3, p4)
@@ -195,16 +93,7 @@ class Quad:
         )
 
     def area(self) -> float:
-        """
-        Calculate the area of the quad using the shoelace formula.
-
-        Returns:
-            Area in square pixels
-
-        Example:
-            >>> quad = Quad.fromCoords([(0, 0), (100, 0), (100, 100), (0, 100)])
-            >>> quad.area()  # Returns 10000.0
-        """
+        """Calculate the area of the quad using the shoelace formula."""
         # Shoelace formula for quad
         area = 0.0
         vertices = self.vertices
@@ -216,19 +105,7 @@ class Quad:
         return abs(area) / 2.0
 
     def randomPoint(self) -> "Point":
-        """
-        Generate a random point within this quad using bilinear interpolation.
-
-        More efficient than rejection sampling - generates valid points directly
-        by treating the quad as a bilinear patch.
-
-        Returns:
-            Random Point inside the quad
-
-        Example:
-            >>> quad = Quad.fromCoords([(0, 0), (100, 0), (100, 100), (0, 100)])
-            >>> point = quad.randomPoint()
-        """
+        """Generate a random point within this quad using bilinear interpolation."""
         from escape.types.point import Point
 
         # Use bilinear interpolation for efficient random point generation
@@ -271,35 +148,12 @@ class Quad:
         return self.center()
 
     def click(self, button: str = "left", randomize: bool = True) -> None:
-        """
-        Click within this quad.
-
-        Args:
-            button: Mouse button ('left', 'right')
-            randomize: If True, clicks at random point. If False, clicks at center.
-
-        Example:
-            >>> quad = Quad.fromCoords([(0, 0), (100, 0), (100, 100), (0, 100)])
-            >>> quad.click()  # Random click inside quad
-            >>> quad.click(randomize=False)  # Click at center
-        """
+        """Click within this quad."""
         point = self.randomPoint() if randomize else self.center()
         point.click(button=button)
 
     def hover(self, randomize: bool = True) -> bool:
-        """
-        Move mouse to hover within this quad. Returns early if already inside.
-
-        Args:
-            randomize: If True, hovers at random point. If False, hovers at center.
-
-        Returns:
-            True if mouse is now inside the quad
-
-        Example:
-            >>> quad = Quad.fromCoords([(0, 0), (100, 0), (100, 100), (0, 100)])
-            >>> quad.hover()  # Hover at random point
-        """
+        """Move mouse to hover within this quad."""
         from escape.globals import getClient
         from escape.types.point import Point
 
@@ -311,46 +165,17 @@ class Quad:
         return True
 
     def rightClick(self, randomize: bool = True) -> None:
-        """
-        Right-click within this quad.
-
-        Args:
-            randomize: If True, clicks at random point. If False, clicks at center.
-
-        Example:
-            >>> quad = Quad.fromCoords([(0, 0), (100, 0), (100, 100), (0, 100)])
-            >>> quad.rightClick()
-        """
+        """Right-click within this quad."""
         self.click(button="right", randomize=randomize)
 
     def toPolygon(self) -> "Polygon":
-        """
-        Convert this quad to a Polygon.
-
-        Returns:
-            Polygon with the same 4 vertices
-
-        Example:
-            >>> polygon = quad.toPolygon()
-        """
+        """Convert this quad to a Polygon."""
         from escape.types.polygon import Polygon
 
         return Polygon(self.vertices)
 
     def isConvex(self) -> bool:
-        """
-        Check if this quad is convex.
-
-        A quad is convex if all cross products of consecutive edges
-        have the same sign.
-
-        Returns:
-            True if convex, False if concave
-
-        Example:
-            >>> quad = Quad.fromCoords([(0, 0), (100, 0), (100, 100), (0, 100)])
-            >>> quad.isConvex()  # True
-        """
+        """Check if this quad is convex."""
         vertices = self.vertices
 
         def crossProduct(o: "Point", a: "Point", b: "Point") -> float:
@@ -374,19 +199,7 @@ class Quad:
     def debug(
         self, argbColor: int = 0xFFFF0000, filled: bool = False, tag: str | None = None
     ) -> None:
-        """
-        Draw this quad as an overlay on RuneLite.
-
-        Args:
-            argbColor: Color in ARGB format (0xAARRGGBB), default opaque red
-            filled: If True, fill the quad. If False, outline only.
-            tag: Optional tag for selective clearing
-
-        Example:
-            >>> quad = Quad.fromCoords([(100, 100), (200, 110), (190, 200), (90, 190)])
-            >>> quad.debug()  # Red outline
-            >>> quad.debug(0x8000FF00, filled=True)  # Semi-transparent green fill
-        """
+        """Draw this quad as an overlay on RuneLite."""
         from escape.input.drawing import drawing
 
         xPoints = [self.p1.x, self.p2.x, self.p3.x, self.p4.x]

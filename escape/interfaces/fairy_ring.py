@@ -1,3 +1,4 @@
+from escape._internal.logger import logger
 from escape.client import client
 from escape.types.box import Box
 from escape.types.widget import Widget, WidgetFields
@@ -122,9 +123,9 @@ class FairyRingInterface:
     def _rotateToSequence(self, target_code: str) -> bool:
         all_info = self.cached_info
         current_code = self.getCurrentCode()
-        print(f"Current code: {current_code}, Target code: {target_code}")
+        logger.info(f"Current code: {current_code}, Target code: {target_code}")
         if "Z" in current_code:
-            print("Error: Invalid current code detected.")
+            logger.error("Error: Invalid current code detected")
             return False
 
         for i in range(3):
@@ -153,7 +154,7 @@ class FairyRingInterface:
         return self.getCurrentCode() == target_code
 
     def interact(self, target_code: str) -> bool:
-        """Interact with the fairy ring option specified by option_text."""
+        """Dial a fairy ring code and confirm teleport."""
         self.cached_info = self._getAllInfo()
         if self._rotateToSequence(target_code):
             dest_button_bounds = self.cached_info[9].get("bounds", [0, 0, 0, 0])

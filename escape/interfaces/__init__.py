@@ -11,14 +11,7 @@ _interface_id_to_name: dict[int, str] | None = None
 
 
 def _getInterfaceIdToNameMap() -> dict[int, str]:
-    """
-    Build and cache a reverse lookup map from interface group ID to name.
-
-    Lazily loads the InterfaceID class and builds the map once.
-
-    Returns:
-        Dict mapping group ID (int) to interface name (str)
-    """
+    """Build and cache a reverse lookup map from interface group ID to name."""
     global _interface_id_to_name
 
     if _interface_id_to_name is not None:
@@ -48,26 +41,12 @@ def _getInterfaceIdToNameMap() -> dict[int, str]:
 
 
 def getInterfaceName(group_id: int) -> str | None:
-    """
-    Get the interface name for a group ID.
-
-    Args:
-        group_id: The interface group ID
-
-    Returns:
-        Interface name string or None if not found
-
-    Example:
-        >>> getInterfaceName(12)
-        'BANKMAIN'
-    """
+    """Get the interface name for a group ID."""
     return _getInterfaceIdToNameMap().get(group_id)
 
 
 class ScrollInterface(GeneralInterface):
-    """
-    Interface-type class for the interface that looks like a scroll.
-    """
+    """Interface for scroll-type overlays."""
 
     def __init__(self):
         super().__init__(
@@ -80,9 +59,7 @@ class ScrollInterface(GeneralInterface):
 
 
 class GliderInterface(GeneralInterface):
-    """
-    Interface-type class for the glider interface.
-    """
+    """Interface for the gnome glider map."""
 
     def __init__(self):
         super().__init__(
@@ -124,17 +101,7 @@ class GliderInterface(GeneralInterface):
 
 
 class Interfaces:
-    """
-    Namespace for overlay interfaces - returns singleton instances.
-
-    Example:
-        from escape.client import client
-
-        client.interfaces.bank.depositAll()
-        # Or directly:
-        from escape.interfaces.bank import bank
-        bank.depositAll()
-    """
+    """Overlay interfaces: bank, fairy ring, spirit tree, etc."""
 
     _instance = None
 
@@ -188,40 +155,20 @@ class Interfaces:
 
     @property
     def bank(self) -> Bank:
-        """Get bank interface singleton."""
+        """Bank interface."""
         return bank
 
     @property
     def fairy_ring(self) -> "FairyRingInterface":
-        """Get fairy ring interface singleton."""
+        """Fairy ring interface."""
         return fairy_ring
 
     def getOpenInterfaces(self) -> list[int]:
-        """
-        Get a list of currently open interface IDs.
-
-        Returns:
-            List of open interface IDs
-
-        Example:
-            >>> from escape.client import client
-            >>> open_interfaces = client.interfaces.getOpenInterfaces()
-            >>> print(open_interfaces)  # e.g., [12, 15, 162]
-        """
+        """Get a list of currently open interface IDs."""
         return list(client.cache.getOpenWidgets())
 
     def getOpenInterfaceNames(self) -> list[str]:
-        """
-        Get a list of currently open interface names.
-
-        Returns:
-            List of open interface names (unknown IDs are formatted as "UNKNOWN_123")
-
-        Example:
-            >>> from escape.client import client
-            >>> open_interfaces = client.interfaces.getOpenInterfaceNames()
-            >>> print(open_interfaces)  # e.g., ['BANKMAIN', 'BANKSIDE', 'TOPLEVEL']
-        """
+        """Get a list of currently open interface names."""
         names = []
         for group_id in self.getOpenInterfaces():
             name = getInterfaceName(group_id)
@@ -232,7 +179,7 @@ class Interfaces:
         return names
 
 
-# Module-level singleton instance
+# Module-level instance
 interfaces = Interfaces()
 
 

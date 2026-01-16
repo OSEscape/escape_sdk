@@ -7,16 +7,7 @@ from ..types.path import Path
 
 
 class Pathfinder:
-    """
-    Singleton pathfinder for calculating routes.
-
-    Example:
-        from escape.navigation.pathfinder import pathfinder
-
-        path = pathfinder.getPath(3200, 3200, 0)
-        if path:
-            print(f"Path length: {path.length()} tiles")
-    """
+    """Pathfinder for calculating routes between locations."""
 
     _instance = None
 
@@ -37,26 +28,7 @@ class Pathfinder:
         destination_plane: int,
         use_transport: bool = True,
     ) -> Path | None:
-        """
-        Calculate path to destination.
-
-        Args:
-            destination_x: Destination X coordinate
-            destination_y: Destination Y coordinate
-            destination_plane: Destination plane
-            use_transport: If True, allows transport objects (doors, ladders, etc.)
-
-        Returns:
-            Path instance or None if no path found
-
-        Example:
-            >>> from escape.navigation.pathfinder import pathfinder
-            >>> path = pathfinder.getPath(3200, 3200, 0)
-            >>> if path:
-            ...     print(f"Path length: {path.length()} tiles")
-            ...     print(f"Duration: {path.getTotalSeconds():.1f}s")
-            ...     print(f"Obstacles: {len(path.obstacles)}")
-        """
+        """Calculate path to destination."""
         from escape.client import client
 
         dest_packed = PackedPosition(destination_x, destination_y, destination_plane).packed
@@ -84,28 +56,7 @@ class Pathfinder:
         destination_plane: int,
         use_transport: bool = True,
     ) -> Path | None:
-        """
-        Calculate path from specific start position to destination.
-
-        Args:
-            start_x: Start X coordinate
-            start_y: Start Y coordinate
-            start_plane: Start plane
-            destination_x: Destination X coordinate
-            destination_y: Destination Y coordinate
-            destination_plane: Destination plane
-            use_transport: If True, allows transport objects
-
-        Returns:
-            Path instance or None if no path found
-
-        Example:
-            >>> from escape.navigation.pathfinder import pathfinder
-            >>> path = pathfinder.getPathFromPosition(
-            ...     3100, 3100, 0,  # Start
-            ...     3200, 3200, 0   # Destination
-            ... )
-        """
+        """Calculate path from specific start position to destination."""
         # For now, use the simpler method
         # TODO: Extend Java bridge to support custom start positions
         return self.getPath(destination_x, destination_y, destination_plane, use_transport)
@@ -117,26 +68,10 @@ class Pathfinder:
         destination_plane: int,
         use_transport: bool = True,
     ) -> bool:
-        """
-        Check if destination is reachable.
-
-        Args:
-            destination_x: Destination X coordinate
-            destination_y: Destination Y coordinate
-            destination_plane: Destination plane
-            use_transport: If True, allows transport objects
-
-        Returns:
-            True if reachable
-
-        Example:
-            >>> from escape.navigation.pathfinder import pathfinder
-            >>> if pathfinder.canReach(3200, 3200, 0):
-            ...     print("GE is reachable!")
-        """
+        """Check if destination is reachable."""
         path = self.getPath(destination_x, destination_y, destination_plane, use_transport)
         return path is not None and not path.isEmpty()
 
 
-# Module-level singleton instance
+# Module-level instance
 pathfinder = Pathfinder()

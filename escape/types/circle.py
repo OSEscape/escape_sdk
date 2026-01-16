@@ -11,85 +11,30 @@ if TYPE_CHECKING:
 
 @dataclass
 class Circle:
-    """
-    Represents a circle with integer center coordinates and float radius.
-
-    Attributes:
-        centerX: X coordinate of center
-        centerY: Y coordinate of center
-        radius: Radius of the circle
-
-    Example:
-        >>> circle = Circle(100, 100, 50)
-        >>> circle.click()  # Click at random point within circle
-        >>> if circle.contains(Point(120, 110)):
-        ...     print("Point is inside circle")
-    """
+    """Represents a circle with integer center coordinates and float radius."""
 
     centerX: int
     centerY: int
     radius: float
 
     def center(self) -> "Point":
-        """
-        Get the center point of the circle.
-
-        Returns:
-            Point at the center
-
-        Example:
-            >>> circle = Circle(100, 100, 50)
-            >>> center = circle.center()  # Point(100, 100)
-        """
+        """Get the center point of the circle."""
         from escape.types.point import Point
 
         return Point(self.centerX, self.centerY)
 
     def area(self) -> float:
-        """
-        Get the area of the circle.
-
-        Returns:
-            Area in square pixels
-
-        Example:
-            >>> circle = Circle(100, 100, 10)
-            >>> circle.area()  # Returns approximately 314.159
-        """
+        """Get the area of the circle."""
         return math.pi * self.radius * self.radius
 
     def contains(self, point: "Point") -> bool:
-        """
-        Check if a point is within this circle.
-
-        Args:
-            point: Point to check
-
-        Returns:
-            True if point is inside circle, False otherwise
-
-        Example:
-            >>> circle = Circle(100, 100, 50)
-            >>> circle.contains(Point(120, 110))  # True
-            >>> circle.contains(Point(200, 200))  # False
-        """
+        """Check if a point is within this circle."""
         dx = point.x - self.centerX
         dy = point.y - self.centerY
         return math.sqrt(dx * dx + dy * dy) <= self.radius
 
     def randomPoint(self) -> "Point":
-        """
-        Generate a uniformly random point within this circle.
-
-        Uses the polar method with sqrt for true uniform distribution.
-
-        Returns:
-            Random Point inside the circle
-
-        Example:
-            >>> circle = Circle(100, 100, 50)
-            >>> point = circle.randomPoint()
-        """
+        """Generate a uniformly random point within this circle."""
         from escape.types.point import Point
 
         # Use sqrt to get uniform distribution (not just random angle/radius)
@@ -102,35 +47,12 @@ class Circle:
         return Point(x, y)
 
     def click(self, button: str = "left", randomize: bool = True) -> None:
-        """
-        Click within this circle.
-
-        Args:
-            button: Mouse button ('left', 'right')
-            randomize: If True, clicks at random point. If False, clicks at center.
-
-        Example:
-            >>> circle = Circle(100, 100, 50)
-            >>> circle.click()  # Random click inside circle
-            >>> circle.click(randomize=False)  # Click at center
-        """
+        """Click within this circle."""
         point = self.randomPoint() if randomize else self.center()
         point.click(button=button)
 
     def hover(self, randomize: bool = True) -> bool:
-        """
-        Move mouse to hover within this circle. Returns early if already inside.
-
-        Args:
-            randomize: If True, hovers at random point. If False, hovers at center.
-
-        Returns:
-            True if mouse is now inside the circle
-
-        Example:
-            >>> circle = Circle(100, 100, 50)
-            >>> circle.hover()  # Hover at random point
-        """
+        """Move mouse to hover within this circle."""
         from escape.globals import getClient
         from escape.types.point import Point
 
@@ -142,16 +64,7 @@ class Circle:
         return True
 
     def rightClick(self, randomize: bool = True) -> None:
-        """
-        Right-click within this circle.
-
-        Args:
-            randomize: If True, clicks at random point. If False, clicks at center.
-
-        Example:
-            >>> circle = Circle(100, 100, 50)
-            >>> circle.rightClick()
-        """
+        """Right-click within this circle."""
         self.click(button="right", randomize=randomize)
 
     def __repr__(self) -> str:
@@ -160,19 +73,7 @@ class Circle:
     def debug(
         self, argbColor: int = 0xFFFF0000, filled: bool = False, tag: str | None = None
     ) -> None:
-        """
-        Draw this circle as an overlay on RuneLite.
-
-        Args:
-            argbColor: Color in ARGB format (0xAARRGGBB), default opaque red
-            filled: If True, fill the circle. If False, outline only.
-            tag: Optional tag for selective clearing
-
-        Example:
-            >>> circle = Circle(150, 150, 50)
-            >>> circle.debug()  # Red outline
-            >>> circle.debug(0x8000FF00, filled=True)  # Semi-transparent green fill
-        """
+        """Draw this circle as an overlay on RuneLite."""
         from escape.input.drawing import drawing
 
         drawing.addCircle(self.centerX, self.centerY, int(self.radius), argbColor, filled, tag)

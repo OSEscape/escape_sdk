@@ -13,14 +13,7 @@ if TYPE_CHECKING:
 
 @dataclass
 class GroundItem:
-    """
-    Represents a ground item from cache.
-
-    Attributes:
-        data: Raw item data dict from cache
-        position: PackedPosition of the item
-        client: Client instance
-    """
+    """Represents a ground item from cache."""
 
     data: Dict[str, Any]
     position: PackedPosition
@@ -43,12 +36,7 @@ class GroundItem:
 
     @property
     def ownership(self) -> int:
-        """
-        Get ownership state.
-
-        Returns:
-            0 = public, 1 = yours, 2 = other player, 3 = group (also yours)
-        """
+        """Get ownership state."""
         return self.data.get("ownership", 0)
 
     @property
@@ -87,12 +75,7 @@ class GroundItem:
         return self.ownership == 0
 
     def distanceFromPlayer(self) -> int:
-        """
-        Calculate distance from player to this item.
-
-        Returns:
-            Distance in tiles (Chebyshev distance)
-        """
+        """Calculate distance from player to this item."""
         player_pos = PackedPosition(
             self.client.player.x, self.client.player.y, self.client.player.plane
         )

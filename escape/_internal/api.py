@@ -10,34 +10,24 @@ import mmap
 import os
 import struct
 import time
-from typing import TYPE_CHECKING, Any, Dict, List, Tuple, Type
+from typing import Any, Dict, List, Tuple, Type
 
-if TYPE_CHECKING:
-    # For type checkers: always import Query (tells VS Code what type to expect)
-    from .query_builder import Query
+from escape._internal.logger import logger
+
+from .batch import Batch
 
 # Import enum support
 try:
     from .enums import EnumValue, generateAllEnumClasses
 except ImportError:
-    print("⚠️  runelite_enums module not found - enum support disabled")
+    logger.warning("runelite_enums module not found - enum support disabled")
     EnumValue = None
     generateAllEnumClasses = None
 
-# Import query builder support (runtime import)
-try:
-    from .query_builder import Query as RuntimeQuery
-except ImportError:
-    print("⚠️  query_builder module not found - query builder disabled")
-    RuntimeQuery = None
 
 
 class RuneLiteAPI:
-    """
-    Smart API wrapper that uses scraped data to provide exact signatures.
-
-    Singleton pattern - use RuneLiteAPI() to get the shared instance.
-    """
+    """Smart API wrapper that uses scraped data to provide exact signatures."""
 
     _instance = None
 
@@ -53,14 +43,8 @@ class RuneLiteAPI:
         pass
 
     def __init__(self, api_data_file: str = None, auto_update: bool = True):
-        """
-        Load API data and connect to bridge.
-
-        Args:
-            api_data_file: Path to API data JSON file (auto-detected if None)
-            auto_update: If True, check for RuneLite updates on initialization
-        """
-        # Skip if already initialized (singleton pattern)
+        """Load API data and connect to bridge."""
+        # Skip if already initialized
         if self._initialized:
             return
         self._initialized = True
@@ -102,30 +86,30 @@ class RuneLiteAPI:
             # Check if we have the perfect type conversion data
             if "type_conversion" in self.api_data:
                 type_count = self.api_data["type_conversion"]["conversion_lookup"]["type_count"]
-                print(
-                    f"✅ Loaded perfect API data: {len(self.api_data['methods'])} methods, {len(self.api_data['enums'])} enums, {type_count} types"
+                logger.success(
+                    f"Loaded perfect API data: {len(self.api_data['methods'])} methods, {len(self.api_data['enums'])} enums, {type_count} types"
                 )
             else:
-                print(
-                    f"✅ Loaded API data: {len(self.api_data['methods'])} methods, {len(self.api_data['enums'])} enums"
+                logger.success(
+                    f"Loaded API data: {len(self.api_data['methods'])} methods, {len(self.api_data['enums'])} enums"
                 )
-                print("⚠️  No type conversion data found - regenerate with latest scraper")
+                logger.warning("No type conversion data found - regenerate with latest scraper")
 
             # Generate enum classes from API data
             if generateAllEnumClasses:
                 self.enum_classes = generateAllEnumClasses(self.api_data)
-                print(f"✅ Generated {len(self.enum_classes)} enum classes")
+                logger.success(f"Generated {len(self.enum_classes)} enum classes")
 
                 # Make enums accessible as attributes for convenience
                 for enum_name, enum_class in self.enum_classes.items():
                     setattr(self, enum_name, enum_class)
             else:
-                print("⚠️  Enum generation not available")
+                logger.warning("Enum generation not available")
 
         except Exception as e:
-            print(f"❌ Failed to load API data: {e}")
-            print(f"   Current directory: {os.getcwd()}")
-            print(f"   Looking for: {api_data_file}")
+            logger.error(f"Failed to load API data: {e}")
+            logger.info(f"Current directory: {os.getcwd()}")
+            logger.info(f"Looking for: {api_data_file}")
             self.api_data = {
                 "methods": {},
                 "enums": {},
@@ -138,10 +122,7 @@ class RuneLiteAPI:
         self._loadPluginData()
 
     def _loadPluginData(self):
-        """
-        Load plugin API data from scraped plugin files (e.g., shortest-path plugin).
-        This allows querying plugin methods through the query builder.
-        """
+        """Load plugin API data from scraped plugin files."""
         try:
             from .cache_manager import getCacheManager
 
@@ -151,22 +132,19 @@ class RuneLiteAPI:
             if plugin_data_file.exists():
                 with open(plugin_data_file) as f:
                     self.plugin_data = json.load(f)
-                print(
-                    f"✅ Loaded plugin data: {len(self.plugin_data.get('methods', {}))} methods from {len(self.plugin_data.get('classes', []))} classes"
+                logger.success(
+                    f"Loaded plugin data: {len(self.plugin_data.get('methods', {}))} methods from {len(self.plugin_data.get('classes', []))} classes"
                 )
             else:
-                print("⚠️  Plugin data not found - plugin queries will not be available")
+                logger.warning("Plugin data not found - plugin queries will not be available")
                 self.plugin_data = None
 
         except Exception as e:
-            print(f"⚠️  Failed to load plugin data: {e}")
+            logger.warning(f"Failed to load plugin data: {e}")
             self.plugin_data = None
 
     def _checkAndUpdate(self):
-        """
-        Check for RuneLite API updates and regenerate if needed.
-        If an update is found, regenerates and does NOT exit (continues with new data).
-        """
+        """Check for RuneLite API updates and regenerate if needed."""
         try:
             # Import auto_updater (absolute import to avoid issues)
             from escape._internal.updater.api import RuneLiteAPIUpdater
@@ -177,41 +155,26 @@ class RuneLiteAPI:
             needs_update, reason = updater.shouldUpdate(force=False, max_age_days=7)
 
             if needs_update:
-                print("🔄 RuneLite API Update")
-                print(f"📋 {reason}")
+                logger.info("RuneLite API Update")
+                logger.info(f"{reason}")
 
                 # Run the update
                 success = updater.update(force=False, max_age_days=7)
 
                 if success:
-                    print("✅ API data generated successfully")
-
-                    # Reload query_builder to pick up newly generated proxies
-                    import sys
-
-                    if "escape._internal.query_builder" in sys.modules:
-                        print("🔄 Reloading query_builder with new proxies...")
-                        import importlib
-
-                        from . import query_builder
-
-                        importlib.reload(query_builder)
-                        # Update the RuntimeQuery reference
-                        global RuntimeQuery
-                        RuntimeQuery = query_builder.Query
-                        print("✅ Query builder reloaded")
+                    logger.success("API data generated successfully")
                 else:
-                    print("❌ API update failed")
+                    logger.error("API update failed")
                     raise FileNotFoundError("API update failed - cannot continue")
 
         except ImportError as e:
             # auto_updater not available, skip update check
-            print(f"⚠️  API updater not available: {e}")
+            logger.warning(f"API updater not available: {e}")
         except FileNotFoundError:
             # Re-raise file not found errors
             raise
         except Exception as e:
-            print(f"⚠️  Auto-update check failed: {e}")
+            logger.warning(f"Auto-update check failed: {e}")
             import traceback
 
             traceback.print_exc()
@@ -239,23 +202,14 @@ class RuneLiteAPI:
                 self.result_fd.fileno(), 16 * 1024 * 1024
             )  # 16MB to match C side
 
-            print("✅ Connected to bridge")
+            logger.success("Connected to bridge")
             return True
         except Exception as e:
-            print(f"❌ Failed to connect: {e}")
+            logger.error(f"Failed to connect: {e}")
             return False
 
     def _parseSignatureParams(self, signature: str) -> List[str]:
-        """
-        Parse JNI signature and extract all parameter types.
-        Consolidated parser used by all methods to avoid duplicate parsing logic.
-
-        Args:
-            signature: JNI method signature (e.g., "(ILjava/lang/String;)V")
-
-        Returns:
-            List of JNI type strings for each parameter
-        """
+        """Parse JNI signature and extract all parameter types."""
         params_str = signature[signature.index("(") + 1 : signature.index(")")]
         if not params_str:
             return []
@@ -298,15 +252,7 @@ class RuneLiteAPI:
         )
 
     def _normalizeClassName(self, class_name: str) -> str:
-        """
-        Normalize class name to full JNI path format.
-
-        Args:
-            class_name: Simple name (e.g., "WorldPoint") or path (e.g., "net.runelite.api.coords.WorldPoint")
-
-        Returns:
-            Normalized JNI path (e.g., "net/runelite/api/coords/WorldPoint")
-        """
+        """Normalize class name to full JNI path format."""
         # Convert dots to slashes
         normalized = class_name.replace(".", "/")
 
@@ -327,17 +273,7 @@ class RuneLiteAPI:
         return f"net/runelite/api/{normalized}"
 
     def _findMethodInHierarchy(self, method_name: str, target_class: str, signatures: List) -> List:
-        """
-        Find method signatures by walking up the inheritance tree.
-
-        Args:
-            method_name: Name of the method to find
-            target_class: Normalized class name to start search from
-            signatures: Full list of signatures to filter
-
-        Returns:
-            Filtered list of (declaring_class, signature, return_type) tuples
-        """
+        """Find method signatures by walking up the inheritance tree."""
         # Extract simple class name for inheritance lookup
         simple_target = target_class.split("/")[-1]
 
@@ -383,26 +319,14 @@ class RuneLiteAPI:
     def getMethodSignature(
         self, method_name: str, args: List | None = None, target_class: str = "Client"
     ) -> str | None:
-        """
-        Get the correct JNI signature for a method based on arguments.
-        Now delegates to get_method_info for consistency.
-        """
+        """Get the correct JNI signature for a method based on arguments."""
         info = self.getMethodInfo(method_name, args, target_class)
         return info["signature"] if info else None
 
     def getMethodInfo(
         self, method_name: str, args: List | None = None, target_class: str = "Client"
     ) -> dict | None:
-        """
-        Get both the signature AND declaring class for a method.
-        Returns dict with 'signature', 'declaring_class', and 'return_type'.
-
-        If target_class is provided (e.g., "net/runelite/api/GameObject"), will find methods
-        declared on that class OR its parent classes (e.g., TileObject).
-        Uses actual inheritance data from the scraped API.
-
-        Also checks plugin data for plugin classes (e.g., "shortestpath/Pathfinder").
-        """
+        """Get signature, declaring_class, and return_type for a method."""
         # Check if target_class is a plugin class (contains "shortestpath")
         is_plugin_class = target_class and "shortestpath" in target_class
 
@@ -460,11 +384,7 @@ class RuneLiteAPI:
         return None
 
     def _scoreSignatureMatch(self, signature: str, args: List) -> int:
-        """
-        Score how well arguments match a signature.
-        Higher score = better match.
-        Returns -1 for no match.
-        """
+        """Score how well arguments match a signature (-1 = no match)."""
         # Extract parameter types from signature (using consolidated parser)
         param_types = self._parseSignatureParams(signature)
 
@@ -533,11 +453,7 @@ class RuneLiteAPI:
     def convertArgument(
         self, arg_value: Any, signature: str, arg_index: int = 0
     ) -> Tuple[str, str]:
-        """
-        Perfect type conversion using the scraped data.
-        STRICT MODE: Enums must be EnumValue objects, no string shortcuts!
-        Returns (type, value) tuple for the bridge
-        """
+        """Convert argument to (type, value) tuple using scraped type data."""
         # FIRST: Check if it's an EnumValue object - this takes priority!
         if EnumValue and isinstance(arg_value, EnumValue):
             return (arg_value._enum_name, str(arg_value._ordinal))
@@ -632,10 +548,7 @@ class RuneLiteAPI:
     def getStaticMethodSignature(
         self, class_name: str, method_name: str, args: tuple
     ) -> str | None:
-        """
-        Get static method signature.
-        Uses regular method signature lookup since format is the same.
-        """
+        """Get static method signature."""
         return self.getMethodSignature(method_name, args, target_class=class_name.split(".")[-1])
 
     def getEnumValue(self, enum_name: str, ordinal: int) -> str | None:
@@ -666,26 +579,12 @@ class RuneLiteAPI:
         """List all available enum names"""
         return sorted(self.enum_classes.keys())
 
-    def query(self) -> "Query":
-        """
-        Create a new query builder for batch operations.
-
-        Returns:
-            Query object for building chained API calls
-        """
-        if RuntimeQuery is None:
-            raise RuntimeError("Query builder not available - missing query_builder module")
-
-        # Create a new Query instance with this API
-        return RuntimeQuery(self)
+    def query(self) -> Batch:
+        """Create a query for API operations."""
+        return Batch(self)
 
     def _sendRequest(self, encoded_data: bytes) -> None:
-        """
-        Send encoded request to bridge via shared memory.
-
-        Args:
-            encoded_data: MessagePack-encoded request data
-        """
+        """Send encoded request to bridge via shared memory."""
         # Wait for bridge to clear pending from previous request (max 10ms)
         wait_start = time.perf_counter()
         while (time.perf_counter() - wait_start) * 1000 < 10:
@@ -710,15 +609,7 @@ class RuneLiteAPI:
         self.api_channel.write(struct.pack("<II", 1, 0))  # pending=1, ready=0
 
     def _waitForResponse(self, timeout_ms: int = 10000) -> bytes | None:
-        """
-        Wait for response from bridge with exponential backoff polling.
-
-        Args:
-            timeout_ms: Timeout in milliseconds
-
-        Returns:
-            Response data bytes, or None on timeout
-        """
+        """Wait for response from bridge with exponential backoff polling."""
         start_time = time.perf_counter()
         poll_count = 0
 
@@ -729,17 +620,17 @@ class RuneLiteAPI:
             if ready == 1:
                 elapsed = (time.perf_counter() - start_time) * 1000
                 if elapsed > 100:
-                    print(f"⏱️  Response ready after {elapsed:.2f}ms (polls={poll_count})")
+                    logger.debug(f"Response ready after {elapsed:.2f}ms (polls={poll_count})")
 
                 # Read response
                 self.result_buffer.seek(0)
                 size = struct.unpack("<I", self.result_buffer.read(4))[0]
 
                 if size == 0:
-                    print(
-                        f"❌ DEBUG: ready=1 but size=0 after {elapsed:.2f}ms (polls={poll_count})"
+                    logger.error(
+                        f"DEBUG: ready=1 but size=0 after {elapsed:.2f}ms (polls={poll_count})"
                     )
-                    print("   This means C set ready flag but didn't write response data")
+                    logger.info("This means C set ready flag but didn't write response data")
                     # Clear ready flag anyway
                     self.result_buffer.seek(4)
                     self.result_buffer.write(struct.pack("<I", 0))
@@ -781,19 +672,11 @@ class RuneLiteAPI:
         elapsed = (time.perf_counter() - start_time) * 1000
         self.api_channel.seek(0)
         query_pending = struct.unpack("i", self.api_channel.read(4))[0]
-        print(f"⚠️ TIMEOUT after {elapsed:.2f}ms (polls={poll_count}, pending={query_pending})")
+        logger.warning(f"TIMEOUT after {elapsed:.2f}ms (polls={poll_count}, pending={query_pending})")
         return None
 
     def _decodeMsgpackResponse(self, data: bytes) -> Any:
-        """
-        Decode MessagePack response, handling magic header if present.
-
-        Args:
-            data: Raw response bytes (already trimmed to exact message size in _wait_for_response)
-
-        Returns:
-            Decoded MessagePack data
-        """
+        """Decode MessagePack response, handling magic header if present."""
         import msgpack
 
         if len(data) >= 8:
@@ -808,15 +691,7 @@ class RuneLiteAPI:
         return msgpack.unpackb(data, raw=False, strict_map_key=False)
 
     def executeBatchQuery(self, operations: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """
-        Execute a batch query using MessagePack v2 protocol.
-
-        Args:
-            operations: List of operation dicts to execute
-
-        Returns:
-            Dictionary with results from the batch execution
-        """
+        """Execute a batch query using MessagePack v2 protocol."""
         if not self.api_channel or not self.result_buffer:
             raise RuntimeError("Not connected to bridge - call connect() first")
 
@@ -864,29 +739,7 @@ class RuneLiteAPI:
         async_exec: bool = False,
         declaring_class: str | None = None,
     ) -> Any:
-        """
-        Invoke a custom Java method directly.
-
-        Args:
-            target: Target class name (e.g., "HelloWorld", "net.runelite.api.Client")
-            method: Method name (e.g., "greetPlayer")
-            signature: Java method signature (e.g., "()Ljava/lang/String;")
-            args: Optional list of arguments to pass
-            async_exec: If False, executes on client thread. If True, executes async.
-
-        Returns:
-            Method return value
-
-        Example:
-            >>> api.invokeCustomMethod(
-            ...     target="HelloWorld",
-            ...     method="greetPlayer",
-            ...     signature="()Ljava/lang/String;",
-            ...     args=[],
-            ...     async_exec=False
-            ... )
-            "Hello, Player123!"
-        """
+        """Invoke a custom Java method directly."""
         operation = {
             "async": async_exec,
             "target": target,

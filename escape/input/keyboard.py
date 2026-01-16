@@ -11,17 +11,7 @@ except ImportError:
 
 
 class Keyboard:
-    """
-    Singleton keyboard controller with human-like typing.
-    Uses pyautogui for cross-platform keyboard control.
-    Requires RuneLite window focus for input.
-
-    Example:
-        from escape.input.keyboard import keyboard
-
-        keyboard.type("Hello world")
-        keyboard.pressEnter()
-    """
+    """Keyboard controller with human-like typing."""
 
     _instance = None
 
@@ -32,12 +22,7 @@ class Keyboard:
         return cls._instance
 
     def _init(self, speed: float = 1.0):
-        """
-        Actual initialization, runs once.
-
-        Args:
-            speed: Typing speed multiplier (1.0 = ~50ms per keystroke)
-        """
+        """Actual initialization, runs once."""
         from escape.input.runelite import runelite
 
         if pag is None:
@@ -51,64 +36,31 @@ class Keyboard:
         self.speed = speed
 
     def _ensureFocus(self) -> None:
-        """
-        Ensure RuneLite window is ready for input.
-        Refreshes window position (respects 10s cache).
-        """
+        """Ensure RuneLite window is ready for input."""
         self.runelite.refreshWindowPosition()
 
     def _press(self, key: str) -> None:
-        """
-        Core press function - ONLY access point to pyautogui.press().
-
-        Args:
-            key: Key to press (e.g., 'enter', 'space', 'a', 'f1')
-        """
+        """Core press function - ONLY access point to pyautogui.press()."""
         self._ensureFocus()
         pag.press(key, _pause=False)
 
     def _keyDown(self, key: str) -> None:
-        """
-        Core key down function - ONLY access point to pyautogui.keyDown().
-
-        Args:
-            key: Key to hold down
-        """
+        """Core key down function - ONLY access point to pyautogui.keyDown()."""
         self._ensureFocus()
         pag.keyDown(key, _pause=False)
 
     def _keyUp(self, key: str) -> None:
-        """
-        Core key up function - ONLY access point to pyautogui.keyUp().
-
-        Args:
-            key: Key to release
-        """
+        """Core key up function - ONLY access point to pyautogui.keyUp()."""
         self._ensureFocus()
         pag.keyUp(key, _pause=False)
 
     def _typeChar(self, char: str) -> None:
-        """
-        Core type function - ONLY access point to pyautogui.write() for single char.
-
-        Args:
-            char: Single character to type
-        """
+        """Core type function - ONLY access point to pyautogui.write() for single char."""
         self._ensureFocus()
         pag.write(char, interval=0, _pause=False)
 
     def type(self, text: str, humanize: bool = True) -> None:
-        """
-        Type text with optional human-like delays.
-
-        Args:
-            text: Text to type
-            humanize: If True, adds random delays between keystrokes
-
-        Example:
-            >>> keyboard.type("Hello world")
-            >>> keyboard.type("fast typing", humanize=False)
-        """
+        """Type text with optional human-like delays."""
         if not text:
             return
 
@@ -131,65 +83,25 @@ class Keyboard:
                 time.sleep(delay)
 
     def press(self, key: str) -> None:
-        """
-        Press and release a key.
-
-        Args:
-            key: Key to press (e.g., 'enter', 'space', 'escape', 'f1')
-
-        Example:
-            >>> keyboard.press('enter')
-            >>> keyboard.press('escape')
-            >>> keyboard.press('f1')
-        """
+        """Press and release a key."""
         self._press(key)
 
         # Small delay after key press (human-like)
         time.sleep(random.uniform(0.02, 0.05))
 
     def hold(self, key: str) -> None:
-        """
-        Hold a key down (must call release() to let go).
-
-        Args:
-            key: Key to hold
-
-        Example:
-            >>> keyboard.hold('shift')
-            >>> keyboard.type('hello')  # Types 'HELLO'
-            >>> keyboard.release('shift')
-        """
+        """Hold a key down (must call release() to let go)."""
         self._keyDown(key)
 
     def release(self, key: str) -> None:
-        """
-        Release a held key.
-
-        Args:
-            key: Key to release
-
-        Example:
-            >>> keyboard.hold('ctrl')
-            >>> keyboard.press('a')  # Ctrl+A
-            >>> keyboard.release('ctrl')
-        """
+        """Release a held key."""
         self._keyUp(key)
 
         # Small delay after release (human-like)
         time.sleep(random.uniform(0.02, 0.05))
 
     def hotkey(self, *keys: str) -> None:
-        """
-        Press a key combination (hotkey).
-
-        Args:
-            *keys: Keys to press together
-
-        Example:
-            >>> keyboard.hotkey('ctrl', 'a')      # Select all
-            >>> keyboard.hotkey('ctrl', 'shift', 'escape')  # Task manager
-            >>> keyboard.hotkey('alt', 'f4')     # Close window
-        """
+        """Press a key combination (hotkey)."""
         self._ensureFocus()
 
         # Press keys in order
@@ -206,80 +118,35 @@ class Keyboard:
         time.sleep(random.uniform(0.03, 0.08))
 
     def pressEnter(self) -> None:
-        """
-        Press Enter key.
-
-        Example:
-            >>> keyboard.type("search query")
-            >>> keyboard.pressEnter()
-        """
+        """Press Enter key."""
         self.press("enter")
 
     def pressEscape(self) -> None:
-        """
-        Press Escape key.
-
-        Example:
-            >>> keyboard.pressEscape()  # Close menu/dialog
-        """
+        """Press Escape key."""
         self.press("escape")
 
     def pressSpace(self) -> None:
-        """
-        Press Space key.
-
-        Example:
-            >>> keyboard.pressSpace()  # Continue dialogue
-        """
+        """Press Space key."""
         self.press("space")
 
     def pressTab(self) -> None:
-        """
-        Press Tab key.
-
-        Example:
-            >>> keyboard.pressTab()  # Next field
-        """
+        """Press Tab key."""
         self.press("tab")
 
     def pressFKey(self, num: int) -> None:
-        """
-        Press a function key (F1-F12).
-
-        Args:
-            num: Function key number (1-12)
-
-        Raises:
-            ValueError: If num is not between 1 and 12
-
-        Example:
-            >>> keyboard.pressFKey(1)   # Press F1
-            >>> keyboard.pressFKey(5)   # Press F5
-        """
+        """Press a function key (F1-F12)."""
         if not 1 <= num <= 12:
             raise ValueError(f"Function key must be between 1 and 12, got {num}")
 
         self.press(f"f{num}")
 
     def pressNumber(self, num: int) -> None:
-        """
-        Press a number key (0-9).
-
-        Args:
-            num: Number to press (0-9)
-
-        Raises:
-            ValueError: If num is not between 0 and 9
-
-        Example:
-            >>> keyboard.pressNumber(1)  # Press '1' key
-            >>> keyboard.pressNumber(5)  # Press '5' key
-        """
+        """Press a number key (0-9)."""
         if not 0 <= num <= 9:
             raise ValueError(f"Number must be between 0 and 9, got {num}")
 
         self.press(str(num))
 
 
-# Module-level singleton instance
+# Module-level instance
 keyboard = Keyboard()

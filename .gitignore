@@ -162,3 +162,5 @@ data/resources/
 
 # Block entire data directory
 /data/
+.serena
+generated

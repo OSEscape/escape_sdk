@@ -10,19 +10,7 @@ if TYPE_CHECKING:
 
 @dataclass
 class Polygon:
-    """
-    Represents an arbitrary polygon defined by n vertices.
-
-    Attributes:
-        vertices: List of Point objects defining the polygon vertices
-
-    Example:
-        >>> from escape.types.point import Point
-        >>> polygon = Polygon([Point(100, 100), Point(200, 100), Point(150, 200)])
-        >>> polygon.click()  # Click at random point within polygon
-        >>> if polygon.contains(Point(150, 150)):
-        ...     print("Point is inside polygon")
-    """
+    """Represents an arbitrary polygon defined by n vertices."""
 
     vertices: List["Point"]
 
@@ -32,16 +20,7 @@ class Polygon:
             raise ValueError("Polygon must have at least 3 vertices")
 
     def fromArray(self, data: List[List[int]]) -> None:
-        """
-        Populate Polygon from array of [x, y] coordinate pairs.
-
-        Args:
-            data: List of [x, y] pairs
-
-        Example:
-            >>> polygon = Polygon([])
-            >>> polygon.fromArray([[0, 0], [100, 0], [50, 100]])
-        """
+        """Populate Polygon from array of [x, y] coordinate pairs."""
         from escape.types.point import Point
 
         x_data = data[0]
@@ -50,16 +29,7 @@ class Polygon:
         self.vertices = [Point(x, y) for x, y in zip(x_data, y_data)]
 
     def center(self) -> "Point":
-        """
-        Get the centroid (center of mass) of the polygon.
-
-        Returns:
-            Point at the centroid
-
-        Example:
-            >>> polygon = Polygon([Point(0, 0), Point(100, 0), Point(50, 100)])
-            >>> center = polygon.center()
-        """
+        """Get the centroid (center of mass) of the polygon."""
         from escape.types.point import Point
 
         x_sum = sum(v.x for v in self.vertices)
@@ -68,16 +38,7 @@ class Polygon:
         return Point(x_sum // n, y_sum // n)
 
     def bounds(self) -> tuple[int, int, int, int]:
-        """
-        Get the bounding box of this polygon.
-
-        Returns:
-            Tuple of (minX, minY, maxX, maxY)
-
-        Example:
-            >>> polygon = Polygon([Point(0, 0), Point(100, 0), Point(50, 100)])
-            >>> bounds = polygon.bounds()  # (0, 0, 100, 100)
-        """
+        """Get the bounding box of this polygon."""
         min_x = min(v.x for v in self.vertices)
         min_y = min(v.y for v in self.vertices)
         max_x = max(v.x for v in self.vertices)
@@ -85,20 +46,7 @@ class Polygon:
         return (min_x, min_y, max_x, max_y)
 
     def contains(self, point: "Point") -> bool:
-        """
-        Check if a point is within this polygon using ray casting algorithm.
-
-        Args:
-            point: Point to check
-
-        Returns:
-            True if point is inside polygon, False otherwise
-
-        Example:
-            >>> polygon = Polygon([Point(0, 0), Point(100, 0), Point(50, 100)])
-            >>> polygon.contains(Point(50, 50))  # True
-            >>> polygon.contains(Point(200, 200))  # False
-        """
+        """Check if a point is within this polygon using ray casting algorithm."""
         x, y = point.x, point.y
         n = len(self.vertices)
         inside = False
@@ -118,16 +66,7 @@ class Polygon:
         return inside
 
     def area(self) -> float:
-        """
-        Calculate the area of the polygon using the shoelace formula.
-
-        Returns:
-            Area in square pixels
-
-        Example:
-            >>> polygon = Polygon([Point(0, 0), Point(100, 0), Point(100, 100), Point(0, 100)])
-            >>> polygon.area()  # Returns 10000.0
-        """
+        """Calculate the area of the polygon using the shoelace formula."""
         n = len(self.vertices)
         area = 0.0
         for i in range(n):
@@ -137,16 +76,7 @@ class Polygon:
         return abs(area) / 2.0
 
     def randomPoint(self) -> "Point":
-        """
-        Generate a random point within this polygon using rejection sampling.
-
-        Returns:
-            Random Point inside the polygon
-
-        Example:
-            >>> polygon = Polygon([Point(0, 0), Point(100, 0), Point(50, 100)])
-            >>> point = polygon.randomPoint()
-        """
+        """Generate a random point within this polygon using rejection sampling."""
         min_x, min_y, max_x, max_y = self.bounds()
 
         # Rejection sampling with max attempts
@@ -164,35 +94,12 @@ class Polygon:
         return self.center()
 
     def click(self, button: str = "left", randomize: bool = True) -> None:
-        """
-        Click within this polygon.
-
-        Args:
-            button: Mouse button ('left', 'right')
-            randomize: If True, clicks at random point. If False, clicks at center.
-
-        Example:
-            >>> polygon = Polygon([Point(0, 0), Point(100, 0), Point(50, 100)])
-            >>> polygon.click()  # Random click inside polygon
-            >>> polygon.click(randomize=False)  # Click at center
-        """
+        """Click within this polygon."""
         point = self.randomPoint() if randomize else self.center()
         point.click(button=button)
 
     def hover(self, randomize: bool = True) -> bool:
-        """
-        Move mouse to hover within this polygon. Returns early if already inside.
-
-        Args:
-            randomize: If True, hovers at random point. If False, hovers at center.
-
-        Returns:
-            True if mouse is now inside the polygon
-
-        Example:
-            >>> polygon = Polygon([Point(0, 0), Point(100, 0), Point(50, 100)])
-            >>> polygon.hover()  # Hover at random point
-        """
+        """Move mouse to hover within this polygon."""
         from escape.globals import getClient
         from escape.types.point import Point
 
@@ -204,16 +111,7 @@ class Polygon:
         return True
 
     def rightClick(self, randomize: bool = True) -> None:
-        """
-        Right-click within this polygon.
-
-        Args:
-            randomize: If True, clicks at random point. If False, clicks at center.
-
-        Example:
-            >>> polygon = Polygon([Point(0, 0), Point(100, 0), Point(50, 100)])
-            >>> polygon.rightClick()
-        """
+        """Right-click within this polygon."""
         self.click(button="right", randomize=randomize)
 
     def __repr__(self) -> str:
@@ -222,19 +120,7 @@ class Polygon:
     def debug(
         self, argbColor: int = 0xFFFF0000, filled: bool = False, tag: str | None = None
     ) -> None:
-        """
-        Draw this polygon as an overlay on RuneLite.
-
-        Args:
-            argbColor: Color in ARGB format (0xAARRGGBB), default opaque red
-            filled: If True, fill the polygon. If False, outline only.
-            tag: Optional tag for selective clearing
-
-        Example:
-            >>> polygon = Polygon([Point(100, 100), Point(200, 100), Point(150, 200)])
-            >>> polygon.debug()  # Red outline
-            >>> polygon.debug(0x8000FF00, filled=True)  # Semi-transparent green fill
-        """
+        """Draw this polygon as an overlay on RuneLite."""
         from escape.input.drawing import drawing
 
         xPoints = [v.x for v in self.vertices]

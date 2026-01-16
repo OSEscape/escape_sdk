@@ -1,15 +1,9 @@
 #!/usr/bin/env python3
-"""
-Main auto-updater entry point.
-
-Handles updating all escape data:
-- RuneLite API data
-- Game resources (varps, objects database)
-"""
+"""Main auto-updater entry point."""
 
 
 def main():
-    """Command-line interface for escape updater"""
+    """Command-line interface for escape updater."""
     import argparse
 
     parser = argparse.ArgumentParser(

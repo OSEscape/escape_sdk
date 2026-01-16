@@ -12,6 +12,8 @@ import sys
 from pathlib import Path
 from typing import List, Tuple
 
+from escape._internal.logger import logger
+
 
 def isCamelCase(name: str) -> bool:
     """
@@ -211,13 +213,13 @@ def main() -> int:
     escape_dir = Path(__file__).parent.parent / "escape"
 
     if not escape_dir.exists():
-        print(f"Error: {escape_dir} does not exist")
+        logger.error(f"Error: {escape_dir} does not exist")
         return 1
 
     python_files = list(escape_dir.rglob("*.py"))
 
     if not python_files:
-        print("No Python files found in escape/")
+        logger.info("No Python files found in escape/")
         return 0
 
     # Exclude patterns (generated code only)
@@ -234,16 +236,16 @@ def main() -> int:
 
         errors = checkFile(filepath)
         if errors:
-            print(f"\n{filepath}:")
+            logger.info(f"\n{filepath}")
             for lineno, message in errors:
-                print(f"  Line {lineno}: {message}")
+                logger.info(f"Line {lineno}: {message}")
                 total_errors += 1
 
     if total_errors > 0:
-        print(f"\n❌ Found {total_errors} naming convention error(s)")
+        logger.error(f"\n Found {total_errors} naming convention error(s)")
         return 1
     else:
-        print("✅ All files follow the naming conventions!")
+        logger.success("All files follow the naming conventions!")
         return 0
 
 

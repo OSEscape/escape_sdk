@@ -6,53 +6,19 @@ from dataclasses import dataclass
 
 @dataclass
 class Point:
-    """
-    Represents a 2D point with integer coordinates.
-
-    Attributes:
-        x: X coordinate
-        y: Y coordinate
-
-    Example:
-        >>> point = Point(100, 200)
-        >>> point.click()  # Click at this point
-        >>> distance = point.distanceTo(Point(150, 250))
-    """
+    """Represents a 2D point with integer coordinates."""
 
     x: int
     y: int
 
     def distanceTo(self, other: "Point") -> float:
-        """
-        Calculate Euclidean distance to another point.
-
-        Args:
-            other: Another Point instance
-
-        Returns:
-            Distance as a float
-
-        Example:
-            >>> p1 = Point(0, 0)
-            >>> p2 = Point(3, 4)
-            >>> p1.distanceTo(p2)  # Returns 5.0
-        """
+        """Calculate Euclidean distance to another point."""
         dx = self.x - other.x
         dy = self.y - other.y
         return math.sqrt(dx * dx + dy * dy)
 
     def click(self, button: str = "left") -> None:
-        """
-        Click at this point.
-
-        Args:
-            button: Mouse button ('left', 'right')
-
-        Example:
-            >>> point = Point(100, 200)
-            >>> point.click()  # Left click
-            >>> point.click(button="right")  # Right click
-        """
+        """Click at this point."""
         from escape.globals import getClient
 
         mouse = getClient().input.mouse
@@ -62,26 +28,14 @@ class Point:
             mouse.rightClick(self.x, self.y)
 
     def hover(self) -> None:
-        """
-        Move mouse to hover over this point.
-
-        Example:
-            >>> point = Point(100, 200)
-            >>> point.hover()
-        """
+        """Move mouse to hover over this point."""
         from escape.globals import getClient
 
         mouse = getClient().input.mouse
         mouse.moveTo(self.x, self.y)
 
     def rightClick(self) -> None:
-        """
-        Right-click at this point.
-
-        Example:
-            >>> point = Point(100, 200)
-            >>> point.rightClick()
-        """
+        """Right-click at this point."""
         self.click(button="right")
 
     def __repr__(self) -> str:
@@ -90,78 +44,30 @@ class Point:
     def debug(
         self, argbColor: int = 0xFFFF0000, size: int = 5, thickness: int = 2, tag: str | None = None
     ) -> None:
-        """
-        Draw this point as a crosshair overlay on RuneLite.
-
-        Args:
-            argbColor: Color in ARGB format (0xAARRGGBB), default opaque red
-            size: Size of the crosshair arms in pixels
-            thickness: Line thickness in pixels
-            tag: Optional tag for selective clearing
-
-        Example:
-            >>> point = Point(150, 150)
-            >>> point.debug()  # Red crosshair
-            >>> point.debug(0xFF00FF00, size=10)  # Green, larger crosshair
-        """
+        """Draw this point as a crosshair overlay on RuneLite."""
         from escape.input.drawing import drawing
 
-        # Draw crosshair (two lines)
         drawing.addLine(self.x - size, self.y, self.x + size, self.y, argbColor, thickness, tag)
         drawing.addLine(self.x, self.y - size, self.x, self.y + size, argbColor, thickness, tag)
 
 
 @dataclass
 class Point3D:
-    """
-    Represents a 3D point with integer coordinates.
-
-    Attributes:
-        x: X coordinate
-        y: Y coordinate
-        z: Z coordinate
-
-    Example:
-        >>> point = Point3D(100, 200, 0)
-        >>> distance = point.distanceTo(Point3D(150, 250, 5))
-        >>> point2d = point.to2d()  # Convert to 2D Point
-    """
+    """Represents a 3D point with integer coordinates."""
 
     x: int
     y: int
     z: int
 
     def distanceTo(self, other: "Point3D") -> float:
-        """
-        Calculate 3D Euclidean distance to another point.
-
-        Args:
-            other: Another Point3D instance
-
-        Returns:
-            Distance as a float
-
-        Example:
-            >>> p1 = Point3D(0, 0, 0)
-            >>> p2 = Point3D(3, 4, 0)
-            >>> p1.distanceTo(p2)  # Returns 5.0
-        """
+        """Calculate 3D Euclidean distance to another point."""
         dx = self.x - other.x
         dy = self.y - other.y
         dz = self.z - other.z
         return math.sqrt(dx * dx + dy * dy + dz * dz)
 
     def to2d(self) -> Point:
-        """
-        Convert to 2D point (dropping z coordinate).
-
-        Returns:
-            A Point instance with x and y coordinates
-
-        Example:
-            >>> point3d = Point3D(100, 200, 50)
-            >>> point2d = point3d.to2d()  # Point(100, 200)
-        """
+        """Convert to 2D point, dropping z coordinate."""
         return Point(self.x, self.y)
 
     def __repr__(self) -> str:

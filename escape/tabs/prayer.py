@@ -45,14 +45,7 @@ class PrayerType(Enum):
 
 
 class Prayer(GameTabs):
-    """
-    Singleton prayer tab - displays available prayers and prayer points.
-
-    Example:
-        from escape.tabs.prayer import prayer
-
-        prayer.open()
-    """
+    """Prayer tab for activating prayers and checking prayer points."""
 
     TAB_TYPE = GameTab.PRAYER
 
@@ -142,32 +135,15 @@ class Prayer(GameTabs):
         )
 
     def getActivePrayerVarbit(self) -> int | None:
-        """
-        Get the varp value representing active prayers.
-
-        Returns:
-            Integer bitmask of active prayers, or None if unavailable
-        """
+        """Get the varp value representing active prayers."""
         return client.resources.varps.getVarbitByName("PRAYER_ALLACTIVE")
 
     def getQuickPrayerVarbit(self) -> int | None:
-        """
-        Get the varp value representing active quick-prayers.
-
-        Returns:
-            Integer bitmask of active quick-prayers, or None if unavailable
-        """
+        """Get the varp value representing active quick-prayers."""
         return client.resources.varps.getVarbitByName("QUICKPRAYER_SELECTED")
 
     def isPrayerActive(self, prayer: PrayerType) -> bool | None:
-        """
-        Check if a specific prayer is active.
-
-        Args:
-            prayer: The PrayerType enum value to check
-        Returns:
-            True if the prayer is active, False if not, or None if unavailable
-        """
+        """Check if a specific prayer is active."""
         varbit_value = self.getActivePrayerVarbit()
         if varbit_value is None:
             return None
@@ -176,12 +152,7 @@ class Prayer(GameTabs):
 
     @property
     def active_prayers(self) -> list[PrayerType] | None:
-        """
-        Get a dictionary of all prayers and their active status.
-
-        Returns:
-            Dict mapping PrayerType to bool (True if active), or None if unavailable
-        """
+        """Get a list of all currently active prayers."""
         varbit_value = self.getActivePrayerVarbit()
         if varbit_value is None:
             return None
@@ -193,14 +164,7 @@ class Prayer(GameTabs):
         return result
 
     def activate(self, prayer: PrayerType, safe: bool = True) -> bool:
-        """
-        Activate a specific prayer via the interface.
-
-        Args:
-            prayer: The PrayerType enum value to activate
-        Returns:
-            True if the interaction was successful, False otherwise
-        """
+        """Activate a specific prayer via the interface."""
         if not self.open():
             return False
 
@@ -209,14 +173,7 @@ class Prayer(GameTabs):
         return True
 
     def deactivate(self, prayer: PrayerType) -> bool:
-        """
-        Deactivate a specific prayer via the interface.
-
-        Args:
-            prayer: The PrayerType enum value to deactivate
-        Returns:
-            True if the interaction was successful, False otherwise
-        """
+        """Deactivate a specific prayer via the interface."""
         if not self.open():
             return False
 
@@ -225,22 +182,12 @@ class Prayer(GameTabs):
         return True
 
     def getPrayerPoints(self) -> int | None:
-        """
-        Get the current prayer points.
-
-        Returns:
-            Integer prayer points, or None if unavailable
-        """
+        """Get the current prayer points."""
         return client.tabs.skills.getLevel("Prayer")
 
     @property
     def selected_quick_prayers(self) -> list[PrayerType] | None:
-        """
-        Get a list of active quick-prayers.
-
-        Returns:
-            List of PrayerType enums that are active as quick-prayers, or None if unavailable
-        """
+        """Get a list of selected quick-prayers."""
         varbit_value = self.getQuickPrayerVarbit()
         if varbit_value is None:
             return None
@@ -252,24 +199,14 @@ class Prayer(GameTabs):
         return result
 
     def isQuickPrayerActive(self) -> bool | None:
-        """
-        Check if quick-prayers are active.
-
-        Returns:
-            True if quick-prayers are active, False if not, or None if unavailable
-        """
+        """Check if quick-prayers are active."""
         varbit_value = client.resources.varps.getVarbitByName("QUICKPRAYER_ACTIVE")
         if varbit_value is None:
             return None
         return varbit_value == 1
 
     def activateQuickPrayer(self) -> bool:
-        """
-        Activate quick-prayers via the orb.
-
-        Returns:
-            True if the interaction was successful, False otherwise
-        """
+        """Activate quick-prayers via the orb."""
         if not self.open():
             return False
 
@@ -278,12 +215,7 @@ class Prayer(GameTabs):
         return True
 
     def deactivateQuickPrayer(self) -> bool:
-        """
-        Deactivate quick-prayers via the orb.
-
-        Returns:
-            True if the interaction was successful, False otherwise
-        """
+        """Deactivate quick-prayers via the orb."""
         if not self.open():
             return False
 
@@ -292,21 +224,11 @@ class Prayer(GameTabs):
         return True
 
     def isQuickPrayerSetupOpen(self) -> bool:
-        """
-        Check if the quick-prayer setup interface is open.
-
-        Returns:
-            True if the quick-prayer setup interface is open, False otherwise
-        """
+        """Check if the quick-prayer setup interface is open."""
         return client.InterfaceID.QUICKPRAYER in client.interfaces.getOpenInterfaces()
 
     def openQuickPrayerSetup(self) -> bool:
-        """
-        Open the quick-prayer setup interface.
-
-        Returns:
-            True if the interaction was successful, False otherwise
-        """
+        """Open the quick-prayer setup interface."""
         if client.InterfaceID.QUICKPRAYER in client.interfaces.getOpenInterfaces():
             return True
 
@@ -317,12 +239,7 @@ class Prayer(GameTabs):
         return False
 
     def closeQuickPrayerSetup(self) -> bool:
-        """
-        Close the quick-prayer setup interface.
-
-        Returns:
-            True if the interaction was successful, False otherwise
-        """
+        """Close the quick-prayer setup interface."""
         if not self.isQuickPrayerSetupOpen():
             return True
 
@@ -333,14 +250,7 @@ class Prayer(GameTabs):
         return False
 
     def configureQuickPrayers(self, prayers: list[PrayerType]) -> bool:
-        """
-        Configure the quick-prayer setup with the specified prayers.
-
-        Args:
-            prayers: List of PrayerType enums to set as quick-prayers
-        Returns:
-            True if the configuration was successful, False otherwise
-        """
+        """Configure the quick-prayer setup with the specified prayers."""
         if not self.prayer_buttons.is_ready:
             if self.isQuickPrayerSetupOpen():
                 self.closeQuickPrayerSetup()
@@ -370,5 +280,5 @@ class Prayer(GameTabs):
         return self.closeQuickPrayerSetup() and set(self.selected_quick_prayers) == prayer_set
 
 
-# Module-level singleton instance
+# Module-level instance
 prayer = Prayer()

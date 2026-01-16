@@ -6,14 +6,7 @@ from escape.types.gametab import GameTab, GameTabs
 
 
 class Logout(GameTabs):
-    """
-    Singleton logout tab - displays logout options and world switcher.
-
-    Example:
-        from escape.tabs.logout import logout
-
-        logout.open()
-    """
+    """Logout tab for logging out and switching worlds."""
 
     TAB_TYPE = GameTab.LOGOUT
 
@@ -30,5 +23,5 @@ class Logout(GameTabs):
         GameTabs.__init__(self)
 
 
-# Module-level singleton instance
+# Module-level instance
 logout = Logout()

@@ -5,19 +5,7 @@ from PIL import Image
 
 
 class Drawing:
-    """
-    Singleton drawing utility for rendering overlays on RuneLite.
-
-    Wraps the Java Drawing class to draw shapes at screen coordinates.
-    All colors are ARGB format: 0xAARRGGBB (e.g., 0xFFFF0000 = opaque red).
-    All commands persist until clear() is called.
-
-    Example:
-        >>> from escape._internal.drawing import drawing
-        >>> drawing.addBox(100, 100, 50, 50, 0xFFFF0000, False)  # Red outline box
-        >>> drawing.addText("Hello", 100, 80, 0xFFFFFFFF)  # White text
-        >>> drawing.clear()  # Remove all drawings
-    """
+    """Drawing utility for rendering debug overlays on RuneLite."""
 
     _instance = None
 
@@ -32,17 +20,7 @@ class Drawing:
         pass
 
     def _invoke(self, method: str, signature: str, args: list) -> dict | None:
-        """
-        Invoke a method on the Java Drawing class.
-
-        Args:
-            method: Method name
-            signature: Java method signature
-            args: Method arguments
-
-        Returns:
-            Result dict or None
-        """
+        """Invoke a method on the Java Drawing class."""
         from escape.client import client
 
         return client.api.invokeCustomMethod(
@@ -64,22 +42,7 @@ class Drawing:
         filled: bool,
         tag: str | None = None,
     ) -> None:
-        """
-        Draw a rectangle at screen coordinates.
-
-        Args:
-            x: X coordinate (left edge)
-            y: Y coordinate (top edge)
-            width: Width in pixels
-            height: Height in pixels
-            argbColor: Color in ARGB format (0xAARRGGBB)
-            filled: If True, fill the rectangle. If False, outline only.
-            tag: Optional tag for selective clearing
-
-        Example:
-            >>> drawing.addBox(100, 100, 50, 50, 0xFFFF0000, False)  # Red outline
-            >>> drawing.addBox(200, 100, 50, 50, 0x80FF0000, True)  # Semi-transparent red fill
-        """
+        """Draw a rectangle at screen coordinates."""
         if tag is None:
             self._invoke(
                 "addBox",
@@ -102,21 +65,7 @@ class Drawing:
         filled: bool,
         tag: str | None = None,
     ) -> None:
-        """
-        Draw a circle at screen coordinates.
-
-        Args:
-            x: X coordinate (center)
-            y: Y coordinate (center)
-            radius: Radius in pixels
-            argbColor: Color in ARGB format (0xAARRGGBB)
-            filled: If True, fill the circle. If False, outline only.
-            tag: Optional tag for selective clearing
-
-        Example:
-            >>> drawing.addCircle(150, 150, 25, 0xFF00FF00, False)  # Green outline
-            >>> drawing.addCircle(250, 150, 25, 0x8000FF00, True)  # Semi-transparent green fill
-        """
+        """Draw a circle at screen coordinates."""
         if tag is None:
             self._invoke(
                 "addCircle",
@@ -140,21 +89,7 @@ class Drawing:
         thickness: int,
         tag: str | None = None,
     ) -> None:
-        """
-        Draw a line between two points.
-
-        Args:
-            x1: Start X coordinate
-            y1: Start Y coordinate
-            x2: End X coordinate
-            y2: End Y coordinate
-            argbColor: Color in ARGB format (0xAARRGGBB)
-            thickness: Line thickness in pixels
-            tag: Optional tag for selective clearing
-
-        Example:
-            >>> drawing.addLine(0, 0, 100, 100, 0xFFFFFFFF, 2)  # White diagonal line
-        """
+        """Draw a line between two points."""
         if tag is None:
             self._invoke(
                 "addLine",
@@ -176,20 +111,7 @@ class Drawing:
         filled: bool,
         tag: str | None = None,
     ) -> None:
-        """
-        Draw a polygon from vertex arrays.
-
-        Args:
-            xPoints: List of X coordinates
-            yPoints: List of Y coordinates
-            argbColor: Color in ARGB format (0xAARRGGBB)
-            filled: If True, fill the polygon. If False, outline only.
-            tag: Optional tag for selective clearing
-
-        Example:
-            >>> # Draw a triangle
-            >>> drawing.addPolygon([100, 150, 50], [100, 150, 150], 0xFFFF00FF, False)
-        """
+        """Draw a polygon from vertex arrays."""
         if tag is None:
             self._invoke(
                 "addPolygon",
@@ -212,21 +134,7 @@ class Drawing:
         fontSize: int = 0,
         tag: str | None = None,
     ) -> None:
-        """
-        Draw text at screen coordinates.
-
-        Args:
-            text: Text string to draw
-            x: X coordinate
-            y: Y coordinate
-            argbColor: Color in ARGB format (0xAARRGGBB)
-            fontSize: Font size (0 = default)
-            tag: Optional tag for selective clearing
-
-        Example:
-            >>> drawing.addText("Hello World", 100, 100, 0xFFFFFF00)  # Yellow text
-            >>> drawing.addText("Big Text", 100, 150, 0xFFFFFFFF, 24)  # Large white text
-        """
+        """Draw text at screen coordinates."""
         if tag is None and fontSize == 0:
             self._invoke(
                 "addText",
@@ -249,22 +157,7 @@ class Drawing:
         y: int,
         tag: str | None = None,
     ) -> None:
-        """
-        Draw an image from ARGB pixel array.
-
-        Args:
-            argbPixels: Flat array of ARGB pixel values (length = imgWidth * imgHeight)
-            imgWidth: Image width in pixels
-            imgHeight: Image height in pixels
-            x: X coordinate to draw at
-            y: Y coordinate to draw at
-            tag: Optional tag for selective clearing
-
-        Example:
-            >>> # Draw a 2x2 red square
-            >>> pixels = [0xFFFF0000] * 4
-            >>> drawing.addImage(pixels, 2, 2, 100, 100)
-        """
+        """Draw an image from ARGB pixel array."""
         if tag is None:
             self._invoke(
                 "addImage",
@@ -285,22 +178,7 @@ class Drawing:
         y: int,
         tag: str | None = None,
     ) -> None:
-        """
-        Draw an image from a file path.
-
-        Supports PNG, JPG, and other formats supported by PIL.
-        Handles RGBA transparency correctly.
-
-        Args:
-            path: Path to the image file
-            x: X coordinate to draw at
-            y: Y coordinate to draw at
-            tag: Optional tag for selective clearing
-
-        Example:
-            >>> drawing.addImageFromPath("/path/to/image.png", 100, 100)
-            >>> drawing.addImageFromPath("/path/to/icon.png", 50, 50, "icons")
-        """
+        """Draw an image from a file path."""
         img = Image.open(path).convert("RGBA")
         pixels = np.array(img)
 
@@ -321,45 +199,20 @@ class Drawing:
         self.addImage(pixelList, width, height, x, y, tag)
 
     def clear(self) -> None:
-        """
-        Clear all drawings.
-
-        Example:
-            >>> drawing.addBox(100, 100, 50, 50, 0xFFFF0000, False)
-            >>> drawing.clear()  # Remove all
-        """
+        """Clear all drawings."""
         self._invoke("clear", "()V", [])
 
     def clearTag(self, tag: str) -> None:
-        """
-        Clear only drawings with a specific tag.
-
-        Args:
-            tag: Tag to clear
-
-        Example:
-            >>> drawing.addBox(100, 100, 50, 50, 0xFFFF0000, False, "boxes")
-            >>> drawing.addCircle(200, 200, 25, 0xFF00FF00, False, "circles")
-            >>> drawing.clearTag("boxes")  # Only removes the box
-        """
+        """Clear only drawings with a specific tag."""
         self._invoke("clearTag", "(Ljava/lang/String;)V", [tag])
 
     def getCount(self) -> int:
-        """
-        Get the number of active draw commands.
-
-        Returns:
-            Number of draw commands
-
-        Example:
-            >>> drawing.addBox(100, 100, 50, 50, 0xFFFF0000, False)
-            >>> drawing.getCount()  # Returns 1
-        """
+        """Get the number of active draw commands."""
         result = self._invoke("getCount", "()I", [])
         if result and "value" in result:
             return result["value"]
         return 0
 
 
-# Module-level singleton
+# Module-level instance
 drawing = Drawing()

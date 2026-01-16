@@ -5,25 +5,7 @@ from escape.navigation.walker import Walker, walker
 
 
 class Navigation:
-    """
-    Namespace for navigation systems - returns singleton instances.
-
-    Example:
-        from escape.client import client
-
-        # Get a path
-        path = client.navigation.pathfinder.getPath(3200, 3200, 0)
-
-        # Walk to destination
-        client.navigation.walker.walkTo(3165, 3487)
-
-        # Or directly:
-        from escape.navigation.pathfinder import pathfinder
-        from escape.navigation.walker import walker
-
-        path = pathfinder.getPath(3200, 3200, 0)
-        walker.walkTo(3165, 3487)
-    """
+    """Pathfinding and walking to destinations."""
 
     _instance = None
 
@@ -34,16 +16,16 @@ class Navigation:
 
     @property
     def pathfinder(self) -> Pathfinder:
-        """Get pathfinder singleton."""
+        """Pathfinder for calculating routes."""
         return pathfinder
 
     @property
     def walker(self) -> Walker:
-        """Get walker singleton."""
+        """Walker for moving the player."""
         return walker
 
 
-# Module-level singleton instance
+# Module-level instance
 navigation = Navigation()
 
 

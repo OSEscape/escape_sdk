@@ -6,14 +6,7 @@ from escape.types.gametab import GameTab, GameTabs
 
 
 class Friends(GameTabs):
-    """
-    Singleton friends tab - displays friends list and ignore list.
-
-    Example:
-        from escape.tabs.friends import friends
-
-        friends.open()
-    """
+    """Friends tab for managing friends and ignore lists."""
 
     TAB_TYPE = GameTab.FRIENDS
 
@@ -30,5 +23,5 @@ class Friends(GameTabs):
         GameTabs.__init__(self)
 
 
-# Module-level singleton instance
+# Module-level instance
 friends = Friends()

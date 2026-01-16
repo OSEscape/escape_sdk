@@ -1,14 +1,4 @@
-"""
-Inotify-based event consumer for RuneLite events.
-
-Watches /dev/shm/runelite_doorbell using inotify for instant event notifications.
-Processes ring buffer and latest-state channels, updates cache.
-Runs in background thread.
-
-Requirements:
-- Linux with inotify support (required, no fallback)
-- RuneLite with Escape plugin running (creates doorbell)
-"""
+"""Inotify-based event consumer for RuneLite events."""
 
 import glob
 import os
@@ -20,6 +10,8 @@ import msgpack
 from inotify_simple import INotify
 from inotify_simple import flags as inotify_flags
 
+from escape._internal.logger import logger
+
 from .channels import (
     DOORBELL_PATH,
     LATEST_STATE_CHANNELS,
@@ -29,25 +21,10 @@ from .channels import (
 
 
 class EventConsumer:
-    """
-    Consumes events from /dev/shm using inotify doorbell pattern.
-
-    Architecture:
-    - Watches doorbell file with inotify (zero CPU when idle)
-    - Wakes instantly when doorbell is rung
-    - Processes all pending ring buffer and latest-state events
-    - Updates cache with event data
-    - Runs in background daemon thread
-    """
+    """Consumes events from /dev/shm using inotify doorbell pattern."""
 
     def __init__(self, cache, warn_on_gaps: bool = True):
-        """
-        Initialize event consumer.
-
-        Args:
-            cache: EventCache instance to update
-            warn_on_gaps: Warn when ring buffer sequence gaps detected
-        """
+        """Initialize event consumer."""
         self.cache = cache
         self.warn_on_gaps = warn_on_gaps
 
@@ -73,8 +50,8 @@ class EventConsumer:
 
         # Check if doorbell exists
         if not os.path.exists(DOORBELL_PATH):
-            print(f"⚠️  Doorbell not found at {DOORBELL_PATH}")
-            print("   Waiting for Java plugin to create it...")
+            logger.warning(f"Doorbell not found at {DOORBELL_PATH}")
+            logger.info("Waiting for Java plugin to create it")
             # Wait up to 5 seconds for doorbell to appear
             for _ in range(50):
                 if os.path.exists(DOORBELL_PATH):
@@ -89,28 +66,19 @@ class EventConsumer:
 
         # Watch for modifications and close-write events
         self.inotify.add_watch(DOORBELL_PATH, inotify_flags.MODIFY | inotify_flags.CLOSE_WRITE)
-        print(f"✅ Watching doorbell: {DOORBELL_PATH}")
+        logger.success(f"Watching doorbell: {DOORBELL_PATH}")
 
     def start(self, wait_for_warmup: bool = True, warmup_timeout: float = 5.0) -> bool:
-        """
-        Start background event consumer thread.
-
-        Args:
-            wait_for_warmup: If True, block until initial event processing completes
-            warmup_timeout: Maximum seconds to wait for warmup (default 5.0)
-
-        Returns:
-            True if started successfully
-        """
+        """Start background event consumer thread."""
         if self.running:
-            print("⚠️  Event consumer already running")
+            logger.warning("Event consumer already running")
             return False
 
         self.running = True
         self.thread = threading.Thread(target=self._run, daemon=True, name="EventConsumer")
         self.thread.start()
 
-        print("✅ Event consumer started (inotify mode)")
+        logger.success("Event consumer started (inotify mode)")
 
         # Process initial backlog of events before continuing
         if wait_for_warmup:
@@ -119,22 +87,12 @@ class EventConsumer:
         return True
 
     def waitForWarmup(self, timeout: float = 5.0) -> bool:
-        """
-        Wait for initial warmup phase to complete.
-
-        Blocks until all existing events are processed or timeout occurs.
-
-        Args:
-            timeout: Maximum seconds to wait
-
-        Returns:
-            True if warmup completed, False if timeout
-        """
+        """Wait for initial warmup phase to complete."""
         if self._warmup_complete.wait(timeout=timeout):
             return True
         else:
-            print(
-                f"⚠️  Warmup timeout after {timeout}s (processed {self._warmup_event_count} events)"
+            logger.warning(
+                f"Warmup timeout after {timeout}s (processed {self._warmup_event_count} events)"
             )
             return False
 
@@ -143,7 +101,7 @@ class EventConsumer:
         if not self.running:
             return
 
-        print("🛑 Stopping event consumer...")
+        logger.info("Stopping event consumer")
         self.running = False
 
         if self.thread and self.thread.is_alive():
@@ -152,13 +110,13 @@ class EventConsumer:
         if self.inotify:
             self.inotify.close()
 
-        print("✅ Event consumer stopped")
+        logger.success("Event consumer stopped")
 
     def _run(self) -> None:
         """Main event loop - runs in background thread."""
-        print("🔄 Event consumer loop started")
-        print(f"   Ring buffer channels: {', '.join(RING_BUFFER_CHANNELS)}")
-        print(f"   Latest-state channels: {', '.join(LATEST_STATE_CHANNELS)}")
+        logger.info("Event consumer loop started")
+        logger.info(f"Ring buffer channels: {', '.join(RING_BUFFER_CHANNELS)}")
+        logger.info(f"Latest-state channels: {', '.join(LATEST_STATE_CHANNELS)}")
         print()
 
         # Perform initial warmup - process all existing events before entering main loop
@@ -176,19 +134,15 @@ class EventConsumer:
             except KeyboardInterrupt:
                 break
             except Exception as e:
-                print(f"❌ Error in event loop: {e}")
+                logger.error(f"Error in event loop: {e}")
                 import traceback
 
                 traceback.print_exc()
                 time.sleep(1)
 
     def _performWarmup(self) -> None:
-        """
-        Process all existing events during startup (warmup phase).
-
-        This ensures the cache is populated before the main script continues.
-        """
-        print("🔥 Warming up event cache...")
+        """Process all existing events during startup."""
+        logger.info("Warming up event cache")
         start_time = time.time()
         total_events = 0
 
@@ -209,11 +163,11 @@ class EventConsumer:
         self._warmup_event_count = total_events
 
         if total_events > 0:
-            print(
-                f"✅ Warmup complete: processed {total_events} events in {elapsed_ms:.1f} ms ({per_event_us:.0f}μs/event)"
+            logger.success(
+                f"Warmup complete: processed {total_events} events in {elapsed_ms:.1f}ms ({per_event_us:.0f}μs/event)"
             )
         else:
-            print("✅ Warmup complete: no backlog events found")
+            logger.success("Warmup complete: no backlog events found")
 
         # Signal that warmup is complete
         self._warmup_complete.set()
@@ -236,22 +190,12 @@ class EventConsumer:
         if total_events > 10:
             elapsed_ms = (time.time() - start_time) * 1000
             per_event_us = (elapsed_ms * 1000) / total_events if total_events > 0 else 0
-            print(
-                f"✅ Cleared {total_events} events in {elapsed_ms:.1f} ms ({per_event_us:.0f}μs/event)"
+            logger.success(
+                f"Cleared {total_events} events in {elapsed_ms:.1f}ms ({per_event_us:.0f}μs/event)"
             )
 
     def _processRingBuffer(self, channel: str) -> int:
-        """
-        Process ring buffer events for a channel.
-
-        Files: /dev/shm/{channel}.{seq}
-
-        Args:
-            channel: Channel name
-
-        Returns:
-            Number of events processed
-        """
+        """Process ring buffer events for a channel."""
         pattern = f"{SHM_DIR}/{channel}.*"
         files = sorted(
             glob.glob(pattern),
@@ -284,8 +228,8 @@ class EventConsumer:
                 if seq != expected_seq and self.last_seq[channel] > 0:
                     if self.warn_on_gaps:
                         gap_size = seq - expected_seq
-                        print(
-                            f"⚠️  [{channel}] Gap detected! Expected {expected_seq}, got {seq} (missed {gap_size})"
+                        logger.warning(
+                            f"[{channel}] Gap detected! Expected {expected_seq}, got {seq} (missed {gap_size})"
                         )
 
                 # Store event in cache
@@ -300,22 +244,12 @@ class EventConsumer:
                 os.remove(filepath)
 
             except Exception as e:
-                print(f"❌ Error processing {filepath}: {e}")
+                logger.error(f"Error processing {filepath}: {e}")
 
         return events_processed
 
     def _processLatestState(self, channel: str) -> bool:
-        """
-        Process latest-state event for a channel.
-
-        Files: /dev/shm/{channel}
-
-        Args:
-            channel: Channel name
-
-        Returns:
-            True if state was updated
-        """
+        """Process latest-state event for a channel."""
         filepath = f"{SHM_DIR}/{channel}"
 
         try:
@@ -343,5 +277,5 @@ class EventConsumer:
             return True
 
         except Exception as e:
-            print(f"❌ Error reading {filepath}: {e}")
+            logger.error(f"Error reading {filepath}: {e}")
             return False

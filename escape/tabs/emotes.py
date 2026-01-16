@@ -6,14 +6,7 @@ from escape.types.gametab import GameTab, GameTabs
 
 
 class Emotes(GameTabs):
-    """
-    Singleton emotes tab - displays available emotes.
-
-    Example:
-        from escape.tabs.emotes import emotes
-
-        emotes.open()
-    """
+    """Emotes tab for performing emote animations."""
 
     TAB_TYPE = GameTab.EMOTES
 
@@ -30,5 +23,5 @@ class Emotes(GameTabs):
         GameTabs.__init__(self)
 
 
-# Module-level singleton instance
+# Module-level instance
 emotes = Emotes()

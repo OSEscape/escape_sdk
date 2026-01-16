@@ -7,6 +7,8 @@ Provides type-safe enum objects that prevent int/enum confusion
 import json
 from typing import Any, Dict, Type
 
+from escape._internal.logger import logger
+
 
 class EnumValue:
     """
@@ -149,7 +151,7 @@ def generateAllEnumClasses(api_data: Dict) -> Dict[str, Type]:
 
     # Check if we have enum data
     if "enums" not in api_data:
-        print("⚠️  No enum data found in API data")
+        logger.warning("No enum data found in API data")
         return enum_classes
 
     # Generate each enum class
@@ -187,17 +189,17 @@ def loadEnumsFromFile(api_data_file: str | None = None) -> Dict[str, Type]:
         with open(api_data_file) as f:
             api_data = json.load(f)
     except FileNotFoundError:
-        print(f"❌ API data file not found: {api_data_file}")
-        print("   Run 'python3 runelite_api_scraper.py' to generate it")
+        logger.error(f"API data file not found: {api_data_file}")
+        logger.info("Run 'python3 runelite_api_scraper.py' to generate it")
         return {}
     except json.JSONDecodeError as e:
-        print(f"❌ Error parsing API data: {e}")
+        logger.error(f"Error parsing API data: {e}")
         return {}
 
     # Generate enum classes
     enum_classes = generateAllEnumClasses(api_data)
 
-    print(f"✅ Generated {len(enum_classes)} enum classes from API data")
+    logger.success(f"Generated {len(enum_classes)} enum classes from API data")
 
     return enum_classes
 

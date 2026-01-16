@@ -10,6 +10,8 @@ import re
 from pathlib import Path
 from typing import List, Tuple
 
+from escape._internal.logger import logger
+
 # Mapping of old import paths to new paths
 IMPORT_REPLACEMENTS = {
     # Old relative imports from nested structure
@@ -69,7 +71,7 @@ def fixImportsInFile(filepath: Path) -> Tuple[int, List[str]]:
         return (0, [])
 
     except Exception as e:
-        print(f"Error processing {filepath}: {e}")
+        logger.error(f"Error processing {filepath}: {e}")
         return (0, [])
 
 
@@ -78,11 +80,11 @@ def main():
     escape_dir = Path(__file__).parent.parent / "escape"
 
     if not escape_dir.exists():
-        print(f"Error: {escape_dir} not found")
+        logger.error(f"Error: {escape_dir} not found")
         return 1
 
     python_files = list(escape_dir.rglob("*.py"))
-    print(f"Found {len(python_files)} Python files")
+    logger.info(f"Found {len(python_files)} Python files")
     print("=" * 60)
 
     total_files_changed = 0
@@ -94,12 +96,12 @@ def main():
         if num_changes > 0:
             total_files_changed += 1
             total_changes += num_changes
-            print(f"\n📝 {filepath.relative_to(escape_dir.parent)}:")
+            logger.info(f"\n {filepath.relative_to(escape_dir.parent)}")
             for change in changes:
                 print(change)
 
     print("\n" + "=" * 60)
-    print(f"✅ Fixed {total_changes} imports in {total_files_changed} files")
+    logger.success(f"Fixed {total_changes} imports in {total_files_changed} files")
 
     return 0
 

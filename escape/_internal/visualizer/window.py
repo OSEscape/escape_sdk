@@ -8,12 +8,7 @@ from PIL import Image
 
 
 class DebugWindow:
-    """
-    Singleton debug window that persists across render calls.
-
-    Uses Tkinter for zero external dependencies beyond Pillow.
-    Window is created on first render and reused for subsequent calls.
-    """
+    """Debug window that persists across render calls."""
 
     _instance: ClassVar["DebugWindow | None"] = None
     _root: ClassVar[tk.Tk | None] = None
@@ -26,13 +21,7 @@ class DebugWindow:
         return cls._instance
 
     def _ensureWindow(self, width: int, height: int) -> None:
-        """
-        Ensure window exists, create if needed.
-
-        Args:
-            width: Window width
-            height: Window height
-        """
+        """Ensure window exists, create if needed."""
         if DebugWindow._root is None or not self._isWindowAlive():
             self._createWindow(width, height)
         else:
@@ -53,13 +42,7 @@ class DebugWindow:
             return False
 
     def _createWindow(self, width: int, height: int) -> None:
-        """
-        Create new Tkinter window.
-
-        Args:
-            width: Window width
-            height: Window height
-        """
+        """Create new Tkinter window."""
         DebugWindow._root = tk.Tk()
         DebugWindow._root.title("Escape Debug Visualizer")
         DebugWindow._root.geometry(f"{width}x{height}")
@@ -81,17 +64,7 @@ class DebugWindow:
             DebugWindow._photoImage = None
 
     def _pilToTkPhoto(self, image: Image.Image) -> tk.PhotoImage:
-        """
-        Convert PIL Image to Tkinter PhotoImage without ImageTk.
-
-        Uses PPM format as intermediate since tk.PhotoImage supports it natively.
-
-        Args:
-            image: PIL Image to convert
-
-        Returns:
-            Tkinter PhotoImage
-        """
+        """Convert PIL Image to Tkinter PhotoImage without ImageTk."""
         # Convert to RGB if necessary (PhotoImage doesn't support RGBA well)
         if image.mode != "RGB":
             image = image.convert("RGB")
@@ -104,14 +77,7 @@ class DebugWindow:
         return tk.PhotoImage(data=ppmData)
 
     def render(self, image: Image.Image) -> None:
-        """
-        Render image to debug window.
-
-        Creates window on first call, updates existing window on subsequent calls.
-
-        Args:
-            image: PIL Image to display
-        """
+        """Render image to debug window."""
         width, height = image.size
         self._ensureWindow(width, height)
 

@@ -2,6 +2,7 @@
 Magic tab module.
 """
 
+from escape._internal.logger import logger
 from escape.client import client
 from escape.types.box import Box
 from escape.types.gametab import GameTab, GameTabs
@@ -9,14 +10,7 @@ from escape.types.widget import Widget, WidgetFields
 
 
 class Magic(GameTabs):
-    """
-    Singleton magic tab - displays spellbook and available spells.
-
-    Example:
-        from escape.tabs.magic import magic
-
-        magic.open()
-    """
+    """Magic tab for viewing and casting spells."""
 
     TAB_TYPE = GameTab.MAGIC
 
@@ -101,32 +95,25 @@ class Magic(GameTabs):
         return spriteId in self.getCastableSpellIds()
 
     def castSpell(self, spell: int, option: str = "Cast") -> bool:
-        """Casts a spell by its widget ID.
-
-        Args:
-            spell (int): The widget ID of the spell to cast.
-
-        Returns:
-            bool: True if the spell was successfully cast, False otherwise.
-        """
+        """Cast a spell by its widget ID."""
         from time import time
 
         if not self.open():
             return False
         t = time()
         w = self._getInfo(spell)
-        print(f"part 1 took {time() - t:.4f}s")
+        logger.info(f"part 1 took {time() - t:.4f}s")
         if self._canCastSpell(w["spriteId"]) and not w["isHidden"]:
             bounds = w["bounds"]
             box = Box(bounds[0], bounds[1], bounds[0] + bounds[2], bounds[1] + bounds[3])
             print(box)
-            print(f"part 2 took {time() - t:.4f}s")
+            logger.info(f"part 2 took {time() - t:.4f}s")
             res = box.clickOption(option)
-            print(f"part 3 took {time() - t:.4f}s")
+            logger.info(f"part 3 took {time() - t:.4f}s")
             return res
 
         return False
 
 
-# Module-level singleton instance
+# Module-level instance
 magic = Magic()

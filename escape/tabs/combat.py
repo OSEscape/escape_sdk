@@ -6,14 +6,7 @@ from escape.types.gametab import GameTab, GameTabs
 
 
 class Combat(GameTabs):
-    """
-    Singleton combat tab - displays combat stats and special attack.
-
-    Example:
-        from escape.tabs.combat import combat
-
-        combat.open()
-    """
+    """Combat tab for viewing combat stats and special attack."""
 
     TAB_TYPE = GameTab.COMBAT
 
@@ -30,5 +23,5 @@ class Combat(GameTabs):
         GameTabs.__init__(self)
 
 
-# Module-level singleton instance
+# Module-level instance
 combat = Combat()

@@ -1,5 +1,5 @@
 """
-Main Client class - singleton that provides access to all game modules.
+Main Client class that provides access to all game modules.
 """
 
 import os
@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 
 from escape._internal.api import RuneLiteAPI  # noqa: E402
 from escape._internal.cache_manager import ensureGeneratedInPath, ensureResourcesLoaded
+from escape._internal.logger import logger
 
 
 def _ensureGeneratedSymlink() -> None:
@@ -62,11 +63,9 @@ _ensureGeneratedSymlink()
 
 # Check for game resource updates
 if not ensureResourcesLoaded():
-    print("⚠️  Some resources failed to load")
+    logger.warning("Some resources failed to load")
 
 GLOBAL_API_INSTANCE: RuneLiteAPI = RuneLiteAPI()
-
-from escape.generated.constants.varclient import VarClientStr  # noqa: E402
 
 if TYPE_CHECKING:
     from escape._internal.cache.event_cache import EventCache
@@ -87,15 +86,7 @@ if TYPE_CHECKING:
 
 
 class Client:
-    """
-    Singleton client providing access to all game modules.
-
-    Example:
-        from escape.client import client
-
-        items = client.tabs.inventory.getItems()
-        client.interfaces.bank.depositAll()
-    """
+    """Main entry point providing access to all game modules."""
 
     _instance = None
 
@@ -108,9 +99,9 @@ class Client:
     def _init(self):
         """Actual initialization, runs once."""
 
-        print("🎮 Initializing Client...")
+        logger.info("Initializing Client")
 
-        # Initialize API singleton and connect
+        # Initialize API and connect
         self.api: RuneLiteAPI = GLOBAL_API_INSTANCE
         self.api.connect()
 
@@ -140,26 +131,10 @@ class Client:
 
         ensureCleanupOnSignal()
 
-        print("✅ Client ready")
+        logger.success("Client ready")
 
     def waitForWarmup(self, timeout: float = 5.0) -> bool:
-        """
-        Wait for event cache warmup to complete.
-
-        Call this after importing if you need to ensure the cache is populated
-        before proceeding. The warmup processes all existing events in /dev/shm.
-
-        Args:
-            timeout: Maximum seconds to wait for warmup
-
-        Returns:
-            True if warmup completed, False if timeout
-
-        Example:
-            from escape.client import client
-            client.waitForWarmup()  # Ensure cache is ready
-            items = client.tabs.inventory.getItems()
-        """
+        """Wait for event cache warmup to complete."""
         if self._event_consumer is None:
             return True
         return self._event_consumer.waitForWarmup(timeout=timeout)
@@ -167,15 +142,15 @@ class Client:
     def connect(self):
         """Connect to RuneLite bridge."""
         if not self._connected:
-            print("🔗 Connecting client to RuneLite...")
+            logger.info("Connecting client to RuneLite")
             self.api.connect()
             self._connected = True
-            print("✅ Client connected!")
+            logger.success("Client connected!")
 
     def disconnect(self):
         """Disconnect from RuneLite bridge and cleanup resources."""
         if self._connected:
-            print("🔌 Disconnecting client...")
+            logger.info("Disconnecting client")
 
             # Stop event consumer if running
             if self._event_consumer is not None:
@@ -183,7 +158,7 @@ class Client:
                 self._event_consumer = None
 
             self._connected = False
-            print("✅ Client disconnected")
+            logger.success("Client disconnected")
 
     def isConnected(self) -> bool:
         """
@@ -195,28 +170,12 @@ class Client:
         return self._connected
 
     def query(self):
-        """
-        Create a new query builder.
-
-        Returns:
-            Query builder instance
-        """
+        """Create a query for API operations."""
         return self.api.query()
 
     @property
     def event_cache(self) -> "EventCache":
-        """
-        Get event cache instance.
-
-        Provides access to cached game state from events.
-
-        Returns:
-            EventCache instance
-
-        Example:
-            >>> age = client.event_cache.getAge()
-            >>> inventory = client.event_cache.getInventory()
-        """
+        """Access cached game state from events."""
         return self._event_cache
 
     @property
@@ -303,134 +262,58 @@ class Client:
 
             return SpriteID
 
-    # Namespace properties - return singleton instances
     @property
     def tabs(self) -> "Tabs":
-        """
-        Get tabs namespace.
-
-        Returns:
-            Tabs namespace with all game tabs
-
-        Example:
-            >>> items = client.tabs.inventory.getItems()
-            >>> skills = client.tabs.skills.getAllSkills()
-            >>> client.tabs.prayer.activatePrayer("Protect from Melee")
-        """
+        """Access game tabs (inventory, skills, prayer, etc.)."""
         from escape.tabs import tabs
 
         return tabs
 
     @property
     def input(self) -> "Input":
-        """
-        Get input namespace.
-
-        Returns:
-            Input namespace with mouse, keyboard, etc.
-
-        Example:
-            >>> client.input.mouse.leftClick(100, 200)
-            >>> client.input.keyboard.type("Hello")
-        """
+        """Access input controls (mouse, keyboard)."""
         from escape.input import input
 
         return input
 
     @property
     def world(self) -> "World":
-        """
-        Get world namespace.
-
-        Returns:
-            World namespace with 3D entities
-
-        Example:
-            >>> items = client.world.groundItems.getAllItems()
-            >>> npcs = client.world.npcs.getNearby()
-        """
+        """Access 3D world entities (ground items, NPCs, objects)."""
         from escape.world import world
 
         return world
 
     @property
     def navigation(self) -> "Navigation":
-        """
-        Get navigation namespace.
-
-        Returns:
-            Navigation namespace with pathfinding, walking, etc.
-
-        Example:
-            >>> path = client.navigation.pathfinder.getPath(3200, 3200, 0)
-            >>> client.navigation.walker.walkTo(3200, 3200)
-        """
+        """Access pathfinding and walking utilities."""
         from escape.navigation import navigation
 
         return navigation
 
     @property
     def interactions(self) -> "Interactions":
-        """
-        Get interactions namespace.
-
-        Returns:
-            Interactions namespace with menu, widgets, etc.
-
-        Example:
-            >>> client.interactions.menu.clickOption("Attack")
-            >>> client.interactions.widgets.click(10551297)
-        """
+        """Access game interactions (menu, widgets)."""
         from escape.interactions import interactions
 
         return interactions
 
     @property
     def interfaces(self) -> "Interfaces":
-        """
-        Get interfaces namespace.
-
-        Returns:
-            Interfaces namespace with bank, GE, shop, etc.
-
-        Example:
-            >>> client.interfaces.bank.depositAll()
-            >>> client.interfaces.grand_exchange.sell(995, 1000, 100)
-        """
+        """Access game interfaces (bank, GE, shop, etc.)."""
         from escape.interfaces import interfaces
 
         return interfaces
 
     @property
     def player(self) -> "Player":
-        """
-        Get player accessor.
-
-        Returns:
-            Player instance
-
-        Example:
-            >>> pos = client.player.position
-            >>> energy = client.player.energy
-            >>> distance = client.player.distanceTo(3200, 3200)
-        """
+        """Access local player state (position, energy, etc.)."""
         from escape.player.player import player
 
         return player
 
-    # Resources namespace
     @property
     def resources(self):
-        """
-        Access game resources (varps, objects).
-
-        Returns:
-            ResourcesNamespace with .varps and .objects
-
-        Example:
-            >>> quest_points = client.resources.varps.getVarpByName("quest_points")
-            >>> tree = client.resources.objects.getById(1276)
-        """
+        """Access game resources (varps, objects)."""
         if not hasattr(self, "_resources_namespace"):
             self._resources_namespace = self._ResourcesNamespace()
         return self._resources_namespace
@@ -454,35 +337,7 @@ class Client:
 
     @property
     def cache(self) -> "EventCache":
-        """
-        Event cache with instant access to game state and events.
-
-        The event consumer is started automatically on Client initialization
-        and watches /dev/shm/runelite_doorbell using inotify with zero CPU
-        usage when idle.
-
-        Returns:
-            EventCache instance with game state and event history
-
-        Example:
-            # Access latest gametick state
-            tick = client.cache.tick
-            energy = client.cache.energy
-            pos = client.cache.position
-
-            # Access derived state
-            inventory = client.cache.getInventory()
-            varp = client.cache.getVarp(173)
-
-            # Access recent events
-            recent_chats = client.cache.getRecentEvents('chat_message', n=10)
-            for chat in recent_chats:
-                print(chat)
-
-            # Check data freshness
-            if client.cache.isFresh():
-                print(f"Data is fresh (age: {client.cache.getAge():.2f}s)")
-        """
+        """Event cache with instant access to game state and events."""
         return self._event_cache
 
     def __enter__(self):
@@ -495,5 +350,5 @@ class Client:
         self.disconnect()
 
 
-# Module-level singleton instance
+# Module-level instance
 client = Client()

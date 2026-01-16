@@ -6,14 +6,7 @@ from escape.types.gametab import GameTab, GameTabs
 
 
 class Account(GameTabs):
-    """
-    Singleton account management tab - displays account settings and info.
-
-    Example:
-        from escape.tabs.account import account
-
-        account.open()
-    """
+    """Account tab for viewing account settings and info."""
 
     TAB_TYPE = GameTab.ACCOUNT
 
@@ -30,5 +23,5 @@ class Account(GameTabs):
         GameTabs.__init__(self)
 
 
-# Module-level singleton instance
+# Module-level instance
 account = Account()

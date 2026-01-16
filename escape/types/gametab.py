@@ -28,24 +28,13 @@ class GameTab(Enum):
 
 
 class GameTabs:
-    """
-    Base class for all game tabs in Old School RuneScape.
-
-    Each game tab (Combat, Skills, Inventory, etc.) should inherit from this class.
-    Subclasses must set the TAB_TYPE class attribute to their corresponding GameTab enum.
-    """
+    """Base class for all game tabs in Old School RuneScape."""
 
     # Subclasses must override this
     TAB_TYPE: GameTab | None = None
 
     def __init__(self):
-        """
-        Initializes a GameTab instance, setting up the bounds and tab areas.
-
-        Attributes:
-            bounds (Box): The bounding Box for the GameTab.
-            tab_box_array (List[Box]): A list of Box objects representing the clickable regions for each tab.
-        """
+        """Initialize a GameTab instance with bounds and tab areas."""
         x = 547
         y = 205
         w = 190
@@ -72,29 +61,14 @@ class GameTabs:
         self.tab_box_array[8], self.tab_box_array[9] = self.tab_box_array[9], self.tab_box_array[8]
 
     def isOpen(self) -> bool:
-        """
-        Check if this specific game tab is currently open.
-
-        Returns:
-            True if this tab is open, False otherwise.
-        """
+        """Check if this specific game tab is currently open."""
         from escape.client import client
 
         current_tab = client.tabs.getOpenTab()
         return current_tab == self.TAB_TYPE
 
     def hover(self) -> bool:
-        """
-        Hover over this specific game tab.
-
-        Returns:
-            True if the tab area was hovered, False if TAB_TYPE not set.
-
-        Example:
-            # Hover over the inventory tab
-            inventory = Inventory()
-            inventory.hover()
-        """
+        """Hover over this specific game tab."""
         if self.TAB_TYPE is None:
             raise NotImplementedError("Subclass must set TAB_TYPE class attribute")
 
@@ -105,21 +79,7 @@ class GameTabs:
         return True
 
     def open(self) -> bool:
-        """
-        Open this specific game tab.
-
-        This method hovers over the tab before clicking, then forces
-        a cache update to get fresh tab state immediately.
-
-        Returns:
-            True if the tab was successfully opened (or already open), False otherwise.
-
-        Example:
-            # Open the inventory tab
-            inventory = Inventory()
-            if inventory.open():
-                print("Inventory tab is now open!")
-        """
+        """Open this specific game tab."""
         if self.TAB_TYPE is None:
             raise NotImplementedError("Subclass must set TAB_TYPE class attribute")
 

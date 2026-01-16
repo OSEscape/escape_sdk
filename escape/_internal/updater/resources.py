@@ -9,6 +9,8 @@ Now delegates to cache_manager for actual download/load operations.
 from pathlib import Path
 from typing import Tuple
 
+from escape._internal.logger import logger
+
 
 class ResourceUpdater:
     """
@@ -51,19 +53,19 @@ class ResourceUpdater:
             True if update successful
         """
         print("=" * 80)
-        print("🔄 Game Data Auto-Updater")
+        logger.info("Game Data Auto-Updater")
         print("=" * 80)
 
         # Check if update needed BEFORE downloading (unless forced)
         if not force:
             needs_update, reason = self.shouldUpdate()
             if not needs_update:
-                print(f"✅ {reason}")
+                logger.success(f"{reason}")
                 print("=" * 80)
                 return True
-            print(f"📦 {reason}")
+            logger.info(f"{reason}")
 
-        print("\n🔄 Updating game data...")
+        logger.info("\n Updating game data")
 
         try:
             from escape._internal.cache_manager import (
@@ -78,7 +80,7 @@ class ResourceUpdater:
 
             # Force download by deleting existing files
             if force:
-                print("🔄 Forcing fresh download...")
+                logger.info("Forcing fresh download")
                 for f in ["metadata.json", "varps.json", "varbits.json", "objects.db"]:
                     file_path = cache_dir / f
                     if file_path.exists():
@@ -99,38 +101,38 @@ class ResourceUpdater:
                 decompress = remote_name.endswith(".gz")
 
                 if not _downloadFile(url, dest, decompress_gz=decompress):
-                    print(f"\n❌ Failed to download {local_name}")
+                    logger.error(f"\n Failed to download {local_name}")
                     print("\n" + "=" * 80)
-                    print("❌ Update failed")
+                    logger.error("Update failed")
                     print("=" * 80)
                     return False
 
             print("\n" + "=" * 80)
-            print("✅ Game data updated successfully!")
+            logger.success("Game data updated successfully!")
             print("=" * 80)
             return True
 
         except Exception as e:
-            print(f"\n❌ Game data update failed: {e}")
+            logger.error(f"\n Game data update failed: {e}")
             import traceback
 
             traceback.print_exc()
             print("\n" + "=" * 80)
-            print("❌ Update failed")
+            logger.error("Update failed")
             print("=" * 80)
             return False
 
     def status(self):
         """Print current game data status."""
         print("=" * 80)
-        print("📊 Game Data Status")
+        logger.info("Game Data Status")
         print("=" * 80)
 
         needs_update, reason = self.shouldUpdate()
         if needs_update:
-            print(f"\n⚠️  {reason}")
+            logger.warning(f"\n {reason}")
         else:
-            print(f"\n✅ {reason}")
+            logger.success(f"\n {reason}")
 
         print("\n" + "=" * 80)
 

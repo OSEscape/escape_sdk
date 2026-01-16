@@ -52,18 +52,7 @@ class EntityConfig:
 
 
 class TileGrid:
-    """
-    Cached projection of all tile corners in the scene.
-
-    Projects (sizeX+1) x (sizeY+1) corner vertices. Tile (x,y) has corners:
-    - NW: corner[x, y]
-    - NE: corner[x+1, y]
-    - SE: corner[x+1, y+1]
-    - SW: corner[x, y+1]
-
-    All data stored as flat arrays indexed by: x * (sizeY+1) + y for corners,
-    or x * sizeY + y for tiles.
-    """
+    """Cached projection of all tile corners in the scene."""
 
     __slots__ = (
         "cornerX",
@@ -208,13 +197,7 @@ class TileGrid:
         return Quad.fromCoords([(nwX, nwY), (neX, neY), (seX, seY), (swX, swY)])
 
     def getVisibleIndices(self, mask: np.ndarray | None = None, margin: int = 0) -> np.ndarray:
-        """
-        Get flat indices of visible tiles, optionally filtered by mask.
-
-        Args:
-            mask: Optional bool array [sizeX * sizeY] to filter tiles
-            margin: Extra pixels around viewport to include
-        """
+        """Get flat indices of visible tiles, optionally filtered by mask."""
         if margin == 0:
             visible = self.tileOnScreen
         else:
@@ -234,14 +217,7 @@ class TileGrid:
 
 
 class Projection:
-    """
-    Fast projection from local coordinates to canvas coordinates.
-
-    Singleton that caches tile projections. Cache is invalidated by StateBuilder
-    when camera_changed, world_entity, or world_view_loaded events arrive.
-
-    Access cached tiles via the `tiles` property which returns a TileGrid.
-    """
+    """Fast projection from local coordinates to canvas coordinates."""
 
     LOCAL_COORD_BITS = 7
     LOCAL_TILE_SIZE = 128
@@ -298,21 +274,13 @@ class Projection:
         self._tileGrid: TileGrid | None = None
         self._stale: bool = True
 
-    # -------------------------------------------------------------------------
-    # Cache access
-    # -------------------------------------------------------------------------
-
     def invalidate(self):
         """Mark cache as stale. Called by StateBuilder on relevant events."""
         self._stale = True
 
     @property
     def tiles(self) -> TileGrid | None:
-        """
-        Get cached tile projections. Recomputes if stale.
-
-        Returns TileGrid with all corner projections, or None if not ready.
-        """
+        """Get cached tile projections, recomputing if stale."""
         if not self._stale and self._tileGrid is not None:
             return self._tileGrid
 
@@ -430,10 +398,6 @@ class Projection:
 
         return screenX, screenY, valid
 
-    # -------------------------------------------------------------------------
-    # Scene data (set by StateBuilder)
-    # -------------------------------------------------------------------------
-
     def setScene(
         self,
         tileHeights: np.ndarray,
@@ -460,10 +424,6 @@ class Projection:
         else:
             self._centerX = self._centerY = 0
 
-    # -------------------------------------------------------------------------
-    # Single-point convenience (uses cache when possible)
-    # -------------------------------------------------------------------------
-
     def worldTileToCanvas(self, worldX: int, worldY: int, plane: int) -> Point | None:
         """Project a world tile center to screen. Returns None if off-scene or behind camera."""
         grid = self.tiles
@@ -483,5 +443,5 @@ class Projection:
         return Point(int(centerX[tileIdx]), int(centerY[tileIdx]))
 
 
-# Module-level singleton
+# Module-level instance
 projection = Projection()
