@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.0.2](https://github.com/OSEscape/escape_sdk/compare/v1.0.1...v1.0.2) (2026-01-03)
+
+### 📚 Documentation
+
+* add PyPI install command with --upgrade flag ([984438c](https://github.com/OSEscape/escape_sdk/commit/984438cadad57e6b1815c24e26c76813b5434f7c))
+
 ## [1.0.1](https://github.com/OSEscape/escape_sdk/compare/v1.0.0...v1.0.1) (2026-01-03)
 
 ### 🐛 Bug Fixes
