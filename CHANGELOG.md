@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.1](https://github.com/OSEscape/escape_sdk/compare/v2.0.0...v2.0.1) (2026-01-17)
+
+### 🐛 Bug Fixes
+
+* configure basedpyright to exclude generated files and warn on missing imports ([f5ca72c](https://github.com/OSEscape/escape_sdk/commit/f5ca72cb585c3e9a15fbc9ddb08c7b185cdbc6f3))
+
 ## [2.0.0](https://github.com/OSEscape/escape_sdk/compare/v1.0.3...v2.0.0) (2026-01-17)
 
 ### ⚠ BREAKING CHANGES
