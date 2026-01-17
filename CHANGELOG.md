@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.0.3](https://github.com/OSEscape/escape_sdk/compare/v1.0.2...v1.0.3) (2026-01-17)
+
+### 🐛 Bug Fixes
+
+* url fix and graph.zip download ([58e7602](https://github.com/OSEscape/escape_sdk/commit/58e7602bb8d9a53ac293640e0b09e76452d2aaa9))
+
 ## [1.0.2](https://github.com/OSEscape/escape_sdk/compare/v1.0.1...v1.0.2) (2026-01-03)
 
 ### 📚 Documentation
