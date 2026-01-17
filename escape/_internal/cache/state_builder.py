@@ -104,12 +104,6 @@ class StateBuilder:
             channel: Event channel name
             event: Event data dict
         """
-        if channel in [
-            "var_client_int_changed",
-            "var_client_str_changed",
-            "varbit_changed",
-        ] and event.get("varc_id", -1) not in [1, 2]:
-            print(f"Processing event on channel {channel}: {event}")  # DEBUG
         if channel in LATEST_STATE_CHANNELS:
             # Latest-state: just overwrite
             event["_timestamp"] = time()
