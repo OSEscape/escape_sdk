@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.0](https://github.com/OSEscape/escape_sdk/compare/v1.0.3...v2.0.0) (2026-01-17)
+
+### ⚠ BREAKING CHANGES
+
+* All public method names now use snake_case
+
+### 💄 Styles
+
+* apply ruff formatting to merged code ([66b11a2](https://github.com/OSEscape/escape_sdk/commit/66b11a2dbb69df4662a59c7422eae3335d9172d2))
+
+### ♻️ Refactoring
+
+* adopt PEP 257 docstrings and add typed package support ([fe2e0f9](https://github.com/OSEscape/escape_sdk/commit/fe2e0f9f07da7889135491f60fe23ba324c50b62))
+* adopt PEP 8 conventions and fix static analysis issues ([98c7882](https://github.com/OSEscape/escape_sdk/commit/98c788203f15dbfff0011a5baeb03b2c609e9456))
+* align naming to PEP 8 across modules ([264304f](https://github.com/OSEscape/escape_sdk/commit/264304f58572342cca58e7b798b2ddfb351a9e53))
+* standardize naming to PEP 8 snake_case ([e7dcb7c](https://github.com/OSEscape/escape_sdk/commit/e7dcb7cdf9164b3f4196cd2174448716627cb010))
+
+### 👷 CI/CD
+
+* update workflow to use basedpyright, remove deleted check_naming.py ([11fddff](https://github.com/OSEscape/escape_sdk/commit/11fddff1031ab73de2d514910212bfeee8fa7f4f))
+
 ## [1.0.3](https://github.com/OSEscape/escape_sdk/compare/v1.0.2...v1.0.3) (2026-01-17)
 
 ### 🐛 Bug Fixes
