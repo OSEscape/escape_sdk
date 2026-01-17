@@ -6,6 +6,7 @@ import os
 import shutil
 import sys
 import urllib.request
+import zipfile
 from pathlib import Path
 from typing import Any
 
@@ -86,7 +87,8 @@ def get_cache_manager() -> CacheManager:
 
 
 # Base URL for game resources
-BASE_URL = "https://storage.googleapis.com/osrs-chroma-storage-eu"
+BASE_URL = "https://data.os-escape.com"
+GRAPH_URL = "https://data.os-escape.com/resources/graph_data.zip"
 
 # Track if resources have been loaded this session
 _resources_loaded = False
@@ -138,6 +140,48 @@ def _download_file(url: str, dest: Path, decompress_gz: bool = True) -> bool:
         return False
 
 
+def _download_and_extract_zip(url: str, extract_dir: Path) -> bool:
+    """Download a zip file and extract it to a directory."""
+    try:
+        logger.info(f"Downloading {url}")
+
+        # Create request with cache-busting headers
+        req = urllib.request.Request(url)
+        req.add_header("Cache-Control", "no-cache, no-store, must-revalidate")
+        req.add_header("Pragma", "no-cache")
+        req.add_header("Expires", "0")
+
+        with urllib.request.urlopen(req, timeout=60) as response:
+            data = response.read()
+
+        # Write to temp zip file
+        zip_path = extract_dir.parent / "temp_download.zip"
+        with open(zip_path, "wb") as f:
+            f.write(data)
+        logger.info(f"Downloaded: {zip_path.stat().st_size:,} bytes")
+
+        # Clear existing extract directory if it exists
+        if extract_dir.exists():
+            shutil.rmtree(extract_dir)
+        extract_dir.mkdir(parents=True, exist_ok=True)
+
+        # Extract zip contents
+        logger.info(f"Extracting to {extract_dir}")
+        with zipfile.ZipFile(zip_path, "r") as zf:
+            zf.extractall(extract_dir)
+        logger.success(f"Extracted {len(list(extract_dir.rglob('*')))} files")
+
+        # Clean up zip file
+        zip_path.unlink()
+        logger.info("Removed zip file")
+
+        return True
+
+    except Exception as e:
+        logger.error(f"Failed to download/extract {url}: {e}")
+        return False
+
+
 def _get_remote_metadata() -> dict | None:
     """Fetch remote metadata to check current revision."""
     url = f"{BASE_URL}/varps/latest/metadata.json"
@@ -156,8 +200,12 @@ def _needs_update(cache_dir: Path) -> bool:
     """Check if resources need updating."""
     # Check if files exist
     required_files = ["metadata.json", "varps.json", "varbits.json", "objects.db"]
+    required_dirs = ["graph"]
     if not all((cache_dir / f).exists() for f in required_files):
         logger.info("Resources not found locally, downloading")
+        return True
+    if not all((cache_dir / d).is_dir() for d in required_dirs):
+        print("🔄 Graph data not found locally, downloading...")
         return True
 
     # Get remote metadata
@@ -218,6 +266,12 @@ def ensure_resources_loaded() -> bool:
                 if not _download_file(url, dest, decompress_gz=decompress):
                     logger.warning(f"Failed to download {local_name}")
                     return False
+
+            # Download and extract graph data
+            graph_dir = cache_dir / "graph"
+            if not _download_and_extract_zip(GRAPH_URL, graph_dir):
+                logger.warning("Failed to download graph data")
+                return False
 
             logger.success("Resources downloaded successfully")
 
