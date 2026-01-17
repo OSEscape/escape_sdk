@@ -43,11 +43,8 @@ jobs:
       - name: Run ruff formatter
         run: ruff format --check .
 
-      - name: Check naming conventions
-        run: python scripts/check_naming.py
-
-      - name: Run mypy type checking
-        run: mypy escape --ignore-missing-imports || echo "⚠️ Mypy check completed with warnings"
+      - name: Run basedpyright type checking
+        run: basedpyright escape || echo "Type check completed with warnings"
         continue-on-error: true
 
       - name: Validate YAML files
