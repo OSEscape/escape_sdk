@@ -321,7 +321,9 @@ class StateBuilder:
         if tile_heights_list:
             expected_tile_size = 4 * size_x * size_y
             if len(tile_heights_list) == expected_tile_size:
-                tile_heights = np.array(tile_heights_list, dtype=np.int32).reshape(4, size_x, size_y)
+                tile_heights = np.array(tile_heights_list, dtype=np.int32).reshape(
+                    4, size_x, size_y
+                )
             else:
                 # Handle size mismatch - pad or truncate
                 arr = np.zeros(expected_tile_size, dtype=np.int32)
@@ -370,7 +372,10 @@ class StateBuilder:
         # Only set entity config if we have non-zero bounds (inside a WorldEntity)
         if bounds_width > 0 or bounds_height > 0:
             config = EntityConfig(
-                bounds_x=bounds_x, bounds_y=bounds_y, bounds_width=bounds_width, bounds_height=bounds_height
+                bounds_x=bounds_x,
+                bounds_y=bounds_y,
+                bounds_width=bounds_width,
+                bounds_height=bounds_height,
             )
             projection.set_entity_config(config)
         else:

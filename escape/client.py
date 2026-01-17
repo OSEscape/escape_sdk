@@ -169,7 +169,6 @@ class Client:
         """
         return self._connected
 
-
     def query(self):
         """Create a query for API operations."""
         return self.api.query()
@@ -262,7 +261,6 @@ class Client:
             from constants import SpriteID  # type: ignore[import-not-found]
 
             return SpriteID
-
 
     @property
     def tabs(self) -> "Tabs":

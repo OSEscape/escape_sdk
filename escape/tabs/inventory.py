@@ -2,7 +2,6 @@
 Inventory tab module.
 """
 
-
 from escape.types.box import Box, create_grid
 from escape.types.gametab import GameTab, GameTabs
 from escape.types.item import Item, ItemIdentifier

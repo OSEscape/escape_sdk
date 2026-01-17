@@ -96,7 +96,6 @@ class EventConsumer:
             )
             return False
 
-
     def stop(self) -> None:
         """Stop event consumer thread."""
         if not self.running:

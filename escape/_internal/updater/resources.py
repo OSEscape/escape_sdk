@@ -6,7 +6,6 @@ Handles automatic version checking and updating of game resources.
 Now delegates to cache_manager for actual download/load operations.
 """
 
-
 from escape._internal.logger import logger
 
 
@@ -119,7 +118,6 @@ class ResourceUpdater:
             logger.error("Update failed")
             print("=" * 80)
             return False
-
 
     def status(self):
         """Print current game data status."""

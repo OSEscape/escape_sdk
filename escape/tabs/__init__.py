@@ -110,6 +110,7 @@ class Tabs:
         index = client.cache.get_varc(client.var_client_id.TOPLEVEL_PANEL)
         return GameTab(index) if index in GameTab._value2member_map_ else None
 
+
 # Module-level instance
 tabs = Tabs()
 

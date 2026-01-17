@@ -42,7 +42,11 @@ class Point:
         return f"Point({self.x}, {self.y})"
 
     def debug(
-        self, argb_color: int = 0xFFFF0000, size: int = 5, thickness: int = 2, tag: str | None = None
+        self,
+        argb_color: int = 0xFFFF0000,
+        size: int = 5,
+        thickness: int = 2,
+        tag: str | None = None,
     ) -> None:
         """Draw this point as a crosshair overlay on RuneLite."""
         from escape.input.drawing import drawing

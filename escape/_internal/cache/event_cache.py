@@ -162,7 +162,9 @@ class EventCache:
                 and not self._state.ground_items_initialized
             ):
                 self._state.init_ground_items()
-                if wait_until(lambda: self._state.latest_states.get("ground_items") is not None, timeout=5):
+                if wait_until(
+                    lambda: self._state.latest_states.get("ground_items") is not None, timeout=5
+                ):
                     self._state.ground_items_initialized = True
 
             raw = self._state.latest_states.get("ground_items", {})
@@ -232,9 +234,8 @@ class EventCache:
     def get_open_widgets(self) -> list[int]:
         """Get list of currently open widgets."""
         with self._lock:
-            raw = (
-                self._state.latest_states.get("active_interfaces", {})
-                .get("active_interfaces", [])
+            raw = self._state.latest_states.get("active_interfaces", {}).get(
+                "active_interfaces", []
             )
             if not isinstance(raw, list):
                 return []

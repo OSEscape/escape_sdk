@@ -84,4 +84,3 @@ def measure_time(func: Callable[[], Any]) -> tuple[Any, float]:
     result = func()
     elapsed = time.time() - start
     return result, elapsed
-

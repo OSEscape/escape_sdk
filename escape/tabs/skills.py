@@ -2,7 +2,6 @@
 Skills tab module.
 """
 
-
 from escape.types.gametab import GameTab, GameTabs
 
 SKILL_NAMES: list[str] = [

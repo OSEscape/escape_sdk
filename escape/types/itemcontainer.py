@@ -28,7 +28,6 @@ class ItemContainer:
 
         self.items = parsed_items
 
-
     def populate(self):
         client = get_client()
 

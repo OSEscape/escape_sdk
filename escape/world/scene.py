@@ -114,7 +114,9 @@ class Scene:
         indices = grid.get_visible_indices(margin=margin)
         return VisibleTiles(grid, indices)
 
-    def get_visible_tiles_near_player(self, radius: int = 25, margin: int = 0) -> VisibleTiles | None:
+    def get_visible_tiles_near_player(
+        self, radius: int = 25, margin: int = 0
+    ) -> VisibleTiles | None:
         """Get visible tiles within radius of player."""
         grid = self._get_tile_grid()
         if grid is None:
@@ -213,7 +215,12 @@ class Scene:
                 projection.base_x + projection.size_x - 1,
                 projection.base_y + projection.size_y - 1,
             )
-        return (grid.base_x, grid.base_y, grid.base_x + grid.size_x - 1, grid.base_y + grid.size_y - 1)
+        return (
+            grid.base_x,
+            grid.base_y,
+            grid.base_x + grid.size_x - 1,
+            grid.base_y + grid.size_y - 1,
+        )
 
     def is_in_scene(self, world_x: int, world_y: int) -> bool:
         """Check if world coordinate is in loaded scene."""

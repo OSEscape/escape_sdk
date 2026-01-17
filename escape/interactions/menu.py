@@ -61,7 +61,9 @@ class Menu:
         current_state = client.cache.get_menu_clicked_state()
         timestamp = current_state.get("_timestamp", 0)
 
-        if (time.time() - timestamp) < max_age and not client.cache.is_menu_option_clicked_consumed():
+        if (
+            time.time() - timestamp
+        ) < max_age and not client.cache.is_menu_option_clicked_consumed():
             return True
 
         def check_event(ts) -> bool:
@@ -69,7 +71,9 @@ class Menu:
             event_time = state.get("_timestamp", 0)
             return (event_time - ts) > 0
 
-        return timing.wait_until(lambda: check_event(timestamp), timeout=timeout, poll_interval=0.001)
+        return timing.wait_until(
+            lambda: check_event(timestamp), timeout=timeout, poll_interval=0.001
+        )
 
     def wait_has_type(self, option_type: str, timeout: float = 0.5) -> bool:
         """Wait until menu contains an option of the specified type."""
@@ -132,7 +136,9 @@ class Menu:
                 box = self.get_option_box(cancel_index)
                 if box:
                     box.click()
-                    return timing.wait_until(lambda: not self.is_open(), timeout=timeout, poll_interval=0.001)
+                    return timing.wait_until(
+                        lambda: not self.is_open(), timeout=timeout, poll_interval=0.001
+                    )
                 # Box not found, fall back to mouse move
                 use_cancel = False
             else:
@@ -168,7 +174,9 @@ class Menu:
             # Move mouse to target position
             client.input.mouse.move_to(target_x, target_y, safe=False)
 
-            return timing.wait_until(lambda: not self.is_open(), timeout=timeout, poll_interval=0.001)
+            return timing.wait_until(
+                lambda: not self.is_open(), timeout=timeout, poll_interval=0.001
+            )
 
         # Fallback - should not reach here in normal execution
         return timing.wait_until(lambda: not self.is_open(), timeout=timeout, poll_interval=0.001)
@@ -331,6 +339,7 @@ class Menu:
             if option_type.lower() in t.lower():
                 return self.click_option(options[i])
         return False
+
 
 # Module-level instance
 menu = Menu()

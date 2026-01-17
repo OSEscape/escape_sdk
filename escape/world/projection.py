@@ -165,8 +165,12 @@ class TileGrid:
         ne = (tx + 1) * sy1 + ty
         se = (tx + 1) * sy1 + (ty + 1)
         sw = tx * sy1 + (ty + 1)
-        center_x = (self.corner_x[nw] + self.corner_x[ne] + self.corner_x[se] + self.corner_x[sw]) >> 2
-        center_y = (self.corner_y[nw] + self.corner_y[ne] + self.corner_y[se] + self.corner_y[sw]) >> 2
+        center_x = (
+            self.corner_x[nw] + self.corner_x[ne] + self.corner_x[se] + self.corner_x[sw]
+        ) >> 2
+        center_y = (
+            self.corner_y[nw] + self.corner_y[ne] + self.corner_y[se] + self.corner_y[sw]
+        ) >> 2
         return center_x, center_y
 
     def get_tile_corners(self, tile_idx: int) -> tuple[int, int, int, int, int, int, int, int]:
@@ -214,7 +218,6 @@ class TileGrid:
             visible = visible & mask
 
         return np.where(visible)[0]
-
 
 
 class Projection:
@@ -427,7 +430,6 @@ class Projection:
             self._center_y = config.center_y
         else:
             self._center_x = self._center_y = 0
-
 
     def world_tile_to_canvas(self, world_x: int, world_y: int, plane: int) -> Point | None:
         """Project a world tile center to screen. Returns None if off-scene or behind camera."""

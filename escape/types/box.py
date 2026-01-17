@@ -29,7 +29,6 @@ class Box:
         """Create a Box from Java Rectangle format (x, y, width, height)."""
         return cls(x, y, x + width, y + height)
 
-
     def width(self) -> int:
         """Get width of the box."""
         return self.x2 - self.x1
@@ -95,7 +94,6 @@ class Box:
             return client.interactions.menu.click_option(option)
         return False
 
-
     def __repr__(self) -> str:
         return f"Box({self.x1}, {self.y1}, {self.x2}, {self.y2})"
 
@@ -138,4 +136,3 @@ def create_grid(
 
             boxes.append(Box(x1, y1, x2, y2))
     return boxes
-

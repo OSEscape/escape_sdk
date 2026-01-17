@@ -17,7 +17,6 @@ class Circle:
     center_y: int
     radius: float
 
-
     def center(self) -> "Point":
         """Get the center point of the circle."""
         from escape.types.point import Point

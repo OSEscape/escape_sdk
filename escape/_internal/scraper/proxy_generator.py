@@ -432,7 +432,9 @@ class ProxyGenerator:
                             enum_type = "Prayer"
 
                 if int_sig and enum_sig and enum_type:
-                    code += self._generate_int_enum_method(method_name, int_sig, enum_sig, enum_type)
+                    code += self._generate_int_enum_method(
+                        method_name, int_sig, enum_sig, enum_type
+                    )
                 else:
                     code += self._generate_overloaded_method(method_name, signatures, class_name)
 
@@ -538,7 +540,9 @@ class ProxyGenerator:
         enum_type: str,
     ) -> str:
         """Generate a method that handles both integer and enum arguments."""
-        int_signature, int_return_type, int_generic, int_full_java_class, int_declaring_class = int_sig
+        int_signature, int_return_type, int_generic, int_full_java_class, int_declaring_class = (
+            int_sig
+        )
         (
             enum_signature,
             enum_return_type,
@@ -555,8 +559,18 @@ class ProxyGenerator:
         wrapped_class = None
 
         primitive_types = (
-            "int", "long", "bool", "boolean", "float", "double",
-            "str", "String", "java.lang.String", "None", "Any", "QueryRef",
+            "int",
+            "long",
+            "bool",
+            "boolean",
+            "float",
+            "double",
+            "str",
+            "String",
+            "java.lang.String",
+            "None",
+            "Any",
+            "QueryRef",
         )
         if (
             return_type
@@ -633,8 +647,18 @@ class ProxyGenerator:
         wrapped_class = None
 
         primitive_types = (
-            "int", "long", "bool", "boolean", "float", "double",
-            "str", "String", "java.lang.String", "None", "Any", "QueryRef",
+            "int",
+            "long",
+            "bool",
+            "boolean",
+            "float",
+            "double",
+            "str",
+            "String",
+            "java.lang.String",
+            "None",
+            "Any",
+            "QueryRef",
         )
         if (
             return_type
@@ -1304,7 +1328,9 @@ def get_proxy_class(class_name: str) -> type:
             f.write(wrapper_code)
 
         total_size = sum(f.stat().st_size for f in output_dir.glob("*.py")) / 1024
-        logger.success(f"Generated {len(files_created)} constant modules ({total_size:.1f} KB total)")
+        logger.success(
+            f"Generated {len(files_created)} constant modules ({total_size:.1f} KB total)"
+        )
         logger.info(f"Files: {', '.join(files_created)}")
         logger.success(f"Created wrapper at {output_path}")
 

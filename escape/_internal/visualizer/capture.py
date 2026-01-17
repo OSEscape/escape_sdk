@@ -64,8 +64,6 @@ def clear_cache() -> None:
     _canvas_size = None
 
 
-
-
 def _capture_window(window, width: int, height: int) -> Image.Image | None:
     """Capture window using Xlib XGetImage (fast, in-memory)."""
     try:

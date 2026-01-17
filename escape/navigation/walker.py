@@ -149,7 +149,8 @@ class Walker:
             if quad is not None:
                 # Check all 4 vertices are inside viewport
                 all_inside = all(
-                    grid.view_min_x <= p.x <= grid.view_max_x and grid.view_min_y <= p.y <= grid.view_max_y
+                    grid.view_min_x <= p.x <= grid.view_max_x
+                    and grid.view_min_y <= p.y <= grid.view_max_y
                     for p in quad.vertices
                 )
                 if all_inside:

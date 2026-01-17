@@ -351,7 +351,8 @@ class Bank(ItemContainer):
             return True
 
         return timing.wait_until(
-            lambda: client.resources.varps.get_varbit_by_name("BANK_QUANTITY_TYPE") == index, timeout=1
+            lambda: client.resources.varps.get_varbit_by_name("BANK_QUANTITY_TYPE") == index,
+            timeout=1,
         )
 
     def check_items_deposited(self, start_count) -> bool:
@@ -388,7 +389,9 @@ class Bank(ItemContainer):
         if not wait:
             return True
 
-        return timing.wait_until(lambda: client.tabs.equipment.get_total_count() < start, timeout=2.0)
+        return timing.wait_until(
+            lambda: client.tabs.equipment.get_total_count() < start, timeout=2.0
+        )
 
     def withdraw_items(self, bank_items: list[BankItem], safe: bool = True) -> bool:
         """Withdraw multiple items from the bank."""

@@ -144,7 +144,9 @@ class FairyRingInterface:
                 box = Box.from_rect(*button)
                 s = "Rotate clockwise" if steps > 0 else "Rotate counter-clockwise"
                 if box.click_option(s):
-                    wait_until(lambda i=i, nl=next_letter: self._check_index_to_target(i, nl), timeout=5)
+                    wait_until(
+                        lambda i=i, nl=next_letter: self._check_index_to_target(i, nl), timeout=5
+                    )
                 else:
                     return False
         self.cached_info = self._get_all_info()

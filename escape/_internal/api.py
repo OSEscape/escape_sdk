@@ -25,7 +25,6 @@ except ImportError:
     generate_all_enum_classes = None
 
 
-
 class RuneLiteAPI:
     """Smart API wrapper that uses scraped data to provide exact signatures."""
 
@@ -273,7 +272,9 @@ class RuneLiteAPI:
 
         return f"net/runelite/api/{normalized}"
 
-    def _find_method_in_hierarchy(self, method_name: str, target_class: str, signatures: list) -> list:
+    def _find_method_in_hierarchy(
+        self, method_name: str, target_class: str, signatures: list
+    ) -> list:
         """Find method signatures by walking up the inheritance tree."""
         # Extract simple class name for inheritance lookup
         simple_target = target_class.split("/")[-1]
@@ -480,7 +481,9 @@ class RuneLiteAPI:
         # Fallback for when perfect data isn't available
         return self._convert_fallback(arg_value, jni_type)
 
-    def _convert_by_category(self, arg_value: Any, jni_type: str, type_info: dict) -> tuple[str, str]:
+    def _convert_by_category(
+        self, arg_value: Any, jni_type: str, type_info: dict
+    ) -> tuple[str, str]:
         """Convert argument based on type category from API data."""
         category = type_info["category"]
 
@@ -689,7 +692,9 @@ class RuneLiteAPI:
         elapsed = (time.perf_counter() - start_time) * 1000
         api_channel.seek(0)
         query_pending = struct.unpack("i", api_channel.read(4))[0]
-        logger.warning(f"TIMEOUT after {elapsed:.2f}ms (polls={poll_count}, pending={query_pending})")
+        logger.warning(
+            f"TIMEOUT after {elapsed:.2f}ms (polls={poll_count}, pending={query_pending})"
+        )
         return None
 
     def _decode_msgpack_response(self, data: bytes) -> Any:

@@ -141,7 +141,6 @@ class _WidgetFields:
     is_hidden: WidgetField = "isHidden"
 
 
-
 # Module-level instance for IDE autocomplete
 WidgetFields = _WidgetFields()
 

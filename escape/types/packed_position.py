@@ -1,7 +1,6 @@
 """PackedPosition type for efficient OSRS coordinate storage."""
 
 
-
 class PackedPosition:
     """Efficient packed position representation for OSRS coordinates."""
 
@@ -24,7 +23,6 @@ class PackedPosition:
         pos = cls.__new__(cls)
         pos._packed = packed
         return pos
-
 
     @property
     def x(self) -> int:

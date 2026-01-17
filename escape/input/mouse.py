@@ -223,5 +223,6 @@ class Mouse:
             if i < count - 1:
                 time.sleep(random.uniform(0.025, 0.05))
 
+
 # Module-level instance
 mouse = Mouse()

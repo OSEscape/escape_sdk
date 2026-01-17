@@ -167,7 +167,6 @@ class Interfaces:
         """Get a list of currently open interface IDs."""
         return list(client.cache.get_open_widgets())
 
-
     def get_open_interface_names(self) -> list[str]:
         """Get a list of currently open interface names."""
         names = []
@@ -178,7 +177,6 @@ class Interfaces:
             else:
                 names.append(f"UNKNOWN_{group_id}")
         return names
-
 
 
 # Module-level instance

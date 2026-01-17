@@ -65,18 +65,15 @@ class Path:
 
         return cls(packed, obstacles)
 
-
     @property
     def world_x(self) -> np.ndarray:
         """World X coordinates (vectorized). Shape: [length]. X is bits 0-14."""
         return (self._packed & 0x7FFF).astype(np.int32)
 
-
     @property
     def world_y(self) -> np.ndarray:
         """World Y coordinates (vectorized). Shape: [length]. Y is bits 15-29."""
         return ((self._packed >> 15) & 0x7FFF).astype(np.int32)
-
 
     @property
     def plane(self) -> np.ndarray:
@@ -104,7 +101,9 @@ class Path:
         scene_x = self.world_x - grid.base_x
         scene_y = self.world_y - grid.base_y
 
-        in_scene = (scene_x >= 0) & (scene_x < grid.size_x) & (scene_y >= 0) & (scene_y < grid.size_y)
+        in_scene = (
+            (scene_x >= 0) & (scene_x < grid.size_x) & (scene_y >= 0) & (scene_y < grid.size_y)
+        )
 
         return scene_x, scene_y, in_scene
 
@@ -163,7 +162,6 @@ class Path:
         _, _, visible = self.get_screen_coords(margin=margin)
         return np.where(visible)[0]
 
-
     def get_visible_quads(self) -> list["Quad"]:
         """Get Quads for all visible path tiles."""
         grid = self._get_tile_grid()
@@ -218,7 +216,6 @@ class Path:
         tile_idx = scene_x * grid.size_y + scene_y
         return grid.get_tile_quad(tile_idx)
 
-
     @property
     def obstacles(self) -> list[PathObstacle]:
         """Get all obstacles in path."""
@@ -231,7 +228,6 @@ class Path:
     def is_empty(self) -> bool:
         """Check if path is empty."""
         return len(self._packed) == 0
-
 
     def get_position(self, i: int) -> PackedPosition | None:
         """Get PackedPosition at index, or None if out of bounds."""
@@ -268,7 +264,6 @@ class Path:
     def has_obstacles(self) -> bool:
         """Check if path has any obstacles."""
         return len(self._obstacles) > 0
-
 
     def get_total_duration(self) -> int:
         """Get total estimated duration in ticks (walking + obstacles)."""

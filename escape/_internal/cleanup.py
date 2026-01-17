@@ -84,4 +84,3 @@ class CleanupContext:
         """Context manager exit - cleanup everything."""
         # Don't suppress exceptions
         return False
-

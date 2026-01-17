@@ -277,7 +277,9 @@ class Prayer(GameTabs):
         if should_activate:
             wait_ticks(1)  # Wait for interface to update
 
-        return self.close_quick_prayer_setup() and set(self.selected_quick_prayers or []) == prayer_set
+        return (
+            self.close_quick_prayer_setup() and set(self.selected_quick_prayers or []) == prayer_set
+        )
 
 
 # Module-level instance

@@ -89,9 +89,9 @@ class Quad:
 
         # Split quad into two triangles: (p1, p2, p3) and (p1, p3, p4)
         # Point is in quad if it's in either triangle
-        return self._point_in_triangle(px, py, self.p1, self.p2, self.p3) or self._point_in_triangle(
-            px, py, self.p1, self.p3, self.p4
-        )
+        return self._point_in_triangle(
+            px, py, self.p1, self.p2, self.p3
+        ) or self._point_in_triangle(px, py, self.p1, self.p3, self.p4)
 
     def area(self) -> float:
         """Calculate the area of the quad using the shoelace formula."""
