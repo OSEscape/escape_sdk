@@ -162,11 +162,13 @@ exclude_lines = [
     "@abstractmethod",
 ]
 
-# Basedpyright configuration (used by Zed editor)
+# Basedpyright configuration
 [tool.basedpyright]
 pythonVersion = "3.12"
-typeCheckingMode = "basic"  # Start lenient: off < basic < standard < strict
-reportOptionalMemberAccess = "warning"  # Demote from error to warning
+typeCheckingMode = "basic"
+exclude = ["escape/generated"]
+reportMissingImports = "warning"
+reportOptionalMemberAccess = "warning"
 reportOptionalSubscript = "warning"
 reportOptionalCall = "warning"
 reportOptionalIterable = "warning"
