@@ -57,6 +57,9 @@ jobs:
           pip install toml
           python -c "import toml; toml.load('pyproject.toml')"
 
+      - name: Validate linter config integrity
+        run: python scripts/validate_config.py
+
       - name: Validate commit messages (main branch only)
         if: github.ref == 'refs/heads/main'
         run: |
