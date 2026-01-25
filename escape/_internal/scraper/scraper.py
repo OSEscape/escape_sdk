@@ -1091,7 +1091,7 @@ class EfficientRuneLiteScraper:
         logger.info("\n Resolving declaring classes from inheritance hierarchy")
 
         # Build inheritance mappings
-        child_to_parent, parent_to_children = self._build_inheritance_tree()
+        child_to_parent, _parent_to_children = self._build_inheritance_tree()
 
         # For each method, group by signature and resolve declaring class
         resolved_methods = {}

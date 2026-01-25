@@ -218,13 +218,7 @@ for _name, _cls in _enum_classes.items():
     globals()[_name] = _cls
 
 # Export commonly used enums for easy access
-__all__ = [
-    "EnumValue",
-    "EnumMeta",
-    "create_enum_class",
-    "generate_all_enum_classes",
-    "load_enums_from_file",
-] + list(_enum_classes.keys())
+__all__ = ["EnumValue", "EnumMeta", "create_enum_class", "generate_all_enum_classes", "load_enums_from_file", *list(_enum_classes.keys())]
 
 
 # Provide convenient access to common enums (if they exist)

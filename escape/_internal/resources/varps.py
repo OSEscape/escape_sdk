@@ -5,20 +5,20 @@ from typing import Any
 from escape._internal.logger import logger
 
 __all__ = [
-    "get_varbit_by_name",
-    "get_varbit_by_index",
-    "get_varp_by_name",
-    "get_varp_by_index",
-    "get_varc_value",
-    "get_varbit_info",
-    "get_varc_name",
-    "list_varps",
-    "list_varbits",
     "extract_bits",
-    "set_varps_data",
-    "set_varbits_data",
-    "get_varps_data_count",
+    "get_varbit_by_index",
+    "get_varbit_by_name",
+    "get_varbit_info",
     "get_varbits_data_count",
+    "get_varc_name",
+    "get_varc_value",
+    "get_varp_by_index",
+    "get_varp_by_name",
+    "get_varps_data_count",
+    "list_varbits",
+    "list_varps",
+    "set_varbits_data",
+    "set_varps_data",
 ]
 
 # Module-level data (loaded by cache_manager at init)

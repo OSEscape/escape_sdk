@@ -47,7 +47,7 @@ class PathObstacle:
 class Path:
     """Navigation path with numpy-backed coordinate storage for efficient vectorized operations."""
 
-    __slots__ = ("_packed", "_obstacles")
+    __slots__ = ("_obstacles", "_packed")
 
     def __init__(self, packed: np.ndarray, obstacles: list[PathObstacle]):
         """Initialize path with packed positions and obstacles."""

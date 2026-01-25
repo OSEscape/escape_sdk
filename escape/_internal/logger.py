@@ -92,4 +92,4 @@ def enable_json_logging(path: str, level: str = "DEBUG", rotation: str = "10 MB"
     )
 
 
-__all__ = ["logger", "set_level", "enable_file_logging", "enable_json_logging"]
+__all__ = ["enable_file_logging", "enable_json_logging", "logger", "set_level"]

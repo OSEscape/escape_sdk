@@ -183,4 +183,4 @@ class Interfaces:
 interfaces = Interfaces()
 
 
-__all__ = ["Interfaces", "interfaces", "Bank", "bank", "get_interface_name"]
+__all__ = ["Bank", "Interfaces", "bank", "get_interface_name", "interfaces"]

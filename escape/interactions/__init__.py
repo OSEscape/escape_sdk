@@ -23,4 +23,4 @@ class Interactions:
 interactions = Interactions()
 
 
-__all__ = ["Interactions", "interactions", "Menu", "menu"]
+__all__ = ["Interactions", "Menu", "interactions", "menu"]

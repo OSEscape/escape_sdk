@@ -5,7 +5,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import TYPE_CHECKING
 
-from escape._internal.api import RuneLiteAPI  # noqa: E402
+from escape._internal.api import RuneLiteAPI
 from escape._internal.cache_manager import ensure_generated_in_path, ensure_resources_loaded
 from escape._internal.logger import logger
 from escape._internal.resources import objects as objects_module

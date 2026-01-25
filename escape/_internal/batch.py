@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 class BatchOperation:
     """Single operation in a batch request."""
 
-    __slots__ = ("ref", "target", "method", "signature", "declaring_class", "args")
+    __slots__ = ("args", "declaring_class", "method", "ref", "signature", "target")
 
     def __init__(
         self,

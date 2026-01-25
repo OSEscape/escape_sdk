@@ -29,4 +29,4 @@ class Navigation:
 navigation = Navigation()
 
 
-__all__ = ["Navigation", "navigation", "Pathfinder", "pathfinder", "Walker", "walker"]
+__all__ = ["Navigation", "Pathfinder", "Walker", "navigation", "pathfinder", "walker"]

@@ -10,6 +10,6 @@ __author__ = "Escape Team"
 
 # Ensure generated files path is available for imports
 
-from escape.client import Client  # noqa: E402
+from escape.client import Client
 
 __all__ = ["Client"]

@@ -7,15 +7,15 @@ from escape._internal.logger import logger
 from escape.types.packed_position import pack_position_signed, unpack_position
 
 __all__ = [
+    "close",
+    "count_locations",
+    "count_objects",
+    "execute_query",
     "get_by_id",
     "get_by_name",
     "get_locations",
     "get_nearby",
     "search_by_action",
-    "count_objects",
-    "count_locations",
-    "execute_query",
-    "close",
     # Setter for cache_manager
     "set_db_connection",
 ]

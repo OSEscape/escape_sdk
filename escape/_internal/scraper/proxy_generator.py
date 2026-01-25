@@ -540,14 +540,14 @@ class ProxyGenerator:
         enum_type: str,
     ) -> str:
         """Generate a method that handles both integer and enum arguments."""
-        int_signature, int_return_type, int_generic, int_full_java_class, int_declaring_class = (
+        int_signature, int_return_type, _int_generic, int_full_java_class, int_declaring_class = (
             int_sig
         )
         (
             enum_signature,
-            enum_return_type,
-            enum_generic,
-            enum_full_java_class,
+            _enum_return_type,
+            _enum_generic,
+            _enum_full_java_class,
             enum_declaring_class,
         ) = enum_sig
 
@@ -941,7 +941,7 @@ def get_proxy_class(class_name: str) -> type:
                     elif isinstance(const_value, int | float):
                         code.append(f"    {const_name} = {const_value}")
                     else:
-                        code.append(f"    {const_name} = {repr(const_value)}")
+                        code.append(f"    {const_name} = {const_value!r}")
 
             code.append("")
             code.append("")
@@ -1006,7 +1006,7 @@ def get_proxy_class(class_name: str) -> type:
                 elif isinstance(const_value, int | float):
                     code.append(f"    {const_name} = {const_value}")
                 else:
-                    code.append(f"    {const_name} = {repr(const_value)}")
+                    code.append(f"    {const_name} = {const_value!r}")
 
         with open(output_path, "w") as f:
             f.write("\n".join(code))
@@ -1040,7 +1040,7 @@ def get_proxy_class(class_name: str) -> type:
                     if isinstance(const_value, int | float):
                         code.append(f"    {const_name} = {const_value}")
                     else:
-                        code.append(f"    {const_name} = {repr(const_value)}")
+                        code.append(f"    {const_name} = {const_value!r}")
 
             code.append("")
             code.append("")
@@ -1078,7 +1078,7 @@ def get_proxy_class(class_name: str) -> type:
                     if isinstance(const_value, int | float):
                         code.append(f"    {const_name} = {const_value}")
                     else:
-                        code.append(f"    {const_name} = {repr(const_value)}")
+                        code.append(f"    {const_name} = {const_value!r}")
 
             code.append("")
             code.append("")

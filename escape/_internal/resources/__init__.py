@@ -20,6 +20,6 @@ from escape._internal.resources import objects as objects
 from escape._internal.resources import varps as varps
 
 __all__ = [
-    "varps",
     "objects",
+    "varps",
 ]

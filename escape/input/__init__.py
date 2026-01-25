@@ -42,14 +42,14 @@ input = Input()
 
 
 __all__ = [
-    "Input",
-    "input",
     "Drawing",
-    "drawing",
+    "Input",
     "Keyboard",
-    "keyboard",
     "Mouse",
-    "mouse",
     "RuneLite",
+    "drawing",
+    "input",
+    "keyboard",
+    "mouse",
     "runelite",
 ]

@@ -55,22 +55,22 @@ class TileGrid:
     """Cached projection of all tile corners in the scene."""
 
     __slots__ = (
-        "corner_x",
-        "corner_y",
-        "corner_valid",
-        "size_x",
-        "size_y",
-        "base_x",
-        "base_y",
-        "plane",
-        "view_min_x",
-        "view_max_x",
-        "view_min_y",
-        "view_max_y",
         "_scene_xs",
         "_scene_ys",
-        "_tile_valid",
         "_tile_on_screen",
+        "_tile_valid",
+        "base_x",
+        "base_y",
+        "corner_valid",
+        "corner_x",
+        "corner_y",
+        "plane",
+        "size_x",
+        "size_y",
+        "view_max_x",
+        "view_max_y",
+        "view_min_x",
+        "view_min_y",
     )
 
     def __init__(
