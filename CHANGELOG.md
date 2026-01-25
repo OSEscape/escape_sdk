@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.1.2](https://github.com/OSEscape/escape_sdk/compare/v2.1.1...v2.1.2) (2026-01-25)
+
+### 🐛 Bug Fixes
+
+* remove unused mypy config (replaced by basedpyright) ([5e4ae17](https://github.com/OSEscape/escape_sdk/commit/5e4ae178bf481485006e1ec806817780d954c2fe))
+
 ## [2.1.1](https://github.com/OSEscape/escape_sdk/compare/v2.1.0...v2.1.1) (2026-01-25)
 
 ### 📚 Documentation
