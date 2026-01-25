@@ -8,7 +8,7 @@ version = "2.2.0"
 description = "OSRS Bot Development SDK with game-native structure"
 readme = "README.md"
 requires-python = ">=3.12"
-license = {text = "MIT"}
+license = "MIT"
 authors = [
     {name = "Escape Team"}
 ]

@@ -17,17 +17,29 @@ pip install escape-sdk
 ## Development
 
 ```bash
-# Clone and install
 git clone https://github.com/OSEscape/escape_sdk.git
 cd escape_sdk
 uv sync --all-extras
+pre-commit install
+```
 
-# Commands
+```bash
 make test      # Run all checks (ruff, basedpyright, skylos, pytest)
 make format    # Auto-format and fix linting issues
-make clean     # Remove caches and build artifacts
-make build     # Build distribution packages
 ```
+
+## Contributing
+
+We use [Conventional Commits](https://www.conventionalcommits.org/) for automated versioning and changelog.
+
+| Type | Bump | Example |
+|------|------|---------|
+| `feat` | Minor | `feat(bank): add deposit-all` |
+| `fix` | Patch | `fix: resolve crash on empty inventory` |
+| `feat!` | Major | `feat!: redesign API` |
+| `docs`, `refactor`, `test`, `chore` | — | `chore: update deps` |
+
+Push to `main` triggers automatic release to PyPI.
 
 ## License
 
