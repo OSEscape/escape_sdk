@@ -238,21 +238,20 @@ pytest tests/test_inventory.py   # Specific file
 pytest -k "test_bank"            # Pattern match
 ```
 
-### Linting and Formatting
+### Development Commands
 
 ```bash
-ruff check .           # Lint
-ruff check --fix .     # Auto-fix
-ruff format .          # Format
-python check_naming.py # Verify naming conventions
+make test      # Run all checks (ruff, basedpyright, skylos, pytest)
+make format    # Auto-format and fix linting issues
+make clean     # Remove caches and build artifacts
+make build     # Build distribution packages
 ```
 
-### Pre-commit Hooks
+### Linting Stack
 
-```bash
-pre-commit install       # Install hooks
-pre-commit run --all-files  # Run manually
-```
+- **ruff** - Linting and formatting (replaces black, isort, flake8)
+- **basedpyright** - Type checking (replaces mypy)
+- **skylos** - Dead code detection
 
 ## Generated Files
 
