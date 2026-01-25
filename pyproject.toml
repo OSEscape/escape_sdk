@@ -188,21 +188,6 @@ reportOptionalCall = "warning"
 reportOptionalIterable = "warning"
 reportOptionalContextManager = "warning"
 
-# MyPy configuration (kept for CI compatibility)
-[tool.mypy]
-python_version = "3.12"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = false
-disallow_incomplete_defs = false
-check_untyped_defs = true
-disallow_untyped_decorators = false
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-warn_no_return = true
-strict_equality = true
-
 # Skylos configuration (dead code detection)
 # Only runs on escape/_internal/ to find dead internal code
 # Public SDK API is excluded (unused methods are expected there)
