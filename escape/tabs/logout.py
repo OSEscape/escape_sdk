@@ -1,6 +1,4 @@
-"""
-Logout tab module.
-"""
+"""Logout tab module."""
 
 from escape.types.gametab import GameTab, GameTabs
 

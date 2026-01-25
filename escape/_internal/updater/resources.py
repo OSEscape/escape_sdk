@@ -10,9 +10,7 @@ from escape._internal.logger import logger
 
 
 class ResourceUpdater:
-    """
-    Manages automatic updates for game resources (varps, objects, etc.)
-    """
+    """Manages automatic updates for game resources (varps, objects, etc.)"""
 
     def should_update(self) -> tuple[bool, str]:
         """

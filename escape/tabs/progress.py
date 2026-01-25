@@ -1,6 +1,4 @@
-"""
-Progress tab module (Quest/Achievement Diaries).
-"""
+"""Progress tab module (Quest/Achievement Diaries)."""
 
 from escape.types.gametab import GameTab, GameTabs
 

@@ -36,9 +36,7 @@ class EnumInfo:
 
 
 class EfficientRuneLiteScraper:
-    """
-    Local scraper for RuneLite API files
-    """
+    """Local scraper for RuneLite API files"""
 
     def __init__(self):
         self.methods: dict[

@@ -1,6 +1,4 @@
-"""
-Pathfinder for navigation.
-"""
+"""Pathfinder for navigation."""
 
 from ..types.packed_position import PackedPosition
 from ..types.path import Path

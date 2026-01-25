@@ -1,6 +1,4 @@
-"""
-Prayer tab module.
-"""
+"""Prayer tab module."""
 
 from enum import Enum
 

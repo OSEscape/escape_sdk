@@ -1,6 +1,4 @@
-"""
-Menu module - handles right-click context menu interactions.
-"""
+"""Menu module - handles right-click context menu interactions."""
 
 import time
 from copy import deepcopy

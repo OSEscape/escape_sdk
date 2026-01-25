@@ -1,6 +1,4 @@
-"""
-Friends tab module.
-"""
+"""Friends tab module."""
 
 from escape.types.gametab import GameTab, GameTabs
 

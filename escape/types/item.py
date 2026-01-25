@@ -1,6 +1,4 @@
-"""
-Item type for representing game items.
-"""
+"""Item type for representing game items."""
 
 from dataclasses import dataclass
 from typing import Any

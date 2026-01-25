@@ -1,6 +1,4 @@
-"""
-Magic tab module.
-"""
+"""Magic tab module."""
 
 from escape._internal.logger import logger
 from escape.client import client

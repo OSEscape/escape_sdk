@@ -1,6 +1,4 @@
-"""
-Event system for consuming RuneLite events from /dev/shm.
-"""
+"""Event system for consuming RuneLite events from /dev/shm."""
 
 from .channels import (
     DOORBELL_PATH,

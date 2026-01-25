@@ -1,6 +1,4 @@
-"""
-Settings tab module.
-"""
+"""Settings tab module."""
 
 from escape.types.gametab import GameTab, GameTabs
 

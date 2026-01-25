@@ -58,9 +58,7 @@ class EnumValue:
 
 
 class EnumMeta(type):
-    """
-    Metaclass for enum classes to provide iteration and lookup capabilities
-    """
+    """Metaclass for enum classes to provide iteration and lookup capabilities"""
 
     _values: list[str]
     _ordinal_map: dict[int, EnumValue]
@@ -112,9 +110,7 @@ class EnumMeta(type):
 
 
 def create_enum_class(enum_name: str, values: list, value_map: dict | None = None) -> type:
-    """
-    Create a single enum class from scraped data
-    """
+    """Create a single enum class from scraped data"""
     # Build class attributes
     class_attrs = {
         "__module__": "runelite_enums",
@@ -158,9 +154,7 @@ def create_enum_class(enum_name: str, values: list, value_map: dict | None = Non
 
 
 def generate_all_enum_classes(api_data: dict) -> dict[str, type]:
-    """
-    Generate all enum classes from the scraped API data
-    """
+    """Generate all enum classes from the scraped API data"""
     enum_classes = {}
 
     # Check if we have enum data
@@ -187,9 +181,7 @@ def generate_all_enum_classes(api_data: dict) -> dict[str, type]:
 
 
 def load_enums_from_file(api_data_file: str | None = None) -> dict[str, type]:
-    """
-    Load enum classes from the API data file
-    """
+    """Load enum classes from the API data file"""
     # Default to the standard location in data/api directory
     if api_data_file is None:
         # Look for data file in cache directory

@@ -1,6 +1,4 @@
-"""
-Timing utilities - delays, waits, retries.
-"""
+"""Timing utilities - delays, waits, retries."""
 
 import random
 import time

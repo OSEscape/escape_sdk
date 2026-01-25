@@ -1,6 +1,4 @@
-"""
-Main Client class that provides access to all game modules.
-"""
+"""Main Client class that provides access to all game modules."""
 
 import os
 from pathlib import Path
@@ -98,7 +96,6 @@ class Client:
 
     def _init(self):
         """Actual initialization, runs once."""
-
         logger.info("Initializing Client")
 
         # Initialize API and connect

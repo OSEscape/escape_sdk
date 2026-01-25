@@ -1,6 +1,4 @@
-"""
-Entry point for running escape updater as a module.
-"""
+"""Entry point for running escape updater as a module."""
 
 from .main import main
 

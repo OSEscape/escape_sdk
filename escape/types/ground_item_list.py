@@ -1,6 +1,4 @@
-"""
-GroundItemList type with fluent filtering.
-"""
+"""GroundItemList type with fluent filtering."""
 
 from collections.abc import Callable
 

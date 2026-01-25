@@ -1,6 +1,4 @@
-"""
-Base GameTab class - parent class for all game tab modules.
-"""
+"""Base GameTab class - parent class for all game tab modules."""
 
 from enum import Enum
 

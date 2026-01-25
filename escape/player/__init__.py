@@ -1,6 +1,4 @@
-"""
-Player module - middleware for player state.
-"""
+"""Player module - middleware for player state."""
 
 from .player import Player
 

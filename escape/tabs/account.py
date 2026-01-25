@@ -1,6 +1,4 @@
-"""
-Account Management tab module.
-"""
+"""Account Management tab module."""
 
 from escape.types.gametab import GameTab, GameTabs
 

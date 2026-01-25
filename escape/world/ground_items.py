@@ -1,6 +1,4 @@
-"""
-OSRS ground item handling using event cache.
-"""
+"""OSRS ground item handling using event cache."""
 
 from typing import ClassVar, Self
 

@@ -6,9 +6,7 @@ from escape.utilities.timing import wait_until
 
 
 class FairyRingInterface:
-    """
-    Interface for the Fairy Ring transportation system.
-    """
+    """Interface for the Fairy Ring transportation system."""
 
     def __init__(self):
         self.group = client.interface_id.FAIRYRINGS

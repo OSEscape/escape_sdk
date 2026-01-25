@@ -1,6 +1,4 @@
-"""
-Inventory tab module.
-"""
+"""Inventory tab module."""
 
 from escape.types.box import Box, create_grid
 from escape.types.gametab import GameTab, GameTabs

@@ -1,6 +1,4 @@
-"""
-Emotes tab module.
-"""
+"""Emotes tab module."""
 
 from escape.types.gametab import GameTab, GameTabs
 

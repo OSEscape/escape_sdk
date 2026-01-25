@@ -1,6 +1,4 @@
-"""
-Equipment tab module.
-"""
+"""Equipment tab module."""
 
 from enum import Enum
 

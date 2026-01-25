@@ -1,6 +1,4 @@
-"""
-Grouping tab module (Clan/Group activities).
-"""
+"""Grouping tab module (Clan/Group activities)."""
 
 from escape.client import client
 from escape.types.gametab import GameTab, GameTabs

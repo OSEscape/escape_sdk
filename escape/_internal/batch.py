@@ -1,6 +1,4 @@
-"""
-Batch client for RuneLite API operations.
-"""
+"""Batch client for RuneLite API operations."""
 
 from typing import TYPE_CHECKING, Any
 

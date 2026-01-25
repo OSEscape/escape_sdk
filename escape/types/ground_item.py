@@ -1,6 +1,4 @@
-"""
-Ground item type definition.
-"""
+"""Ground item type definition."""
 
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any

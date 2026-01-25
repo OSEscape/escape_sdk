@@ -1,6 +1,4 @@
-"""
-Music tab module.
-"""
+"""Music tab module."""
 
 from escape.types.gametab import GameTab, GameTabs
 

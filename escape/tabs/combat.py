@@ -1,6 +1,4 @@
-"""
-Combat tab module.
-"""
+"""Combat tab module."""
 
 from escape.types.gametab import GameTab, GameTabs
 

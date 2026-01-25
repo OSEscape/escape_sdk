@@ -1,6 +1,4 @@
-"""
-Banking module - handles all banking operations.
-"""
+"""Banking module - handles all banking operations."""
 
 import math
 import random
@@ -98,7 +96,6 @@ class Bank(ItemContainer):
 
     def is_open(self) -> bool:
         """Check if bank interface is open."""
-
         if client.interface_id.BANKMAIN in client.interfaces.get_open_interfaces():
             if not self.is_setup:
                 text = self.capacity_widget.get().get("text", None)
