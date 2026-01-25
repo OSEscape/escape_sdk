@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.1.0](https://github.com/OSEscape/escape_sdk/compare/v2.0.1...v2.1.0) (2026-01-25)
+
+### ✨ Features
+
+* add unified linting pipeline (ruff, basedpyright, skylos) ([9e32115](https://github.com/OSEscape/escape_sdk/commit/9e321155424bc80073e2f8da75e6e4eb38913b52))
+
+### 📚 Documentation
+
+* update README with new make commands and linting stack ([b9b9527](https://github.com/OSEscape/escape_sdk/commit/b9b95274692dafb26423dc9f0001bda9454f1dbe))
+
+### 💄 Styles
+
+* auto-fix docstrings to PEP 257 one-line format ([f6f9aff](https://github.com/OSEscape/escape_sdk/commit/f6f9aff0b269822ecc4697d36f65c56ccaf9bc7a))
+* auto-fix ruff violations ([1823495](https://github.com/OSEscape/escape_sdk/commit/182349565f5aab4b1e2ffa752f1d38b63f5eb29c))
+* fix remaining D205, D401, and RUF012 violations ([2a20480](https://github.com/OSEscape/escape_sdk/commit/2a2048090c654b861177c396c821fddfb3954f16))
+
+### 🔨 Build
+
+* add make format target for auto-formatting ([6a72877](https://github.com/OSEscape/escape_sdk/commit/6a72877f952c6bea14127f0914cd4d604d70732a))
+
 ## [2.0.1](https://github.com/OSEscape/escape_sdk/compare/v2.0.0...v2.0.1) (2026-01-17)
 
 ### 🐛 Bug Fixes
