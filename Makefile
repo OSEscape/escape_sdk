@@ -1,57 +1,18 @@
-.PHONY: help install test lint format check clean build
+SHELL := /usr/bin/env bash
 
-help:
-	@echo "Escape Development Commands:"
-	@echo ""
-	@echo "  make install       Install package and dev dependencies"
-	@echo "  make test          Run tests with pytest"
-	@echo "  make lint          Run linting checks"
-	@echo "  make format        Format code with ruff"
-	@echo "  make naming        Check naming conventions"
-	@echo "  make verify        Verify package setup"
-	@echo "  make check         Run all checks (lint + naming + tests)"
-	@echo "  make clean         Remove build artifacts and cache"
-	@echo "  make build         Build distribution packages"
-	@echo ""
+.PHONY: test clean build help
 
-install:
-	pip install -e ".[dev]"
-	pre-commit install
+test:           ## Run all checks (ruff, basedpyright, skylos, pytest)
+	uv run ruff check . && uv run ruff format --check . && uv run basedpyright escape/ && uv run skylos escape/_internal/ -c 80 --secrets && uv run pytest -q
 
-test:
-	pytest -v
+clean:          ## Remove caches and build artifacts
+	find . -type d \( -name __pycache__ -o -name .pytest_cache -o -name .ruff_cache -o -name htmlcov -o -name "*.egg-info" \) -exec rm -rf {} + 2>/dev/null || true
+	rm -rf build/ dist/ .coverage 2>/dev/null || true
 
-test-cov:
-	pytest --cov=escape --cov-report=html --cov-report=term
+build:          ## Build distribution packages
+	uv run python -m build
 
-lint:
-	ruff check .
-
-format:
-	ruff format .
-	ruff check --fix .
-
-naming:
-	python3 scripts/check_naming.py
-
-verify:
-	python3 scripts/verify_setup.py
-
-check: lint naming test
-	@echo "✅ All checks passed!"
-
-clean:
-	rm -rf build/
-	rm -rf dist/
-	rm -rf *.egg-info
-	rm -rf .pytest_cache/
-	rm -rf .ruff_cache/
-	rm -rf htmlcov/
-	rm -rf .coverage
-	find . -type d -name __pycache__ -exec rm -rf {} +
-	find . -type f -name "*.pyc" -delete
-
-build: clean
-	python -m build
+help:           ## Show this help
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
 .DEFAULT_GOAL := help

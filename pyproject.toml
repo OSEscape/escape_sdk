@@ -34,6 +34,8 @@ dependencies = [
     "ruff>=0.14.13",
     "basedpyright>=1.37.1",
     "pytest>=9.0.2",
+    "pytest-cov>=4.1.0",
+    "skylos>=3.1.1",
 ]
 
 [project.optional-dependencies]
@@ -80,7 +82,7 @@ exclude = [
 ]
 
 [tool.ruff.lint]
-# Enable pycodestyle (E, W), Pyflakes (F), and isort (I)
+# Enable pycodestyle (E, W), Pyflakes (F), isort (I), and pydocstyle (D)
 select = [
     "E",   # pycodestyle errors
     "W",   # pycodestyle warnings
@@ -92,12 +94,21 @@ select = [
     "C4",  # flake8-comprehensions
     "SIM", # flake8-simplify
     "TCH", # flake8-type-checking
+    "ISC", # implicit-str-concat
+    "RUF", # ruff-specific rules
+    "D",   # pydocstyle (PEP 257 docstrings)
 ]
 
 # Ignore rules - keep minimal, only for legitimate cases
 ignore = [
-    "F822",  # Undefined name in __all__ (dynamically generated)
     "E501",  # Line too long (handled by formatter)
+    "D100",  # Missing docstring in public module
+    "D102",  # Missing docstring in public method
+    "D104",  # Missing docstring in public package
+    "D105",  # Missing docstring in magic method
+    "D107",  # Missing docstring in __init__
+    "D400",  # First line should end with a period
+    "F822",  # Undefined name in __all__ (dynamically generated) - escape_sdk specific
 ]
 
 # Allow autofix for all enabled rules
@@ -115,6 +126,9 @@ line-ending = "auto"
 
 [tool.ruff.lint.isort]
 known-first-party = ["escape"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
 
 # Pytest configuration
 [tool.pytest.ini_options]
@@ -188,3 +202,19 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 warn_no_return = true
 strict_equality = true
+
+# Skylos configuration (dead code detection)
+# Only runs on escape/_internal/ to find dead internal code
+# Public SDK API is excluded (unused methods are expected there)
+[tool.skylos]
+complexity = 10
+nesting = 4
+max_args = 6
+max_lines = 100
+ignore = []
+
+[tool.skylos.gate]
+fail_on_critical = true
+max_security = 0
+max_quality = 10
+strict = false
