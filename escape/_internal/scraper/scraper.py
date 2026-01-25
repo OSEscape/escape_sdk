@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-Local RuneLite API Scraper
-Processes locally downloaded RuneLite API files to generate comprehensive API database
+Local RuneLite API Scraper.
+
+Processes locally downloaded RuneLite API files to generate comprehensive API database.
 """
 
 import contextlib

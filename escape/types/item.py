@@ -31,7 +31,7 @@ class Item:
         return {"id": self.id, "name": self.name, "stack": self.quantity, "noted": self.noted}
 
     def __repr__(self) -> str:
-        """String representation."""
+        """Return string representation."""
         noted_str = " (noted)" if self.noted else ""
         return f"Item({self.id}, '{self.name}' x{self.quantity}{noted_str})"
 

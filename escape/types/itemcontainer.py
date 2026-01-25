@@ -142,7 +142,7 @@ class ItemContainer:
         return all(item is not None for item in self.items)
 
     def __repr__(self) -> str:
-        """String representation."""
+        """Return string representation."""
         return f"ItemContainer(id={self.container_id}, items={self.to_dict()})"
 
     def __eq__(self, other) -> bool:

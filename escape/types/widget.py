@@ -1,5 +1,5 @@
 import typing
-from typing import Literal
+from typing import ClassVar, Literal
 
 from escape.globals import get_client
 
@@ -148,8 +148,8 @@ WidgetFields = _WidgetFields()
 class Widget:
     """Python-side mask builder for widget property queries."""
 
-    _FIELDS: list[WidgetField] = list(typing.get_args(WidgetField))  # keeps exact order
-    _FIELD_BITS = {name: 1 << i for i, name in enumerate(_FIELDS)}
+    _FIELDS: ClassVar[list[WidgetField]] = list(typing.get_args(WidgetField))  # keeps exact order
+    _FIELD_BITS: ClassVar[dict[str, int]] = {name: 1 << i for i, name in enumerate(_FIELDS)}
 
     def __init__(self, id):
         self._mask = 0

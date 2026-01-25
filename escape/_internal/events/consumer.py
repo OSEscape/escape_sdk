@@ -45,7 +45,7 @@ class EventConsumer:
         self._setup_inotify()
 
     def _setup_inotify(self) -> None:
-        """Setup inotify watch on doorbell file."""
+        """Set up inotify watch on doorbell file."""
         self.inotify = INotify()
 
         # Check if doorbell exists
@@ -113,7 +113,7 @@ class EventConsumer:
         logger.success("Event consumer stopped")
 
     def _run(self) -> None:
-        """Main event loop - runs in background thread."""
+        """Run main event loop in background thread."""
         logger.info("Event consumer loop started")
         logger.info(f"Ring buffer channels: {', '.join(RING_BUFFER_CHANNELS)}")
         logger.info(f"Latest-state channels: {', '.join(LATEST_STATE_CHANNELS)}")

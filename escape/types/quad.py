@@ -69,7 +69,7 @@ class Quad:
         return (min(xs), min(ys), max(xs), max(ys))
 
     def _sign(self, p1x: int, p1y: int, p2x: int, p2y: int, p3x: int, p3y: int) -> float:
-        """Helper for cross product sign calculation."""
+        """Calculate cross product sign for point-in-triangle test."""
         return (p1x - p3x) * (p2y - p3y) - (p2x - p3x) * (p1y - p3y)
 
     def _point_in_triangle(self, px: int, py: int, v1: "Point", v2: "Point", v3: "Point") -> bool:

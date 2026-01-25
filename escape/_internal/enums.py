@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-RuneLite Enum Classes - Auto-generated from scraped API data
-Provides type-safe enum objects that prevent int/enum confusion
+RuneLite Enum Classes - Auto-generated from scraped API data.
+
+Provides type-safe enum objects that prevent int/enum confusion.
 """
 
 import json
@@ -14,7 +15,8 @@ from escape._internal.logger import logger
 
 class EnumValue:
     """
-    Represents a RuneLite enum value with type information.
+    Represent a RuneLite enum value with type information.
+
     This is NOT an integer - it's a distinct type that carries enum metadata.
     """
 
@@ -218,7 +220,14 @@ for _name, _cls in _enum_classes.items():
     globals()[_name] = _cls
 
 # Export commonly used enums for easy access
-__all__ = ["EnumValue", "EnumMeta", "create_enum_class", "generate_all_enum_classes", "load_enums_from_file", *list(_enum_classes.keys())]
+__all__ = [
+    "EnumValue",
+    "EnumMeta",
+    "create_enum_class",
+    "generate_all_enum_classes",
+    "load_enums_from_file",
+    *list(_enum_classes.keys()),
+]
 
 
 # Provide convenient access to common enums (if they exist)

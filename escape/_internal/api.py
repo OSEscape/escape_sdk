@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
-RuneLite API Wrapper - Data-Driven Universal Bridge Interface
-Uses perfect type conversion data from the scraper for zero-maintenance operation
-Now with type-safe enum support to prevent int/enum confusion
+RuneLite API Wrapper - Data-Driven Universal Bridge Interface.
+
+Uses perfect type conversion data from the scraper for zero-maintenance operation.
+Now with type-safe enum support to prevent int/enum confusion.
 """
 
 import json

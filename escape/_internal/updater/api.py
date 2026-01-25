@@ -266,7 +266,7 @@ class RuneLiteAPIUpdater:
             return False
 
     def update(self, force: bool = False, max_age_days: int = 7) -> bool:
-        """Main update function that checks and updates if needed."""
+        """Check for updates and download new API data if needed."""
         print("=" * 80)
         logger.info("RuneLite API Auto-Updater")
         print("=" * 80)

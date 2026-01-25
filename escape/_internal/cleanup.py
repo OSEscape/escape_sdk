@@ -26,7 +26,7 @@ def register_api_for_cleanup(api) -> None:
 
 
 def _cleanup_all():
-    """Internal cleanup handler called by atexit."""
+    """Handle internal cleanup on atexit."""
     if not _registered_apis:
         return
 
@@ -39,7 +39,7 @@ def _cleanup_all():
 
 
 def with_cleanup(func: Callable) -> Callable:
-    """Decorator that ensures cleanup runs even on exception."""
+    """Ensure cleanup runs even on exception."""
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
