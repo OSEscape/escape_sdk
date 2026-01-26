@@ -1,37 +1,42 @@
+# Pre-commit hooks configuration
+# Updated: 2026-01-26
+# Versions checked against latest releases
+
+default_language_version:
+  python: python3.12
+
 repos:
-  # Ruff - fast Python linter and formatter
+  # Ruff - fast Python linter and formatter (replaces black, flake8, isort)
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.4
+    rev: v0.14.14
     hooks:
-      # Run the linter
       - id: ruff
         args: [--fix]
         exclude: ^(escape/generated/|scripts/)
-      # Run the formatter
       - id: ruff-format
         exclude: ^(escape/generated/|scripts/)
 
-  # Note: mypy disabled in pre-commit (too slow, run manually with: mypy escape/)
-  # Type checking with mypy
-  # - repo: https://github.com/pre-commit/mirrors-mypy
-  #   rev: v1.7.1
-  #   hooks:
-  #     - id: mypy
-  #       additional_dependencies: [types-all]
-  #       args: [--ignore-missing-imports]
-  #       exclude: ^escape/generated/
-
-  # Basic file checks
+  # Basic file and git hygiene checks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
+      - id: check-toml
       - id: check-added-large-files
         args: [--maxkb=1000]
       - id: check-merge-conflict
-      - id: check-toml
       - id: debug-statements
       - id: mixed-line-ending
         args: [--fix=lf]
+
+  # Secret scanning - prevents accidental credential commits
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.0
+    hooks:
+      - id: gitleaks
+
+# Note: Type checking (basedpyright) runs in CI, not pre-commit
+# Per basedpyright maintainers: IDE integration + CI is preferred over pre-commit
+# See: https://docs.basedpyright.com/latest/installation/pre-commit%20hook/
